@@ -22,7 +22,7 @@ and a comparison of that analysis against the photonic inference processor in
 | `scripts/verify_gradient.py` | Numerical check of eqs. S3 to S8 and S12 on a random triangular mesh against finite differences. Finds one conjugation error in the printed VJP (S5) and a sign typo in S12. |
 | `scripts/energy_model.py` | Rebuilds Tables S1 to S4 and the photonic-advantage contours of fig. S8, reconciles the "2× at N = 64, M ≥ 16" claim, and puts the Lightmatter chip on the same per-op axes. |
 | `scripts/energy_breakdown.py` | Stacked per-component energy bars for inference and training: the SM model with segmented phase shifters for inputs and weights (no DACs) at 8 bits, projected to 4 bits for inference and to 12-bit readout for training, against Envise measured and digital lines, plus the contact count a segmented weight array implies. Writes `figs/energy_breakdown.tex` (pgfplots) which the deck inputs. |
-| `slides/` | The talk as a reveal.js deck: `index.html`, theme, vendored reveal.js, KaTeX and Fira Sans (no CDN, works offline), the two Science training movies, and the generated chart SVG. Deployed to GitHub Pages at https://sunilkpai.github.io/sprc2026/ by `.github/workflows/pages.yml`; `.gitlab-ci.yml` does the same on GitLab Pages. |
+| `slides/` | The talk as a reveal.js deck: `index.html`, theme, vendored reveal.js, KaTeX and Fira Sans (no CDN, works offline), the two Science training movies, and the generated chart SVG. Published to GitHub Pages at https://sunilkpai.github.io/sprc2026/ by `.github/workflows/pages.yml` (via the `gh-pages` branch); `.gitlab-ci.yml` does the same on GitLab Pages. |
 | `talk.tex`, `talk.pdf`, `figs/` | The earlier beamer version of the deck (metropolis, 16:9). Kept for the PDF; the reveal.js deck is the one being maintained. |
 | `refs/` | Local copies of the source PDFs. Git-ignored; see below. |
 
@@ -60,10 +60,10 @@ view with notes, `f` for fullscreen, `?` for the key map.
 python3 -m http.server 8765 --directory slides
 ```
 
-Every push to `main` that touches `slides/` redeploys
-https://sunilkpai.github.io/sprc2026/ through GitHub Actions (Settings, Pages,
-Source: GitHub Actions; the workflow enables it on first run). The QR code on the
-last slide points there. To serve from GitLab Pages instead, push the repo to
+Every push to `main` that touches `slides/` republishes
+https://sunilkpai.github.io/sprc2026/: the workflow in
+`.github/workflows/pages.yml` copies `slides/` to the `gh-pages` branch, which
+GitHub Pages serves. The QR code on the last slide points there. To serve from GitLab Pages instead, push the repo to
 GitLab (the included `.gitlab-ci.yml` publishes `slides/`) and regenerate the QR
 with the GitLab URL:
 
