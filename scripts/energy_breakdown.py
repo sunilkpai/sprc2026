@@ -113,7 +113,7 @@ YMAX = 400.0
 def axis(name, data, title, at=None, legend=False, ylabel=True):
     cats = list(data)
     lines = []
-    opts = [f"name={name}", "width=0.5\\textwidth", "height=3.5cm", "ybar stacked",
+    opts = [f"name={name}", "width=0.5\\textwidth", "height=4.4cm", "ybar stacked",
             "bar width=13pt", f"ymin=0, ymax={YMAX:.0f}", "ylabel near ticks",
             "symbolic x coords={" + ",".join(cats) + "}", "xtick=data",
             "x tick label style={font=\\scriptsize, rotate=25, anchor=north east}",
