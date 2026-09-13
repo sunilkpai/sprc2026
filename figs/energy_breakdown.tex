@@ -3,7 +3,7 @@
 \begin{axis}[
   name=inf,
   width=0.5\textwidth,
-  height=4.4cm,
+  height=3.9cm,
   ybar stacked,
   bar width=13pt,
   ymin=0, ymax=400,
@@ -45,18 +45,19 @@
 \addlegendentry{B200 FP4 wall 110}
 \addplot[sharp plot, stack plots=false, dashed, color=amber, thick, no markers, line legend] coordinates {(Envise meas.,100) (SM 4-bit,100)};
 \addlegendentry{model 4-bit digital 100}
+\node[font=\tiny, color=ink, anchor=west, xshift=7pt, align=left] at (axis cs:Envise meas.,220) {1215 fJ/op,\\ off scale};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit,45.1) {45};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit,13.9) {14};
 \end{axis}
 \begin{axis}[
   name=train,
   width=0.5\textwidth,
-  height=4.4cm,
+  height=3.9cm,
   ybar stacked,
   bar width=13pt,
-  ymin=0, ymax=400,
+  ymin=0, ymax=800,
   ylabel near ticks,
-  symbolic x coords={SM 8-bit M16,SM 4-bit M16,SM 4-bit M64},
+  symbolic x coords={SM 8-bit M16,SM 8-bit M64,SM 12-bit M64},
   xtick=data,
   x tick label style={font=\scriptsize, rotate=25, anchor=north east},
   y tick label style={font=\scriptsize},
@@ -69,18 +70,17 @@
   clip=true,
   at={(inf.south east)}, anchor=south west, xshift=0.9cm
 ]
-\addplot[fill=slate,draw=none] coordinates {(SM 8-bit M16,7.03) (SM 4-bit M16,2.34) (SM 4-bit M64,2.34)};
-\addplot[fill=moss,draw=none] coordinates {(SM 8-bit M16,0.19) (SM 4-bit M16,0.09) (SM 4-bit M64,0.09)};
-\addplot[fill=sky,draw=none] coordinates {(SM 8-bit M16,21.56) (SM 4-bit M16,1.35) (SM 4-bit M64,1.35)};
-\addplot[fill=ink2,draw=none] coordinates {(SM 8-bit M16,54.69) (SM 4-bit M16,54.69) (SM 4-bit M64,21.88)};
-\addplot[fill=amber!40,draw=none] coordinates {(SM 8-bit M16,11.72) (SM 4-bit M16,11.72) (SM 4-bit M64,11.72)};
-\addplot[fill=mist,draw=none] coordinates {(SM 8-bit M16,0.31) (SM 4-bit M16,0.31) (SM 4-bit M64,0.08)};
-\addplot[forget plot, sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,300) (SM 4-bit M64,300)};
-\addplot[forget plot, sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,350) (SM 4-bit M64,350)};
-\addplot[forget plot, sharp plot, stack plots=false, dashdotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,110) (SM 4-bit M64,110)};
-\addplot[forget plot, sharp plot, stack plots=false, dashed, color=amber, thick, no markers, line legend] coordinates {(SM 8-bit M16,100) (SM 4-bit M64,100)};
+\addplot[fill=slate,draw=none] coordinates {(SM 8-bit M16,7.03) (SM 8-bit M64,7.03) (SM 12-bit M64,14.06)};
+\addplot[fill=moss,draw=none] coordinates {(SM 8-bit M16,0.19) (SM 8-bit M64,0.19) (SM 12-bit M64,0.28)};
+\addplot[fill=sky,draw=none] coordinates {(SM 8-bit M16,21.56) (SM 8-bit M64,21.56) (SM 12-bit M64,345.00)};
+\addplot[fill=ink2,draw=none] coordinates {(SM 8-bit M16,54.69) (SM 8-bit M64,21.88) (SM 12-bit M64,21.88)};
+\addplot[fill=amber!40,draw=none] coordinates {(SM 8-bit M16,11.72) (SM 8-bit M64,11.72) (SM 12-bit M64,3000.00)};
+\addplot[fill=mist,draw=none] coordinates {(SM 8-bit M16,0.31) (SM 8-bit M64,0.08) (SM 12-bit M64,0.08)};
+\addplot[forget plot, sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,300) (SM 12-bit M64,300)};
+\addplot[forget plot, sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,350) (SM 12-bit M64,350)};
+\addplot[forget plot, sharp plot, stack plots=false, densely dotted, color=amber, thick, no markers, line legend] coordinates {(SM 8-bit M16,707) (SM 12-bit M64,707)} node[pos=0, anchor=south west, font=\tiny, color=amber] {H100 FP16 wall 707};
+\node[font=\tiny, color=ink, anchor=east, xshift=-7pt, align=right] at (axis cs:SM 12-bit M64,440) {3381 fJ/op,\\ off scale};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit M16,95.5) {95};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit M16,70.5) {71};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit M64,37.5) {37};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit M64,62.5) {62};
 \end{axis}
 \end{tikzpicture}

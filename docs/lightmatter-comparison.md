@@ -276,15 +276,22 @@ segmented array fits under a PTC-sized die even at microbump pitch; at 8 bits it
 needs hybrid bonding. Weight *write* energy is then $b\,E_{\mathrm{mod}}$ per
 changed weight, paid once per batch and negligible against the per-op terms.
 
-**Other 4-bit projection rules.** ADC energy scales as $2^{b}$ (Walden-type;
-the Nature SI quotes the thermal-limited $2^{2\Delta b}$ for its own ADC, which
-would be 16× more optimistic over four bits). Digital op energy is divided by 3,
-the B200 FP4 to H100 INT8 ratio at the wall and close to $b^2$ multiplier
-scaling. Optical power for *inference* scales as $4^{b}$, i.e. by 256, since a
-shot-noise-limited amplitude SNR of $2^{b}$ needs power $\propto4^{b}$. Optical
-power for *training* is held at the 8-bit value because sec. 2.7.10 sets it by
-the gradient SNR at the taps (at least 0.5 µW per tap), not by the output bit
-depth. TIA and switch energies are bit-independent.
+**Projection rules.** ADC energy scales as $2^{b}$ (Walden-type; the Nature SI
+quotes the thermal-limited $2^{2\Delta b}$ for its own ADC, which would be 16×
+more optimistic over four bits). Digital op energy is divided by 3 going to 4
+bits, the B200 FP4 to H100 INT8 ratio at the wall, and doubled going to 16-bit
+class. Optical power scales as $4^{b}$, since a shot-noise-limited amplitude SNR
+of $2^{b}$ needs power $\propto4^{b}$; the SM's 1 mW per mode with a 3% tap is
+about a 9-bit shot-noise budget at 1 GHz, so it is treated as the 8-bit base.
+TIA and switch energies are bit-independent.
+
+**4 bits is an inference story, not a training one.** Gradients need precision:
+the SM's own data show gradient error growing toward convergence and with batch
+size (fig. S4G, H), and the deck's own line is that gradients want 16-bit dynamic
+range. So the training panel is *not* projected to 4 bits. It shows the SM's own
+8-bit readout at two batch sizes, and a 12-bit readout projection with the same
+rules run upward (ADC ×16, tap light ×256, digital prep ×2, 12 segments) against
+an FP16 digital line (H100 dense FP16 peak over board power, 707 fJ per op).
 
 **Inference, $N=128$, fJ per op**
 
@@ -302,32 +309,37 @@ B200 FP4 110, the model's 4-bit baseline 100.
 | scenario | digital prep | encode | ADC | TIA + updater | optical | switches | total |
 |---|---|---|---|---|---|---|---|
 | SM 8-bit, $M=16$ | 7.0 | 0.2 | 21.6 | 54.7 | 11.7 | 0.3 | 96 |
-| SM 4-bit, $M=16$ | 2.3 | 0.1 | 1.3 | 54.7 | 11.7 | 0.3 | 71 |
-| SM 4-bit, $M=64$ | 2.3 | 0.1 | 1.3 | 21.9 | 11.7 | 0.1 | 38 |
+| SM 8-bit, $M=64$ | 7.0 | 0.2 | 21.6 | 21.9 | 11.7 | 0.1 | 63 |
+| SM 12-bit readout, $M=64$ | 14.1 | 0.3 | 345 | 21.9 | 3000 | 0.1 | 3381 |
+
+Digital reference lines: model 8-bit 300, H100 INT8 350, H100 FP16 707.
 
 What the two tables say:
 
-- **With segmented phase shifters the encode path is already at 0.1 fJ per op,
-  40× under Envise's measured 3.8 fJ per op.** The 2023 model's expensive term
-  at 8 bits is then the ADC (48% of inference), and at 4 bits it is the TIA.
-  There is no "best-of" bar because nothing in Envise's measured encode path is
-  cheaper than the segmented-PS model; what Envise adds is the reality check
-  that the rest of the system costs 1.19 pJ per op.
+- **With segmented phase shifters the encode path is 0.1 fJ per op, 40× under
+  Envise's measured 3.8 fJ per op.** The 2023 model's expensive term at 8 bits is
+  then the ADC (48% of inference), and at 4 bits it is the TIA. There is no
+  "best-of" bar because nothing in Envise's measured encode path is cheaper than
+  the segmented-PS model; what Envise adds is the reality check that the rest of
+  its system costs 1.19 pJ per op.
 - **4-bit inference lands at 14 fJ per op, 7× under the 4-bit digital line.**
-  The ADC collapses 16×, the optical power collapses by 256, and the four
-  remaining segments cost nothing. What is left is the TIA, which is fixed by
-  photodiode current and bandwidth, not bits.
-- **Training does not collapse the same way.** At $M=16$ the 4-bit training bar
-  is 71 fJ per op, 1.4× under the 4-bit digital line, because the per-phase
-  gradient updater ($4N^2E_{\mathrm{TIA}}$ per batch, 44 of the 55 fJ in the TIA
-  row) and the tap optical floor are bit-independent. Batch size is the lever:
-  at $M=64$ the updater amortises to 11 fJ and the bar drops to 38 fJ per op,
-  2.7× under the digital line. Inference advantage is independent of $M$;
-  training advantage is set by it.
+  The ADC collapses 16×, the light by 256, the four remaining segments cost
+  nothing. What is left is the TIA, fixed by photodiode current and bandwidth.
+- **8-bit training is 3 to 5× under the 8-bit digital line and the lever is
+  batch size.** The per-phase gradient updater ($4N^2E_{\mathrm{TIA}}$ per batch)
+  is 44 of the 55 fJ in the TIA row at $M=16$ and 11 of 22 at $M=64$. Inference
+  advantage is independent of $M$; training advantage is set by it.
+- **12-bit gradient readout is not an analog proposition at this tap design.**
+  Sixteen times the ADC energy is survivable (345 fJ per op); 256× the tap light
+  is not (3 pJ per op, i.e. 256 mW per mode, 33 W optical per mesh). The bar
+  lands 5× above FP16 digital. Getting gradient precision without paying in
+  photons means stronger taps, integrated APDs with gain, or per-vector scaling
+  of the adjoint so the ADC window tracks the shrinking gradient, which is the
+  ABFP gain trick applied to training (sec. 8, question 2).
 - **The 4-bit optical number for inference is a limit, not a design.** 4 µW per
-  mode is below the tap power the gradient protocol needs and below what a
-  practical link budget with 0.2 dB per MZI over 256 columns allows; the bar
-  shows what shot noise permits, not what the S14 recursion permits.
+  mode is below what a practical link budget with 0.2 dB per MZI over 256
+  columns allows; the bar shows what shot noise permits, not what the S14
+  recursion permits.
 
 ## 8. Open questions this raises
 

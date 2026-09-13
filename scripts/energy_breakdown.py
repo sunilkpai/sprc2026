@@ -13,10 +13,12 @@ All photonic bars use segmented phase shifters for inputs and weights: no DACs.
   * segmented PS        ~ b     (b binary-weighted segments; the SM charges 16 E_mod at 8 bits)
   * digital op energy   /3      (B200 FP4 vs H100 INT8 at the wall is ~3.2x; Horowitz b^2 for
                                   the multiplier gives ~4x)
-  * optical power       ~ 4^b   for inference (shot-noise-limited amplitude SNR), i.e. /256;
-                         unchanged for training, where sec. 2.7.10 sets the tap power by
-                         gradient SNR (>= 0.5 uW per tap), not by output bit depth.
-  * TIA, modulators, switches: bit-independent.
+  * optical power       ~ 4^b   (shot-noise-limited amplitude SNR), i.e. /256 for inference.
+  * TIA, switches: bit-independent.
+Training is NOT projected to 4 bits: gradients need precision.  The training panel shows
+8-bit readout at two batch sizes and a 12-bit-readout projection with the same rules run
+the other way (ADC x16, tap optical power x256, digital prep x2, 12 segments), against an
+FP16 digital line.
 
 Run:  python3 scripts/energy_breakdown.py
 """
@@ -56,6 +58,11 @@ def per_op(comp, ops, M=1):
 
 
 M_BIG = 64
+UP = 4  # extra readout bits for the training projection: 8 -> 12
+TWELVE_BIT = dict(E_ADC=DEFAULT["E_ADC"] * 2**UP,      # Walden
+                  E_OP=DEFAULT["E_OP"] * 2,             # 16-bit-class digital I/O prep
+                  E_mode=DEFAULT["E_mode"] * 4**UP,     # shot-noise-limited tap SNR
+                  E_mod=DEFAULT["E_mod"] * (8 + UP) / 8)  # 12 segments
 inf = {
     "Envise meas.": {**{k: 0.0 for k in KEYS}, "modulator": LM_ENC, "optical power": LM_OPT,
                      "rest of system": LM_REST},
@@ -64,11 +71,12 @@ inf = {
 }
 train = {
     f"SM 8-bit M{M_TRAIN}": per_op(components(N, M_TRAIN, **SEG)[1], OPS_TRAIN, M_TRAIN),
-    f"SM 4-bit M{M_TRAIN}": per_op(components(N, M_TRAIN, **SEG, **FOUR_BIT)[1], OPS_TRAIN, M_TRAIN),
-    f"SM 4-bit M{M_BIG}": per_op(components(N, M_BIG, **SEG, **FOUR_BIT)[1], OPS_TRAIN, M_BIG),
+    f"SM 8-bit M{M_BIG}": per_op(components(N, M_BIG, **SEG)[1], OPS_TRAIN, M_BIG),
+    f"SM 12-bit M{M_BIG}": per_op(components(N, M_BIG, **SEG, **TWELVE_BIT)[1], OPS_TRAIN, M_BIG),
 }
 digital = {"model 8-bit": 6 * DEFAULT["E_OP"] / 2, "model 4-bit": 6 * FOUR_BIT["E_OP"] / 2,
-           "H100 INT8": 0.35 * pJ, "B200 FP4": 0.11 * pJ}
+           "H100 INT8": 0.35 * pJ, "B200 FP4": 0.11 * pJ,
+           "H100 FP16": 990e12 and 700 / 990e12}   # dense FP16 peak over board power
 NONZERO = {k for d in (inf, train) for c in d.values() for k, v in c.items() if v > 0}
 
 # ------------------------------------------------------------------- report
@@ -110,11 +118,12 @@ SERIES = [("digital I/O prep", "slate", "digital I/O prep"),
 YMAX = 400.0
 
 
-def axis(name, data, title, at=None, legend=False, ylabel=True):
+def axis(name, data, title, at=None, legend=False, ylabel=True, ymax=YMAX, baselines=None,
+         offscale=()):
     cats = list(data)
     lines = []
-    opts = [f"name={name}", "width=0.5\\textwidth", "height=4.4cm", "ybar stacked",
-            "bar width=13pt", f"ymin=0, ymax={YMAX:.0f}", "ylabel near ticks",
+    opts = [f"name={name}", "width=0.5\\textwidth", "height=3.9cm", "ybar stacked",
+            "bar width=13pt", f"ymin=0, ymax={ymax:.0f}", "ylabel near ticks",
             "symbolic x coords={" + ",".join(cats) + "}", "xtick=data",
             "x tick label style={font=\\scriptsize, rotate=25, anchor=north east}",
             "y tick label style={font=\\scriptsize}", "ymajorgrids", "grid style={color=mist}",
@@ -138,22 +147,26 @@ def axis(name, data, title, at=None, legend=False, ylabel=True):
         lines.append(f"\\addplot[fill={color},draw=none] coordinates {{{coords}}};")
         if legend:
             lines.append(f"\\addlegendentry{{{label}}}")
-    # digital baselines: constant plots across the symbolic categories, labelled in the legend
+    # digital baselines: constant plots across the symbolic categories
     c0, c1 = cats[0], cats[-1]
-    for label, val, style in (("model 8-bit digital", digital["model 8-bit"], "dashed, color=slate"),
-                              ("H100 INT8 wall", digital["H100 INT8"], "dotted, color=slate"),
-                              ("B200 FP4 wall", digital["B200 FP4"], "dashdotted, color=slate"),
-                              ("model 4-bit digital", digital["model 4-bit"], "dashed, color=amber")):
+    for label, val, style, inline in baselines:
         y = val / fJ
-        fp = "" if legend else "forget plot, "
+        fp = "" if legend and not inline else "forget plot, "
         lines.append(f"\\addplot[{fp}sharp plot, stack plots=false, {style}, thick, no markers, "
-                     f"line legend] "
-                     f"coordinates {{({c0},{y:.0f}) ({c1},{y:.0f})}};")
-        if legend:
+                     f"line legend] coordinates {{({c0},{y:.0f}) ({c1},{y:.0f})}}"
+                     + (f" node[pos=0, anchor=south west, font=\\tiny, color={style.split('color=')[1]}] "
+                        f"{{{label} {y:.0f}}};" if inline else ";"))
+        if legend and not inline:
             lines.append(f"\\addlegendentry{{{label} {y:.0f}}}")
+    # off-scale bars: label beside the bar (nodes inside the axis are drawn under the bars)
+    for c in offscale:
+        tot = sum(data[c].values()) / fJ
+        side = "anchor=east, xshift=-7pt, align=right" if c == cats[-1] else "anchor=west, xshift=7pt, align=left"
+        lines.append(f"\\node[font=\\tiny, color=ink, {side}] at "
+                     f"(axis cs:{c},{ymax * 0.55:.0f}) {{{tot:.0f} fJ/op,\\\\ off scale}};")
     # totals above each stack
     for c in cats:
-        if c == "Envise meas.":
+        if c in offscale:
             continue
         tot = sum(data[c].values()) / fJ
         lines.append(f"\\node[font=\\tiny, color=ink, anchor=south, inner sep=1pt] at "
@@ -162,11 +175,20 @@ def axis(name, data, title, at=None, legend=False, ylabel=True):
     return "\n".join(lines)
 
 
+INF_BASE = [("model 8-bit digital", digital["model 8-bit"], "dashed, color=slate", False),
+            ("H100 INT8 wall", digital["H100 INT8"], "dotted, color=slate", False),
+            ("B200 FP4 wall", digital["B200 FP4"], "dashdotted, color=slate", False),
+            ("model 4-bit digital", digital["model 4-bit"], "dashed, color=amber", False)]
+TRAIN_BASE = [("model 8-bit digital", digital["model 8-bit"], "dashed, color=slate", False),
+              ("H100 INT8 wall", digital["H100 INT8"], "dotted, color=slate", False),
+              ("H100 FP16 wall", digital["H100 FP16"], "densely dotted, color=amber", True)]
 tex = "\n".join([
     "% Generated by scripts/energy_breakdown.py -- do not edit by hand.",
     "\\begin{tikzpicture}",
-    axis("inf", inf, f"Inference: $N={N}$ MVM", legend=True),
-    axis("train", train, f"Training: in situ VJP/grad, $N={N}$", at="inf", ylabel=False),
+    axis("inf", inf, f"Inference: $N={N}$ MVM", legend=True, baselines=INF_BASE,
+         offscale=("Envise meas.",)),
+    axis("train", train, f"Training: in situ VJP/grad, $N={N}$", at="inf", ylabel=False,
+         ymax=800, baselines=TRAIN_BASE, offscale=(f"SM 12-bit M{M_BIG}",)),
     "\\end{tikzpicture}",
 ])
 out = os.path.join(os.path.dirname(__file__), "..", "figs", "energy_breakdown.tex")

@@ -20,7 +20,7 @@ and a comparison of that analysis against the photonic inference processor in
 | `docs/lightmatter-comparison.md` | The same ideas placed against Lightmatter's 2025 processor: how its ABFP multiply-accumulate works, a side-by-side table, where the two analyses agree, why in situ backprop is a mesh-specific idea, and what the 2023 energy model got right and wrong. |
 | `scripts/verify_gradient.py` | Numerical check of eqs. S3 to S8 and S12 on a random triangular mesh against finite differences. Finds one conjugation error in the printed VJP (S5) and a sign typo in S12. |
 | `scripts/energy_model.py` | Rebuilds Tables S1 to S4 and the photonic-advantage contours of fig. S8, reconciles the "2× at N = 64, M ≥ 16" claim, and puts the Lightmatter chip on the same per-op axes. |
-| `scripts/energy_breakdown.py` | Stacked per-component energy bars for inference and training: the SM model with segmented phase shifters for inputs and weights (no DACs) at 8 bits and projected to 4 bits, against Envise measured, plus the contact count a segmented weight array implies. Writes `figs/energy_breakdown.tex` (pgfplots) which the deck inputs. |
+| `scripts/energy_breakdown.py` | Stacked per-component energy bars for inference and training: the SM model with segmented phase shifters for inputs and weights (no DACs) at 8 bits, projected to 4 bits for inference and to 12-bit readout for training, against Envise measured and digital lines, plus the contact count a segmented weight array implies. Writes `figs/energy_breakdown.tex` (pgfplots) which the deck inputs. |
 | `talk.tex`, `talk.pdf`, `figs/` | The beamer deck (metropolis, 16:9) the notes feed into. |
 | `refs/` | Local copies of the source PDFs. Git-ignored; see below. |
 
