@@ -20,3 +20,4 @@ qa/
 
 # Reference PDFs (copyrighted, keep local)
 refs/
+__pycache__/

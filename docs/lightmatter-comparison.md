@@ -245,7 +245,76 @@ Wrong or dated:
   tailed. The $s_{\mathrm{tap}}$ APD model in sec. 2.7.10 is the right form for an
   integrated gradient-tap detector but has not been tested against silicon.
 
-## 7. Open questions this raises
+## 7. Energy breakdown and a 4-bit projection
+
+`scripts/energy_breakdown.py` stacks the per-component energies of the 2023
+model (Table S4 counts, Table S1 values) next to Lightmatter's measured split and
+projects both to 4-bit operation. Basis: fJ per real op, an $N\times N$ MVM being
+$2N^2$ ops and an in situ VJP/grad step $4N^2$ ops per example, batch cost divided
+by $M$. The figure is written to `figs/energy_breakdown.tex` and appears in the
+deck.
+
+**4-bit projection rules.** ADC and DAC energy scale as $2^{b}$ (Walden-type;
+the Nature SI quotes the thermal-limited $2^{2\Delta b}$ for its own ADC, which
+would be 16× more optimistic over four bits). Digital op energy is divided by 3,
+which is the B200 FP4 to H100 INT8 ratio at the wall and close to the $b^2$
+multiplier scaling. Optical power for *inference* scales as $4^{b}$, i.e. by 256,
+since a shot-noise-limited amplitude SNR of $2^{b}$ needs power $\propto4^{b}$.
+Optical power for *training* is held at the 8-bit value because sec. 2.7.10
+sets it by the gradient SNR at the taps (at least 0.5 µW per tap), not by the
+output bit depth. TIA, modulator and switch energies are bit-independent.
+"Best-of" takes the 2023 architecture and replaces its modulator plus input-DAC
+term with Envise's measured encode cost (0.25 W at 65.5 TOPS, weight DACs
+included).
+
+**Inference, $N=128$, fJ per op**
+
+| scenario | digital prep | encode | input DAC | ADC | TIA | optical | rest | total |
+|---|---|---|---|---|---|---|---|---|
+| SM 8-bit (Table S1) | 4.7 | 0.0 | 39.1 | 21.6 | 10.9 | 7.8 | | 84 |
+| SM 8-bit, digital-control PS | 4.7 | 0.1 | 0 | 21.6 | 10.9 | 7.8 | | 45 |
+| SM 4-bit projection | 1.6 | 0.0 | 2.4 | 1.3 | 10.9 | 0.03 | | 16 |
+| Envise measured | | 3.8 | | | | 24.4 | 1187 | 1215 |
+| Best-of 4-bit | 1.6 | 3.8 | 0 | 1.3 | 10.9 | 0.1 | | 18 |
+
+Digital reference lines: the model's own 8-bit baseline 300, H100 INT8 350,
+B200 FP4 110, the model's 4-bit baseline 100.
+
+**Training, $N=128$, $M=16$, fJ per op**
+
+| scenario | digital prep | encode | input DAC | ADC | TIA + updater | optical | switches | total |
+|---|---|---|---|---|---|---|---|---|
+| SM 8-bit | 7.0 | 0.0 | 58.6 | 21.6 | 54.7 | 11.7 | 0.3 | 154 |
+| SM 8-bit, digital-control PS | 7.0 | 0.2 | 0 | 21.6 | 54.7 | 11.7 | 0.3 | 96 |
+| SM 4-bit projection | 2.3 | 0.0 | 3.7 | 1.3 | 54.7 | 11.7 | 0.3 | 74 |
+| Best-of 4-bit | 2.3 | 3.8 | 0 | 1.3 | 54.7 | 11.7 | 0.3 | 74 |
+
+What the two tables say:
+
+- **At 8 bits the input DAC is the largest single term** in the 2023 model
+  (47% of inference energy). That is why the SM spends a section on
+  digital-control phase shifters, and why Lightmatter's encode path, which
+  includes its weight DACs, is worth having: it is the one part of Envise that is
+  already cheaper than anything in the 2023 tables.
+- **At 4 bits the converters stop mattering and the TIAs take over.** For
+  inference the photonic side lands at 16 to 18 fJ per op, 6× under the 4-bit
+  digital line. For training it lands at 74 fJ per op, only 1.3× under, because
+  the per-phase-shifter gradient updater ($4N^2E_{\mathrm{TIA}}$ per batch, 44 of the
+  55 fJ in the TIA row at $M=16$) and the tap optical floor do not scale with bit
+  depth. The training advantage therefore depends on batch size in a way the
+  inference advantage does not: at $M=64$ the updater term drops to 11 fJ.
+- **Envise's optics and encode are 28 fJ per op; everything else is 1.19 pJ.**
+  Overlaying the 2023 breakdown on Envise says the 2025 chip already realised
+  the cheap half of the 2023 budget and that the expensive half, ADCs and the
+  digital pipeline around them, is where all of the remaining 40× sits. The
+  "best-of" bar is only marginally better than the pure 4-bit projection because
+  the encode term was never the problem.
+- **The 4-bit optical number for inference is a limit, not a design.** 4 µW per
+  mode is below the tap power the gradient protocol needs and below what a
+  practical link budget with 0.2 dB per MZI over 256 columns allows; the bar
+  shows what shot noise permits, not what the S14 recursion permits.
+
+## 8. Open questions this raises
 
 1. What is the minimum output bit depth for in situ gradient measurement at
    $N=128$ to match offline QAT accuracy on ResNet-18 or BERT-tiny? The 2023
