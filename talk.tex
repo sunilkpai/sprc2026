@@ -330,6 +330,52 @@ E_{\mathrm{MAC}} \approx \underbrace{\frac{E_{\mathrm{DAC}}+E_{\mathrm{ADC}}}{N}
 \end{frame}
 
 % =====================================================================
+\begin{frame}{Rack design when the accelerator is 100\,W, not 1\,kW}
+\begin{columns}[T]
+\begin{column}{0.5\textwidth}
+{\scriptsize
+\textbf{Where the heat is, per 128-wide mesh}
+\begin{itemize}\setlength{\itemsep}{2pt}
+  \item Light, ADCs, TIAs, laser: $\approx$2\,W
+  \item \alert{Thermal} phase shifters: $16{,}384\times50$\,mW $\approx$ 800\,W. Segments must be EO or MEMS
+  \item Digital shell: Envise measured 19\,W per core, 25$\times$ the optics. \alert{This} sets the package power; HBM adds 25 to 30\,W per stack
+\end{itemize}
+\vspace{3pt}
+\textbf{Cooling changes purpose}
+\begin{itemize}\setlength{\itemsep}{2pt}
+  \item Capacity: gone. A 50 to 100\,W package is air-cooled
+  \item Stability: stays. Si $dn/dT$ is 0.07\,rad/K per 100\,\textmu m, so sub-kelvin uniformity: TEC per die or a low-flow loop
+  \item Lasers: one water-cooled shelf per rack, fibre to compute and CPO ports. The only liquid in the rack
+\end{itemize}}
+\end{column}
+\begin{column}{0.48\textwidth}
+{\scriptsize
+\textbf{A 30\,kW air-cooled rack buys}
+\begin{center}
+\setlength{\tabcolsep}{4pt}\renewcommand{\arraystretch}{0.95}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+pJ/op, full system & ops/rack & vs NVL72\\
+\midrule
+1.2\quad Envise measured & 25 POPS & 29$\times$ less\\
+0.30\quad 8-bit digital model & 100 POPS & 7$\times$ less\\
+0.045\ 2023 model, 8-bit & 670 POPS & parity, $\tfrac14$ power\\
+0.014\ 2023 model, 4-bit & 2.1 EOPS & 3$\times$ more\\
+\bottomrule
+\end{tabular}
+\end{center}
+\src{NVL72: $\approx$720 PFLOPS dense FP4 at $\approx$120\,kW, liquid. Model rows: MVM engine plus I/O prep.}\\[2pt]
+\textbf{What it means}
+\begin{itemize}\setlength{\itemsep}{2pt}
+  \item Same throughput at a fifth of the power in any air-cooled hall, no CDU or manifolds; or 1{,}200 accelerators in the same 120\,kW, a network problem before a thermal one
+  \item The rack was dense because copper NVLink reaches 1 to 2\,m. Photonic I/O removes the reason; photonic compute removes its cost
+\end{itemize}}
+\end{column}
+\end{columns}
+\note{This slide is the discussion point. The claim is not that photonics is cold, it is that the kilowatt package and the metre of copper were both choices. Say the thermal-phase-shifter number out loud: 800 watts per mesh is what happens if you keep heaters. Then the honest part: the package power is the digital shell, and Envise measured 25 times the photonic core. If the shell gets to 50 femtojoules per op, an NVL72's worth of ops fits in an air-cooled rack. Lasers are the one thing that still wants water, so pool them. Also in the doc but not on the slide: PUE gives a quarter back, air 1.3 to 1.5 against liquid 1.1, and memory and network power do not change.}
+\end{frame}
+
+% =====================================================================
 \begin{frame}{What changed after 2022?}
 \begin{columns}[T]
 \begin{column}{0.48\textwidth}
