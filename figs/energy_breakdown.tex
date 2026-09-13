@@ -3,12 +3,12 @@
 \begin{axis}[
   name=inf,
   width=0.5\textwidth,
-  height=4.0cm,
+  height=3.5cm,
   ybar stacked,
   bar width=13pt,
   ymin=0, ymax=400,
   ylabel near ticks,
-  symbolic x coords={Envise meas.,SM 8-bit,SM 8-bit DCPS,SM 4-bit,Best-of 4-bit},
+  symbolic x coords={Envise meas.,SM 8-bit,SM 4-bit},
   xtick=data,
   x tick label style={font=\scriptsize, rotate=25, anchor=north east},
   y tick label style={font=\scriptsize},
@@ -23,44 +23,40 @@
   legend style={font=\scriptsize, draw=none, fill=none, at={(0.5,-0.42)}, anchor=north, legend columns=4, /tikz/every even column/.append style={column sep=6pt}},
   legend cell align=left
 ]
-\addplot[fill=slate,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,4.69) (SM 8-bit DCPS,4.69) (SM 4-bit,1.56) (Best-of 4-bit,1.56)};
+\addplot[fill=slate,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,4.69) (SM 4-bit,1.56)};
 \addlegendentry{digital I/O prep}
-\addplot[fill=moss,draw=none] coordinates {(Envise meas.,3.82) (SM 8-bit,0.01) (SM 8-bit DCPS,0.12) (SM 4-bit,0.01) (Best-of 4-bit,3.82)};
-\addlegendentry{encode (mod.\ + weight DAC)}
-\addplot[fill=amber,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,39.06) (SM 8-bit DCPS,0.00) (SM 4-bit,2.44) (Best-of 4-bit,0.00)};
-\addlegendentry{input DAC}
-\addplot[fill=sky,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,21.56) (SM 8-bit DCPS,21.56) (SM 4-bit,1.35) (Best-of 4-bit,1.35)};
+\addplot[fill=moss,draw=none] coordinates {(Envise meas.,3.82) (SM 8-bit,0.12) (SM 4-bit,0.06)};
+\addlegendentry{encode: segmented PS (Envise: mod.\ + weight DAC)}
+\addplot[fill=sky,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,21.56) (SM 4-bit,1.35)};
 \addlegendentry{ADC}
-\addplot[fill=ink2,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,10.94) (SM 8-bit DCPS,10.94) (SM 4-bit,10.94) (Best-of 4-bit,10.94)};
+\addplot[fill=ink2,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,10.94) (SM 4-bit,10.94)};
 \addlegendentry{TIA + updater}
-\addplot[fill=amber!40,draw=none] coordinates {(Envise meas.,24.43) (SM 8-bit,7.81) (SM 8-bit DCPS,7.81) (SM 4-bit,0.03) (Best-of 4-bit,0.03)};
+\addplot[fill=amber!40,draw=none] coordinates {(Envise meas.,24.43) (SM 8-bit,7.81) (SM 4-bit,0.03)};
 \addlegendentry{optical power}
-\addplot[fill=mist,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,0.00) (SM 8-bit DCPS,0.00) (SM 4-bit,0.00) (Best-of 4-bit,0.00)};
+\addplot[fill=mist,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,0.00) (SM 4-bit,0.00)};
 \addlegendentry{switches}
-\addplot[fill=ink!25,draw=none] coordinates {(Envise meas.,1187.02) (SM 8-bit,0.00) (SM 8-bit DCPS,0.00) (SM 4-bit,0.00) (Best-of 4-bit,0.00)};
+\addplot[fill=ink!25,draw=none] coordinates {(Envise meas.,1187.02) (SM 8-bit,0.00) (SM 4-bit,0.00)};
 \addlegendentry{Envise DCI, rest of system: 1187, off scale}
-\addplot[sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,300) (Best-of 4-bit,300)};
+\addplot[sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,300) (SM 4-bit,300)};
 \addlegendentry{model 8-bit digital 300}
-\addplot[sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,350) (Best-of 4-bit,350)};
+\addplot[sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,350) (SM 4-bit,350)};
 \addlegendentry{H100 INT8 wall 350}
-\addplot[sharp plot, stack plots=false, dashdotted, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,110) (Best-of 4-bit,110)};
+\addplot[sharp plot, stack plots=false, dashdotted, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,110) (SM 4-bit,110)};
 \addlegendentry{B200 FP4 wall 110}
-\addplot[sharp plot, stack plots=false, dashed, color=amber, thick, no markers, line legend] coordinates {(Envise meas.,100) (Best-of 4-bit,100)};
+\addplot[sharp plot, stack plots=false, dashed, color=amber, thick, no markers, line legend] coordinates {(Envise meas.,100) (SM 4-bit,100)};
 \addlegendentry{model 4-bit digital 100}
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit,84.1) {84};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit DCPS,45.1) {45};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit,16.3) {16};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:Best-of 4-bit,17.7) {18};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit,45.1) {45};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit,13.9) {14};
 \end{axis}
 \begin{axis}[
   name=train,
   width=0.5\textwidth,
-  height=4.0cm,
+  height=3.5cm,
   ybar stacked,
   bar width=13pt,
   ymin=0, ymax=400,
   ylabel near ticks,
-  symbolic x coords={SM 8-bit,SM 8-bit DCPS,SM 4-bit,Best-of 4-bit},
+  symbolic x coords={SM 8-bit M16,SM 4-bit M16,SM 4-bit M64},
   xtick=data,
   x tick label style={font=\scriptsize, rotate=25, anchor=north east},
   y tick label style={font=\scriptsize},
@@ -68,25 +64,23 @@
   grid style={color=mist},
   axis line style={color=slate},
   enlarge x limits=0.18,
-  title={\footnotesize Training: in situ VJP/grad, $N=128$, $M=16$},
+  title={\footnotesize Training: in situ VJP/grad, $N=128$},
   title style={yshift=-4pt},
   clip=true,
   at={(inf.south east)}, anchor=south west, xshift=0.9cm
 ]
-\addplot[fill=slate,draw=none] coordinates {(SM 8-bit,7.03) (SM 8-bit DCPS,7.03) (SM 4-bit,2.34) (Best-of 4-bit,2.34)};
-\addplot[fill=moss,draw=none] coordinates {(SM 8-bit,0.01) (SM 8-bit DCPS,0.19) (SM 4-bit,0.01) (Best-of 4-bit,3.82)};
-\addplot[fill=amber,draw=none] coordinates {(SM 8-bit,58.59) (SM 8-bit DCPS,0.00) (SM 4-bit,3.66) (Best-of 4-bit,0.00)};
-\addplot[fill=sky,draw=none] coordinates {(SM 8-bit,21.56) (SM 8-bit DCPS,21.56) (SM 4-bit,1.35) (Best-of 4-bit,1.35)};
-\addplot[fill=ink2,draw=none] coordinates {(SM 8-bit,54.69) (SM 8-bit DCPS,54.69) (SM 4-bit,54.69) (Best-of 4-bit,54.69)};
-\addplot[fill=amber!40,draw=none] coordinates {(SM 8-bit,11.72) (SM 8-bit DCPS,11.72) (SM 4-bit,11.72) (Best-of 4-bit,11.72)};
-\addplot[fill=mist,draw=none] coordinates {(SM 8-bit,0.31) (SM 8-bit DCPS,0.31) (SM 4-bit,0.31) (Best-of 4-bit,0.31)};
-\addplot[forget plot, sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit,300) (Best-of 4-bit,300)};
-\addplot[forget plot, sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit,350) (Best-of 4-bit,350)};
-\addplot[forget plot, sharp plot, stack plots=false, dashdotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit,110) (Best-of 4-bit,110)};
-\addplot[forget plot, sharp plot, stack plots=false, dashed, color=amber, thick, no markers, line legend] coordinates {(SM 8-bit,100) (Best-of 4-bit,100)};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit,153.9) {154};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit DCPS,95.5) {95};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit,74.1) {74};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:Best-of 4-bit,74.2) {74};
+\addplot[fill=slate,draw=none] coordinates {(SM 8-bit M16,7.03) (SM 4-bit M16,2.34) (SM 4-bit M64,2.34)};
+\addplot[fill=moss,draw=none] coordinates {(SM 8-bit M16,0.19) (SM 4-bit M16,0.09) (SM 4-bit M64,0.09)};
+\addplot[fill=sky,draw=none] coordinates {(SM 8-bit M16,21.56) (SM 4-bit M16,1.35) (SM 4-bit M64,1.35)};
+\addplot[fill=ink2,draw=none] coordinates {(SM 8-bit M16,54.69) (SM 4-bit M16,54.69) (SM 4-bit M64,21.88)};
+\addplot[fill=amber!40,draw=none] coordinates {(SM 8-bit M16,11.72) (SM 4-bit M16,11.72) (SM 4-bit M64,11.72)};
+\addplot[fill=mist,draw=none] coordinates {(SM 8-bit M16,0.31) (SM 4-bit M16,0.31) (SM 4-bit M64,0.08)};
+\addplot[forget plot, sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,300) (SM 4-bit M64,300)};
+\addplot[forget plot, sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,350) (SM 4-bit M64,350)};
+\addplot[forget plot, sharp plot, stack plots=false, dashdotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,110) (SM 4-bit M64,110)};
+\addplot[forget plot, sharp plot, stack plots=false, dashed, color=amber, thick, no markers, line legend] coordinates {(SM 8-bit M16,100) (SM 4-bit M64,100)};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit M16,95.5) {95};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit M16,70.5) {71};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit M64,37.5) {37};
 \end{axis}
 \end{tikzpicture}

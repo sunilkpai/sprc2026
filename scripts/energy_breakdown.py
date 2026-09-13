@@ -5,9 +5,12 @@
 Per-op basis:  an N x N MVM is 2 N^2 real ops; an in situ VJP/grad step (forward +
 backward MVM equivalent) is 4 N^2 real ops per example.  Batch cost is divided by M.
 
+All photonic bars use segmented phase shifters for inputs and weights: no DACs.
+
 4-bit projection rules (all stated in the figure caption):
-  * ADC and DAC energy  ~ 2^b   (Walden-type scaling; the Nature SI uses the thermal-limited
+  * ADC energy          ~ 2^b   (Walden-type scaling; the Nature SI uses the thermal-limited
                                   2^(2 db) for its ADC, which would be 16x more optimistic)
+  * segmented PS        ~ b     (b binary-weighted segments; the SM charges 16 E_mod at 8 bits)
   * digital op energy   /3      (B200 FP4 vs H100 INT8 at the wall is ~3.2x; Horowitz b^2 for
                                   the multiplier gives ~4x)
   * optical power       ~ 4^b   for inference (shot-noise-limited amplitude SNR), i.e. /256;
@@ -35,8 +38,13 @@ LM_OPT = LM_P_OPT / LM_TOPS
 LM_REST = (LM_P_TOTAL - LM_P_PTC - LM_P_OPT) / LM_TOPS  # DCI: ADCs, digital pipeline, SRAM, PCIe
 
 # --------------------------------------------------------------- scenarios
-FOUR_BIT = dict(E_ADC=DEFAULT["E_ADC"] / 2**DB, E_DAC=DEFAULT["E_DAC"] / 2**DB,
-                E_OP=DEFAULT["E_OP"] / 3)
+# All photonic scenarios use segmented ("digital control") phase shifters for both the
+# input vectors and the mesh weights (SM sec. 2.7.3): a b-bit value is written as b binary
+# weighted phase segments driven directly by logic, so no DAC appears anywhere.  The SM
+# charges this as E_mod -> 16 E_mod at 8 bits; we scale the segment count with b.
+SEG = dict(digital_control_ps=True)
+FOUR_BIT = dict(E_ADC=DEFAULT["E_ADC"] / 2**DB, E_OP=DEFAULT["E_OP"] / 3,
+                E_mod=DEFAULT["E_mod"] * (8 - DB) / 8)          # 4 segments instead of 8
 FOUR_BIT_INF = dict(FOUR_BIT, E_mode=DEFAULT["E_mode"] / 4**DB)
 
 KEYS = ["digital I/O prep", "modulator", "DAC", "ADC", "TIA", "optical power", "switches",
@@ -47,32 +55,21 @@ def per_op(comp, ops, M=1):
     return {k: comp.get(k, 0.0) / ops / M for k in KEYS}
 
 
-def best_of(comp, ops, M, four_bit):
-    """Science-SM architecture with Lightmatter's measured PTC encode path replacing the
-    modulator + DAC terms (per op, it already includes the weight DACs), and Lightmatter's
-    measured optical budget where it is lower than the model's."""
-    d = per_op(comp, ops, M)
-    d["modulator"], d["DAC"] = LM_ENC, 0.0
-    d["optical power"] = min(d["optical power"], LM_OPT / (4**DB if four_bit else 1))
-    return d
-
-
+M_BIG = 64
 inf = {
     "Envise meas.": {**{k: 0.0 for k in KEYS}, "modulator": LM_ENC, "optical power": LM_OPT,
                      "rest of system": LM_REST},
-    "SM 8-bit": per_op(components(N, 1)[0], OPS_INF),
-    "SM 8-bit DCPS": per_op(components(N, 1, digital_control_ps=True)[0], OPS_INF),
-    "SM 4-bit": per_op(components(N, 1, **FOUR_BIT_INF)[0], OPS_INF),
-    "Best-of 4-bit": best_of(components(N, 1, **FOUR_BIT_INF)[0], OPS_INF, 1, True),
+    "SM 8-bit": per_op(components(N, 1, **SEG)[0], OPS_INF),
+    "SM 4-bit": per_op(components(N, 1, **SEG, **FOUR_BIT_INF)[0], OPS_INF),
 }
 train = {
-    "SM 8-bit": per_op(components(N, M_TRAIN)[1], OPS_TRAIN, M_TRAIN),
-    "SM 8-bit DCPS": per_op(components(N, M_TRAIN, digital_control_ps=True)[1], OPS_TRAIN, M_TRAIN),
-    "SM 4-bit": per_op(components(N, M_TRAIN, **FOUR_BIT)[1], OPS_TRAIN, M_TRAIN),
-    "Best-of 4-bit": best_of(components(N, M_TRAIN, **FOUR_BIT)[1], OPS_TRAIN, M_TRAIN, False),
+    f"SM 8-bit M{M_TRAIN}": per_op(components(N, M_TRAIN, **SEG)[1], OPS_TRAIN, M_TRAIN),
+    f"SM 4-bit M{M_TRAIN}": per_op(components(N, M_TRAIN, **SEG, **FOUR_BIT)[1], OPS_TRAIN, M_TRAIN),
+    f"SM 4-bit M{M_BIG}": per_op(components(N, M_BIG, **SEG, **FOUR_BIT)[1], OPS_TRAIN, M_BIG),
 }
 digital = {"model 8-bit": 6 * DEFAULT["E_OP"] / 2, "model 4-bit": 6 * FOUR_BIT["E_OP"] / 2,
            "H100 INT8": 0.35 * pJ, "B200 FP4": 0.11 * pJ}
+NONZERO = {k for d in (inf, train) for c in d.values() for k, v in c.items() if v > 0}
 
 # ------------------------------------------------------------------- report
 def report(title, d, ops_label):
@@ -84,13 +81,26 @@ def report(title, d, ops_label):
 
 
 report("INFERENCE (in situ MVM)", inf, "2N^2")
-report(f"TRAINING (in situ VJP/grad, M={M_TRAIN})", train, "4N^2")
+report("TRAINING (in situ VJP/grad)", train, "4N^2")
 print("\nDigital baselines, fJ per op: " + ", ".join(f"{k} {v / fJ:.0f}" for k, v in digital.items()))
 print(f"Envise rest-of-system (DCI) = {LM_REST / fJ:.0f} fJ/op, off the axis in the figure.")
 
+# ---------------------------------------------- what segmented weights cost in contacts
+# A b-bit segmented phase shifter needs b digital lines from the control die, so an N x N
+# mesh (N(N-1) phases) needs ~ N^2 b vertical interconnects: a bump / hybrid-bond array
+# per weight cell.  Lightmatter's PTC has 6,000 bumps (SI III) and pushes weights serially
+# through on-die 7-bit DACs instead.
+print("\nSegmented-PS weight control: vertical contacts per N x N mesh and array area")
+print("        bits   contacts   area @40um microbump   area @10um hybrid bond   (PTC die: 349 mm2)")
+for b in (8, 4):
+    n_contacts = N * (N - 1) * b
+    a40 = n_contacts * (40e-6) ** 2 * 1e6
+    a10 = n_contacts * (10e-6) ** 2 * 1e6
+    print(f"        {b:4d}   {n_contacts:8d}   {a40:14.0f} mm2         {a10:12.1f} mm2")
+
 # ------------------------------------------------------------------- pgfplots
 SERIES = [("digital I/O prep", "slate", "digital I/O prep"),
-          ("modulator", "moss", "encode (mod.\\ + weight DAC)"),
+          ("modulator", "moss", "encode: segmented PS (Envise: mod.\\ + weight DAC)"),
           ("DAC", "amber", "input DAC"),
           ("ADC", "sky", "ADC"),
           ("TIA", "ink2", "TIA + updater"),
@@ -103,7 +113,7 @@ YMAX = 400.0
 def axis(name, data, title, at=None, legend=False, ylabel=True):
     cats = list(data)
     lines = []
-    opts = [f"name={name}", "width=0.5\\textwidth", "height=4.0cm", "ybar stacked",
+    opts = [f"name={name}", "width=0.5\\textwidth", "height=3.5cm", "ybar stacked",
             "bar width=13pt", f"ymin=0, ymax={YMAX:.0f}", "ylabel near ticks",
             "symbolic x coords={" + ",".join(cats) + "}", "xtick=data",
             "x tick label style={font=\\scriptsize, rotate=25, anchor=north east}",
@@ -122,7 +132,7 @@ def axis(name, data, title, at=None, legend=False, ylabel=True):
     lines.append("\\begin{axis}[\n  " + ",\n  ".join(opts) + "\n]")
     for key, color, label in SERIES:
         vals = [data[c][key] / fJ for c in cats]
-        if max(vals) == 0 and not legend:
+        if key not in NONZERO or (max(vals) == 0 and not legend):
             continue
         coords = " ".join(f"({c},{v:.2f})" for c, v in zip(cats, vals))
         lines.append(f"\\addplot[fill={color},draw=none] coordinates {{{coords}}};")
@@ -156,7 +166,7 @@ tex = "\n".join([
     "% Generated by scripts/energy_breakdown.py -- do not edit by hand.",
     "\\begin{tikzpicture}",
     axis("inf", inf, f"Inference: $N={N}$ MVM", legend=True),
-    axis("train", train, f"Training: in situ VJP/grad, $N={N}$, $M={M_TRAIN}$", at="inf", ylabel=False),
+    axis("train", train, f"Training: in situ VJP/grad, $N={N}$", at="inf", ylabel=False),
     "\\end{tikzpicture}",
 ])
 out = os.path.join(os.path.dirname(__file__), "..", "figs", "energy_breakdown.tex")

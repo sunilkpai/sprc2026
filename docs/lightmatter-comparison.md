@@ -17,7 +17,8 @@ Contents
 4. Where the two analyses agree
 5. Where they diverge, and why in situ backprop is a mesh-specific idea
 6. What the 2023 energy model got right and wrong in hindsight
-7. Open questions this raises for training on the Lightmatter-class architecture
+7. Energy breakdown and a 4-bit projection
+8. Open questions this raises for training on the Lightmatter-class architecture
 
 ---
 
@@ -110,7 +111,7 @@ noise at the MVM output during fine-tuning.
 | training | in situ: gradient of every phase from 3 optical passes, no model of the device needed | offline: QAT with STE and injected noise on a GPU; weights loaded once |
 | error model | tap APD shot/thermal noise $s_{\mathrm{tap}}$, loss imbalance, I/O phase error | additive ADC-referred noise, logistic tails; loss and splitter error calibrated out per cell |
 | energy, realised | not applicable (proof of concept) | 1.2 pJ/op full system, 3.8 fJ/op PTC-only |
-| energy, projected | 84 fJ/op for an $N=128$ in situ MVM (Table S1 numbers); 300 fJ/op digital baseline | – |
+| energy, projected | 45 fJ/op for an $N=128$ in situ MVM with segmented phase shifters (84 with 8-bit input DACs); 300 fJ/op digital baseline | – |
 | headline claim | training advantage $\ge2\times$ at $N\ge64$, $M\ge16$ (with digital-control shifters) | 0.84 TOPS/W full-system, comparable to A100 (0.78) on peak FP16 vs ABFP16; near-FP32 accuracy |
 
 ## 4. Where the two analyses agree
@@ -249,66 +250,80 @@ Wrong or dated:
 
 `scripts/energy_breakdown.py` stacks the per-component energies of the 2023
 model (Table S4 counts, Table S1 values) next to Lightmatter's measured split and
-projects both to 4-bit operation. Basis: fJ per real op, an $N\times N$ MVM being
-$2N^2$ ops and an in situ VJP/grad step $4N^2$ ops per example, batch cost divided
-by $M$. The figure is written to `figs/energy_breakdown.tex` and appears in the
-deck.
+projects the model to 4-bit operation. Basis: fJ per real op, an $N\times N$ MVM
+being $2N^2$ ops and an in situ VJP/grad step $4N^2$ ops per example, batch cost
+divided by $M$. The figure is written to `figs/energy_breakdown.tex` and appears
+in the deck.
 
-**4-bit projection rules.** ADC and DAC energy scale as $2^{b}$ (Walden-type;
+**No DACs anywhere on the photonic side.** Every photonic bar assumes segmented
+("digital control") phase shifters, SM sec. 2.7.3, for *both* the input vector
+and the mesh weights: a $b$-bit value is written as $b$ binary-weighted phase
+segments driven straight from logic. The SM charges this as
+$E_{\mathrm{mod}}\to16E_{\mathrm{mod}}$ at 8 bits and $E_{\mathrm{DAC}}\to0$; the
+4-bit projection scales the segment count with $b$. What it costs instead is
+interconnect: an $N\times N$ mesh has $N(N-1)$ phases, so segmented weights need
+about $N^2 b$ vertical contacts from the control die, a bump or hybrid-bond array
+per weight cell.
+
+| bits | contacts, $N=128$ | area at 40 µm microbump pitch | area at 10 µm hybrid-bond pitch |
+|---|---|---|---|
+| 8 | 130 048 | 208 mm² | 13 mm² |
+| 4 | 65 024 | 104 mm² | 6.5 mm² |
+
+Lightmatter's PTC is 349 mm² with 6 000 bumps (SI III) and instead streams
+weights serially through 16 384 on-die 7-bit DACs at 25 MHz. At 4 bits the
+segmented array fits under a PTC-sized die even at microbump pitch; at 8 bits it
+needs hybrid bonding. Weight *write* energy is then $b\,E_{\mathrm{mod}}$ per
+changed weight, paid once per batch and negligible against the per-op terms.
+
+**Other 4-bit projection rules.** ADC energy scales as $2^{b}$ (Walden-type;
 the Nature SI quotes the thermal-limited $2^{2\Delta b}$ for its own ADC, which
 would be 16× more optimistic over four bits). Digital op energy is divided by 3,
-which is the B200 FP4 to H100 INT8 ratio at the wall and close to the $b^2$
-multiplier scaling. Optical power for *inference* scales as $4^{b}$, i.e. by 256,
-since a shot-noise-limited amplitude SNR of $2^{b}$ needs power $\propto4^{b}$.
-Optical power for *training* is held at the 8-bit value because sec. 2.7.10
-sets it by the gradient SNR at the taps (at least 0.5 µW per tap), not by the
-output bit depth. TIA, modulator and switch energies are bit-independent.
-"Best-of" takes the 2023 architecture and replaces its modulator plus input-DAC
-term with Envise's measured encode cost (0.25 W at 65.5 TOPS, weight DACs
-included).
+the B200 FP4 to H100 INT8 ratio at the wall and close to $b^2$ multiplier
+scaling. Optical power for *inference* scales as $4^{b}$, i.e. by 256, since a
+shot-noise-limited amplitude SNR of $2^{b}$ needs power $\propto4^{b}$. Optical
+power for *training* is held at the 8-bit value because sec. 2.7.10 sets it by
+the gradient SNR at the taps (at least 0.5 µW per tap), not by the output bit
+depth. TIA and switch energies are bit-independent.
 
 **Inference, $N=128$, fJ per op**
 
-| scenario | digital prep | encode | input DAC | ADC | TIA | optical | rest | total |
-|---|---|---|---|---|---|---|---|---|
-| SM 8-bit (Table S1) | 4.7 | 0.0 | 39.1 | 21.6 | 10.9 | 7.8 | | 84 |
-| SM 8-bit, digital-control PS | 4.7 | 0.1 | 0 | 21.6 | 10.9 | 7.8 | | 45 |
-| SM 4-bit projection | 1.6 | 0.0 | 2.4 | 1.3 | 10.9 | 0.03 | | 16 |
-| Envise measured | | 3.8 | | | | 24.4 | 1187 | 1215 |
-| Best-of 4-bit | 1.6 | 3.8 | 0 | 1.3 | 10.9 | 0.1 | | 18 |
+| scenario | digital prep | encode | ADC | TIA | optical | rest | total |
+|---|---|---|---|---|---|---|---|
+| Envise measured (encode includes its weight DACs) | | 3.8 | | | 24.4 | 1187 | 1215 |
+| SM 8-bit, segmented PS | 4.7 | 0.1 | 21.6 | 10.9 | 7.8 | | 45 |
+| SM 4-bit, segmented PS | 1.6 | 0.1 | 1.3 | 10.9 | 0.03 | | 14 |
 
 Digital reference lines: the model's own 8-bit baseline 300, H100 INT8 350,
 B200 FP4 110, the model's 4-bit baseline 100.
 
-**Training, $N=128$, $M=16$, fJ per op**
+**Training, $N=128$, fJ per op**
 
-| scenario | digital prep | encode | input DAC | ADC | TIA + updater | optical | switches | total |
-|---|---|---|---|---|---|---|---|---|
-| SM 8-bit | 7.0 | 0.0 | 58.6 | 21.6 | 54.7 | 11.7 | 0.3 | 154 |
-| SM 8-bit, digital-control PS | 7.0 | 0.2 | 0 | 21.6 | 54.7 | 11.7 | 0.3 | 96 |
-| SM 4-bit projection | 2.3 | 0.0 | 3.7 | 1.3 | 54.7 | 11.7 | 0.3 | 74 |
-| Best-of 4-bit | 2.3 | 3.8 | 0 | 1.3 | 54.7 | 11.7 | 0.3 | 74 |
+| scenario | digital prep | encode | ADC | TIA + updater | optical | switches | total |
+|---|---|---|---|---|---|---|---|
+| SM 8-bit, $M=16$ | 7.0 | 0.2 | 21.6 | 54.7 | 11.7 | 0.3 | 96 |
+| SM 4-bit, $M=16$ | 2.3 | 0.1 | 1.3 | 54.7 | 11.7 | 0.3 | 71 |
+| SM 4-bit, $M=64$ | 2.3 | 0.1 | 1.3 | 21.9 | 11.7 | 0.1 | 38 |
 
 What the two tables say:
 
-- **At 8 bits the input DAC is the largest single term** in the 2023 model
-  (47% of inference energy). That is why the SM spends a section on
-  digital-control phase shifters, and why Lightmatter's encode path, which
-  includes its weight DACs, is worth having: it is the one part of Envise that is
-  already cheaper than anything in the 2023 tables.
-- **At 4 bits the converters stop mattering and the TIAs take over.** For
-  inference the photonic side lands at 16 to 18 fJ per op, 6× under the 4-bit
-  digital line. For training it lands at 74 fJ per op, only 1.3× under, because
-  the per-phase-shifter gradient updater ($4N^2E_{\mathrm{TIA}}$ per batch, 44 of the
-  55 fJ in the TIA row at $M=16$) and the tap optical floor do not scale with bit
-  depth. The training advantage therefore depends on batch size in a way the
-  inference advantage does not: at $M=64$ the updater term drops to 11 fJ.
-- **Envise's optics and encode are 28 fJ per op; everything else is 1.19 pJ.**
-  Overlaying the 2023 breakdown on Envise says the 2025 chip already realised
-  the cheap half of the 2023 budget and that the expensive half, ADCs and the
-  digital pipeline around them, is where all of the remaining 40× sits. The
-  "best-of" bar is only marginally better than the pure 4-bit projection because
-  the encode term was never the problem.
+- **With segmented phase shifters the encode path is already at 0.1 fJ per op,
+  40× under Envise's measured 3.8 fJ per op.** The 2023 model's expensive term
+  at 8 bits is then the ADC (48% of inference), and at 4 bits it is the TIA.
+  There is no "best-of" bar because nothing in Envise's measured encode path is
+  cheaper than the segmented-PS model; what Envise adds is the reality check
+  that the rest of the system costs 1.19 pJ per op.
+- **4-bit inference lands at 14 fJ per op, 7× under the 4-bit digital line.**
+  The ADC collapses 16×, the optical power collapses by 256, and the four
+  remaining segments cost nothing. What is left is the TIA, which is fixed by
+  photodiode current and bandwidth, not bits.
+- **Training does not collapse the same way.** At $M=16$ the 4-bit training bar
+  is 71 fJ per op, 1.4× under the 4-bit digital line, because the per-phase
+  gradient updater ($4N^2E_{\mathrm{TIA}}$ per batch, 44 of the 55 fJ in the TIA
+  row) and the tap optical floor are bit-independent. Batch size is the lever:
+  at $M=64$ the updater amortises to 11 fJ and the bar drops to 38 fJ per op,
+  2.7× under the digital line. Inference advantage is independent of $M$;
+  training advantage is set by it.
 - **The 4-bit optical number for inference is a limit, not a design.** 4 µW per
   mode is below the tap power the gradient protocol needs and below what a
   practical link budget with 0.2 dB per MZI over 256 columns allows; the bar
