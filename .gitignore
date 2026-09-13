@@ -1,0 +1,20 @@
+# LaTeX / beamer intermediates
+*.aux
+*.log
+*.nav
+*.snm
+*.toc
+*.out
+*.fls
+*.fdb_latexmk
+*.xdv
+*.synctex.gz
+*.vrb
+*.bbl
+*.blg
+
+# Compiled outputs (rebuild with latexmk -xelatex talk.tex)
+talk.pdf
+qa/
+
+.DS_Store
