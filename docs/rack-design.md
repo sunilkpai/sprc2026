@@ -225,8 +225,8 @@ removes the reason for its cost.
 4. Does the scale-up domain over photonic interconnect keep the latency the
    collective operations need, or does spreading the domain over racks trade
    the thermal problem for a synchronisation one?
-5. For training, sec. 7 of `lightmatter-comparison.md` puts 8-bit readout at 60
-   to 100 fJ per op with the updater term amortised over batch. That is still an
-   air-cooled package. The 12-bit readout projection is not, and it is not
-   because of digital power: it is because of 33 W of laser per mesh. The
-   training rack, if there is one, is the laser shelf's problem.
+5. For training, sec. 7 of `lightmatter-comparison.md` puts batch-integrated
+   training at 53 fJ per op at $M=4096$ with 12-bit-class gradients from 8-bit
+   light. That is an air-cooled package like the inference one. What the training
+   rack adds is a stability spec: a 10 µs integration window per gradient sample
+   during which every phase and the laser must hold.

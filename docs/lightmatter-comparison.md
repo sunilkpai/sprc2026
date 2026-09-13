@@ -287,11 +287,23 @@ TIA and switch energies are bit-independent.
 
 **4 bits is an inference story, not a training one.** Gradients need precision:
 the SM's own data show gradient error growing toward convergence and with batch
-size (fig. S4G, H), and the deck's own line is that gradients want 16-bit dynamic
-range. So the training panel is *not* projected to 4 bits. It shows the SM's own
-8-bit readout at two batch sizes, and a 12-bit readout projection with the same
-rules run upward (ADC ×16, tap light ×256, digital prep ×2, 12 segments) against
-an FP16 digital line (H100 dense FP16 peak over board power, 707 fJ per op).
+size when gradients are read per example (fig. S4G, H), and the deck's own line
+is that gradients want 16-bit dynamic range. So the training panel is *not*
+projected to 4 bits. What it does project is the thing the SM's analog update
+was designed around (sec. 2.6.2, Alg. 4 lines 9 and 10): **batch-integrated
+gradient readout**. The tap photocurrent is integrated over the $M$ examples of
+a batch and digitised *once per phase shifter per batch*. Two consequences:
+
+- the gradient ADC runs at $f_{\mathrm{clk}}/M$, where 12- to 16-bit converters
+  are slow and cheap (a 20 pJ SAR conversion at a few MS/s), and its energy is
+  amortised over $4N^2M$ ops;
+- the integrated signal grows as $M$ while shot noise grows as $\sqrt M$, so the
+  gradient gains $\tfrac12\log_2 M$ bits over a single-example readout with no
+  extra light: 4 bits at $M=256$, 6 bits at $M=4096$.
+
+The per-example passes (forward, backward, sum) still read activations at 8
+bits and 1 GHz; that part is inference-class. The precision-hungry part is the
+one that runs slowly.
 
 **Inference, $N=128$, fJ per op**
 
@@ -306,12 +318,13 @@ B200 FP4 110, the model's 4-bit baseline 100.
 
 **Training, $N=128$, fJ per op**
 
-| scenario | digital prep | encode | ADC | TIA + updater | optical | switches | total |
+| scenario | digital prep | encode | ADC (activations) | TIA (per example) | gradient readout | optical | total |
 |---|---|---|---|---|---|---|---|
-| SM 8-bit, $M=16$ | 7.0 | 0.2 | 21.6 | 54.7 | 11.7 | 0.3 | 96 |
-| SM 8-bit, $M=64$ | 7.0 | 0.2 | 21.6 | 21.9 | 11.7 | 0.1 | 63 |
-| SM 12-bit readout, $M=64$ | 14.1 | 0.3 | 345 | 21.9 | 3000 | 0.1 | 3381 |
+| SM 8-bit, per-example gradients, $M=16$ | 7.0 | 0.2 | 21.6 | 54.7 (incl. $4N^2E_{\mathrm{TIA}}$ updater) | in TIA column | 11.7 | 96 |
+| batch-integrated 12-bit gradients, $M=256$ | 7.0 | 0.2 | 21.6 | 10.9 | 24.2 | 11.7 | 76 |
+| batch-integrated 12-bit gradients, $M=4096$ | 7.0 | 0.2 | 21.6 | 10.9 | 1.5 | 11.7 | 53 |
 
+Gradient readout = $N(N-1)\,(20\ \mathrm{pJ\ ADC} + 5\ \mathrm{pJ\ TIA{+}integrator})/(4N^2M)$.
 Digital reference lines: model 8-bit 300, H100 INT8 350, H100 FP16 707.
 
 What the two tables say:
@@ -329,17 +342,68 @@ What the two tables say:
   batch size.** The per-phase gradient updater ($4N^2E_{\mathrm{TIA}}$ per batch)
   is 44 of the 55 fJ in the TIA row at $M=16$ and 11 of 22 at $M=64$. Inference
   advantage is independent of $M$; training advantage is set by it.
-- **12-bit gradient readout is not an analog proposition at this tap design.**
-  Sixteen times the ADC energy is survivable (345 fJ per op); 256× the tap light
-  is not (3 pJ per op, i.e. 256 mW per mode, 33 W optical per mesh). The bar
-  lands 5× above FP16 digital. Getting gradient precision without paying in
-  photons means stronger taps, integrated APDs with gain, or per-vector scaling
-  of the adjoint so the ADC window tracks the shrinking gradient, which is the
-  ABFP gain trick applied to training (sec. 8, question 2).
+- **Batch integration is where training wins.** Reading gradients per example
+  (the $M=16$ bar, and the 2023 experiment) leaves the $4N^2E_{\mathrm{TIA}}$
+  updater term and forces high-rate readout. Integrating over the batch turns
+  the gradient ADC into a slow 12- to 16-bit part at $f/M$, costs 1.5 fJ per op
+  at $M=4096$, and adds 6 bits of gradient precision from averaging alone. The
+  training bar then sits at 53 fJ per op, 6× under the 8-bit digital line and
+  13× under FP16, with 8-bit-class light. An earlier version of this note
+  projected 12-bit gradients by scaling the tap light by 256; that was the wrong
+  lever, since the same bits come from time.
+- **What integration does not fix.** Shot and thermal noise average down;
+  systematic errors (tap-coupling variation, loss imbalance, phase-to-voltage
+  slope) do not, and they are what the SM's fig. S4G actually measured when
+  the minibatch error grew. Calibrated taps and the linear-slope requirement of
+  sec. 2.1 are the price of the batch win. The integrator also has to hold a sum
+  of $M$ toggled contributions without saturating; the AC-coupled scheme of
+  fig. S6A only accumulates the difference term, which is what makes $M$ in the
+  thousands plausible.
+
 - **The 4-bit optical number for inference is a limit, not a design.** 4 µW per
   mode is below what a practical link budget with 0.2 dB per MZI over 256
   columns allows; the bar shows what shot noise permits, not what the S14
   recursion permits.
+
+### 7.1 Is the ADC fast enough?
+
+Two different ADCs are in play and they should not share a number.
+
+| readout | rate per channel | bits needed | what exists (Murmann survey class) | energy per sample |
+|---|---|---|---|---|
+| activations, inference and the forward/backward passes | $f_{\mathrm{clk}}$, 1 GS/s | 4 to 8 | SAR and time-interleaved SAR, 8 bit at 1 to 2 GS/s | ~1 to 2 pJ; the SM's 1.38 pJ is at the good end |
+| activations at Envise's precision | 500 MS/s | 11 (ENOB ~10) | pipelined SAR, 10.1 ENOB at 500 MS/s (Lagos 2022, cited in the Nature SI) | ~7 pJ, five times the SM's 8-bit number |
+| activations at 12 bits and 1 GS/s | 1 GS/s | 12 | jitter-limited: $\mathrm{SNR}_{\mathrm{jitter}} = -20\log_{10}(2\pi f_{\mathrm{in}}\sigma_j)$ gives 11.4 bits at 100 fs rms, 8 bits at 1 ps | 20 to 50 pJ and a state-of-the-art clock |
+| gradients, batch-integrated | $f_{\mathrm{clk}}/M$: 4 MS/s at $M=256$, 0.24 MS/s at $M=4096$ | 12 to 16 | any precision SAR; trivial | ~20 pJ, amortised over $4N^2M$ ops |
+
+So: 8 bits at 1 GS/s is fine and is what the inference model assumes. Ten to
+eleven bits at the same rate is where Envise sits and costs 5× the SM's ADC
+number, which moves the inference ADC term from 22 to about 110 fJ per op at
+$N=128$, still under the 300 fJ digital line. Twelve bits at 1 GS/s is not a
+sensible target for any analog accelerator, and it does not have to be, because
+the only thing that needs 12 bits is read $M$ times more slowly.
+
+### 7.2 What batch size is realistic
+
+The relevant $M$ is the number of vectors that pass through one weight block
+between updates, per device. Current practice:
+
+| workload | global batch per step | vectors per weight per device per step |
+|---|---|---|
+| LLM pretraining (Llama 3 405B, DeepSeek-V3 class) | 4M to 60M tokens | a micro-batch of 1 to 8 sequences × 4k to 8k tokens: **4k to 64k** tokens, each a vector through every projection |
+| LLM fine-tuning | 0.1M to 4M tokens | 1k to 16k |
+| CNN classification (ResNet-50) | 256 to 4 096 images | im2col makes every spatial position a vector: **10⁴ to 10⁶** per layer |
+| the 2023 experiment | 1 | 1 |
+| the 2023 SM energy analysis | 16 to 256 | 16 to 256 |
+
+The SM's $M=16$ to $256$ was conservative by one to three orders of magnitude.
+At $M \sim 10^4$ the per-batch terms ($4N^2$ updaters, gradient ADCs, weight
+writes, and the block reloads of `footprint-tdm.md`) are all below a femtojoule
+per op, and the training energy is the cost of three inference-class passes.
+The constraint moves to the integrator: $10^4$ examples at 1 GHz is a 10 µs
+integration window per gradient sample, easy for a gated integrator, but it is
+also 10 µs of phase and laser stability demanded of the whole mesh, which is the
+stability requirement from `rack-design.md` restated as a training spec.
 
 ## 8. Open questions this raises
 

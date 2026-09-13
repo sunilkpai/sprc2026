@@ -16,9 +16,10 @@ All photonic bars use segmented phase shifters for inputs and weights: no DACs.
   * optical power       ~ 4^b   (shot-noise-limited amplitude SNR), i.e. /256 for inference.
   * TIA, switches: bit-independent.
 Training is NOT projected to 4 bits: gradients need precision.  The training panel shows
-8-bit readout at two batch sizes and a 12-bit-readout projection with the same rules run
-the other way (ADC x16, tap optical power x256, digital prep x2, 12 segments), against an
-FP16 digital line.
+the SM's 8-bit per-example readout at M=16 next to batch-integrated gradient readout: the
+tap photocurrent is integrated over the batch and digitised once per phase shifter per batch
+with a slow 12-16 bit ADC, so the gradient ADC runs at f/M and the integrated signal gains
+sqrt(M) in SNR.  At M >= 256 that is 4 extra gradient bits with no extra light.
 
 Run:  python3 scripts/energy_breakdown.py
 """
@@ -49,20 +50,34 @@ FOUR_BIT = dict(E_ADC=DEFAULT["E_ADC"] / 2**DB, E_OP=DEFAULT["E_OP"] / 3,
                 E_mod=DEFAULT["E_mod"] * (8 - DB) / 8)          # 4 segments instead of 8
 FOUR_BIT_INF = dict(FOUR_BIT, E_mode=DEFAULT["E_mode"] / 4**DB)
 
-KEYS = ["digital I/O prep", "modulator", "DAC", "ADC", "TIA", "optical power", "switches",
-        "rest of system"]
+KEYS = ["digital I/O prep", "modulator", "DAC", "ADC", "TIA", "gradient readout", "optical power",
+        "switches", "rest of system"]
 
 
 def per_op(comp, ops, M=1):
     return {k: comp.get(k, 0.0) / ops / M for k in KEYS}
 
 
-M_BIG = 64
-UP = 4  # extra readout bits for the training projection: 8 -> 12
-TWELVE_BIT = dict(E_ADC=DEFAULT["E_ADC"] * 2**UP,      # Walden
-                  E_OP=DEFAULT["E_OP"] * 2,             # 16-bit-class digital I/O prep
-                  E_mode=DEFAULT["E_mode"] * 4**UP,     # shot-noise-limited tap SNR
-                  E_mod=DEFAULT["E_mod"] * (8 + UP) / 8)  # 12 segments
+M_BIG = 256
+M_LLM = 4096          # vectors per weight block per update: a per-device transformer micro-batch
+# Batch-integrated gradient readout (SM sec. 2.6.2, Alg. 4 lines 9-10): the tap photocurrent is
+# integrated over the M examples of a batch and read ONCE per phase shifter per batch.  The
+# gradient ADC therefore runs at f_clk / M, where 12+ bit converters are cheap and slow, and the
+# integrated signal gains sqrt(M) in SNR (shot noise) over a single-example readout.
+E_ADC_GRAD = 20 * pJ  # 12-16 bit SAR at <= 10 MS/s, per conversion (Murmann survey class)
+E_TIA_GRAD = 5 * pJ   # precision TIA + gated integrator + sample/hold, per gradient sample
+UP = 4                # extra gradient bits from batch integration at M >= 256 (sqrt(M) = 16 = 4 bits)
+
+
+def batch_grad(M, **kw):
+    """8-bit per-example forward/backward/sum passes, gradient read once per batch per phase."""
+    d = per_op(components(N, M, **SEG, **kw)[1], OPS_TRAIN, M)
+    # replace the per-batch analog updater term 4 N^2 E_TIA by explicit readout electronics
+    d["TIA"] = 8 * M * N * DEFAULT["E_TIA"] / OPS_TRAIN / M
+    d["gradient readout"] = N * (N - 1) * (E_ADC_GRAD + E_TIA_GRAD) / OPS_TRAIN / M
+    return d
+
+
 inf = {
     "Envise meas.": {**{k: 0.0 for k in KEYS}, "modulator": LM_ENC, "optical power": LM_OPT,
                      "rest of system": LM_REST},
@@ -71,8 +86,8 @@ inf = {
 }
 train = {
     f"SM 8-bit M{M_TRAIN}": per_op(components(N, M_TRAIN, **SEG)[1], OPS_TRAIN, M_TRAIN),
-    f"SM 8-bit M{M_BIG}": per_op(components(N, M_BIG, **SEG)[1], OPS_TRAIN, M_BIG),
-    f"SM 12-bit M{M_BIG}": per_op(components(N, M_BIG, **SEG, **TWELVE_BIT)[1], OPS_TRAIN, M_BIG),
+    f"batch-int. M{M_BIG}": batch_grad(M_BIG),
+    f"batch-int. M{M_LLM}": batch_grad(M_LLM),
 }
 digital = {"model 8-bit": 6 * DEFAULT["E_OP"] / 2, "model 4-bit": 6 * FOUR_BIT["E_OP"] / 2,
            "H100 INT8": 0.35 * pJ, "B200 FP4": 0.11 * pJ,
@@ -93,6 +108,13 @@ report("TRAINING (in situ VJP/grad)", train, "4N^2")
 print("\nDigital baselines, fJ per op: " + ", ".join(f"{k} {v / fJ:.0f}" for k, v in digital.items()))
 print(f"Envise rest-of-system (DCI) = {LM_REST / fJ:.0f} fJ/op, off the axis in the figure.")
 
+# ------------------------------------------------------------ is the ADC fast enough?
+print("\nADC budget: per-example activation readout at f_clk vs per-batch gradient readout at f_clk/M")
+for M in (16, 256, M_LLM):
+    print(f"  M={M:5d}: gradient ADC rate {1e9 / M / 1e6:8.2f} MS/s per tap; gradient readout "
+          f"{N * (N - 1) * (E_ADC_GRAD + E_TIA_GRAD) / OPS_TRAIN / M / fJ:6.1f} fJ/op; "
+          f"SNR gain from integration sqrt(M) = {M ** 0.5:5.1f} = {0.5 * __import__('math').log2(M):.1f} bits")
+
 # ---------------------------------------------- what segmented weights cost in contacts
 # A b-bit segmented phase shifter needs b digital lines from the control die, so an N x N
 # mesh (N(N-1) phases) needs ~ N^2 b vertical interconnects: a bump / hybrid-bond array
@@ -111,7 +133,8 @@ SERIES = [("digital I/O prep", "slate", "digital I/O prep"),
           ("modulator", "moss", "encode: segmented PS (Envise: mod.\\ + weight DAC)"),
           ("DAC", "amber", "input DAC"),
           ("ADC", "sky", "ADC"),
-          ("TIA", "ink2", "TIA + updater"),
+          ("TIA", "ink2", "TIA (per example)"),
+          ("gradient readout", "sky!50", "gradient readout, once per batch (12-bit ADC + integrator)"),
           ("optical power", "amber!40", "optical power"),
           ("switches", "mist", "switches"),
           ("rest of system", "ink!25", f"Envise DCI, rest of system: {LM_REST / fJ:.0f}, off scale")]
@@ -151,6 +174,8 @@ def axis(name, data, title, at=None, legend=False, ylabel=True, ymax=YMAX, basel
     c0, c1 = cats[0], cats[-1]
     for label, val, style, inline in baselines:
         y = val / fJ
+        if y > ymax:
+            continue
         fp = "" if legend and not inline else "forget plot, "
         lines.append(f"\\addplot[{fp}sharp plot, stack plots=false, {style}, thick, no markers, "
                      f"line legend] coordinates {{({c0},{y:.0f}) ({c1},{y:.0f})}}"
@@ -182,13 +207,14 @@ INF_BASE = [("model 8-bit digital", digital["model 8-bit"], "dashed, color=slate
 TRAIN_BASE = [("model 8-bit digital", digital["model 8-bit"], "dashed, color=slate", False),
               ("H100 INT8 wall", digital["H100 INT8"], "dotted, color=slate", False),
               ("H100 FP16 wall", digital["H100 FP16"], "densely dotted, color=amber", True)]
+TRAIN_YMAX = 400
 tex = "\n".join([
     "% Generated by scripts/energy_breakdown.py -- do not edit by hand.",
     "\\begin{tikzpicture}",
     axis("inf", inf, f"Inference: $N={N}$ MVM", legend=True, baselines=INF_BASE,
          offscale=("Envise meas.",)),
     axis("train", train, f"Training: in situ VJP/grad, $N={N}$", at="inf", ylabel=False,
-         ymax=800, baselines=TRAIN_BASE, offscale=(f"SM 12-bit M{M_BIG}",)),
+         ymax=TRAIN_YMAX, baselines=TRAIN_BASE, offscale=()),
     "\\end{tikzpicture}",
 ])
 out = os.path.join(os.path.dirname(__file__), "..", "figs", "energy_breakdown.tex")
@@ -198,7 +224,7 @@ print(f"\nwrote {os.path.relpath(out)}")
 
 
 # ------------------------------------------------------------------- SVG (reveal.js deck)
-PALETTE = {"slate": "#5B6B7A", "moss": "#6B8F3D", "amber": "#D9821E", "sky": "#3A8FB7",
+PALETTE = {"slate": "#5B6B7A", "moss": "#6B8F3D", "amber": "#D9821E", "sky": "#3A8FB7", "sky!50": "#9CC7DB",
            "ink2": "#2E4A6B", "amber!40": "#F0CDA5", "mist": "#EEF2F6", "ink!25": "#C5C9CE",
            "ink": "#16263A", "paper": "#FFFFFF"}
 
@@ -248,6 +274,8 @@ def svg_panel(x0, y0, w, h, data, title, ymax, baselines, offscale, ylabel):
     # baselines
     dash = {"dashed": "8,5", "dotted": "2,4", "dashdotted": "8,4,2,4", "densely dotted": "2,2"}
     for label, val, style, inline in baselines:
+        if val / fJ > ymax:
+            continue
         y = sy(val / fJ)
         kind = style.split(",")[0]; col = PALETTE[style.split("color=")[1].strip()]
         out.append(f'<line x1="{px}" y1="{y:.1f}" x2="{px + pw}" y2="{y:.1f}" stroke="{col}" '
@@ -267,13 +295,13 @@ def write_svg(path):
              '.leg{font-size:11.5px;fill:#16263A}</style>',
              f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
              svg_panel(30, 6, pw, 330, inf, f"Inference: N = {N} MVM", YMAX, INF_BASE, ("Envise meas.",), True),
-             svg_panel(30 + pw + 60, 6, pw, 330, train, f"Training: in situ VJP/grad, N = {N}", 800, TRAIN_BASE,
-                       (f"SM 12-bit M{M_BIG}",), False)]
+             svg_panel(30 + pw + 60, 6, pw, 330, train, f"Training: in situ VJP/grad, N = {N}", TRAIN_YMAX,
+                       TRAIN_BASE, (), False)]
     # legend
     items = [(PALETTE[c], lab) for k, c, lab in SERIES if k in NONZERO]
     items = [(c, lab.replace("\\\\ ", " ")) for c, lab in items]
     lines_ = [(PALETTE[st.split("color=")[1].strip()], f"{lab} {v / fJ:.0f}", st.split(",")[0])
-              for lab, v, st, inl in INF_BASE + [TRAIN_BASE[-1]]]
+              for lab, v, st, inl in INF_BASE]
     x, y = 40, 358
     for col, lab in items:
         parts.append(f'<rect x="{x}" y="{y - 9}" width="11" height="11" fill="{col}"/>')

@@ -30,7 +30,9 @@
 \addplot[fill=sky,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,21.56) (SM 4-bit,1.35)};
 \addlegendentry{ADC}
 \addplot[fill=ink2,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,10.94) (SM 4-bit,10.94)};
-\addlegendentry{TIA + updater}
+\addlegendentry{TIA (per example)}
+\addplot[fill=sky!50,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,0.00) (SM 4-bit,0.00)};
+\addlegendentry{gradient readout, once per batch (12-bit ADC + integrator)}
 \addplot[fill=amber!40,draw=none] coordinates {(Envise meas.,24.43) (SM 8-bit,7.81) (SM 4-bit,0.03)};
 \addlegendentry{optical power}
 \addplot[fill=mist,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,0.00) (SM 4-bit,0.00)};
@@ -55,9 +57,9 @@
   height=3.9cm,
   ybar stacked,
   bar width=13pt,
-  ymin=0, ymax=800,
+  ymin=0, ymax=400,
   ylabel near ticks,
-  symbolic x coords={SM 8-bit M16,SM 8-bit M64,SM 12-bit M64},
+  symbolic x coords={SM 8-bit M16,batch-int. M256,batch-int. M4096},
   xtick=data,
   x tick label style={font=\scriptsize, rotate=25, anchor=north east},
   y tick label style={font=\scriptsize},
@@ -70,17 +72,17 @@
   clip=true,
   at={(inf.south east)}, anchor=south west, xshift=0.9cm
 ]
-\addplot[fill=slate,draw=none] coordinates {(SM 8-bit M16,7.03) (SM 8-bit M64,7.03) (SM 12-bit M64,14.06)};
-\addplot[fill=moss,draw=none] coordinates {(SM 8-bit M16,0.19) (SM 8-bit M64,0.19) (SM 12-bit M64,0.28)};
-\addplot[fill=sky,draw=none] coordinates {(SM 8-bit M16,21.56) (SM 8-bit M64,21.56) (SM 12-bit M64,345.00)};
-\addplot[fill=ink2,draw=none] coordinates {(SM 8-bit M16,54.69) (SM 8-bit M64,21.88) (SM 12-bit M64,21.88)};
-\addplot[fill=amber!40,draw=none] coordinates {(SM 8-bit M16,11.72) (SM 8-bit M64,11.72) (SM 12-bit M64,3000.00)};
-\addplot[fill=mist,draw=none] coordinates {(SM 8-bit M16,0.31) (SM 8-bit M64,0.08) (SM 12-bit M64,0.08)};
-\addplot[forget plot, sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,300) (SM 12-bit M64,300)};
-\addplot[forget plot, sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,350) (SM 12-bit M64,350)};
-\addplot[forget plot, sharp plot, stack plots=false, densely dotted, color=amber, thick, no markers, line legend] coordinates {(SM 8-bit M16,707) (SM 12-bit M64,707)} node[pos=0, anchor=south west, font=\tiny, color=amber] {H100 FP16 wall 707};
-\node[font=\tiny, color=ink, anchor=east, xshift=-7pt, align=right] at (axis cs:SM 12-bit M64,440) {3381 fJ/op,\\ off scale};
+\addplot[fill=slate,draw=none] coordinates {(SM 8-bit M16,7.03) (batch-int. M256,7.03) (batch-int. M4096,7.03)};
+\addplot[fill=moss,draw=none] coordinates {(SM 8-bit M16,0.19) (batch-int. M256,0.19) (batch-int. M4096,0.19)};
+\addplot[fill=sky,draw=none] coordinates {(SM 8-bit M16,21.56) (batch-int. M256,21.56) (batch-int. M4096,21.56)};
+\addplot[fill=ink2,draw=none] coordinates {(SM 8-bit M16,54.69) (batch-int. M256,10.94) (batch-int. M4096,10.94)};
+\addplot[fill=sky!50,draw=none] coordinates {(SM 8-bit M16,0.00) (batch-int. M256,24.22) (batch-int. M4096,1.51)};
+\addplot[fill=amber!40,draw=none] coordinates {(SM 8-bit M16,11.72) (batch-int. M256,11.72) (batch-int. M4096,11.72)};
+\addplot[fill=mist,draw=none] coordinates {(SM 8-bit M16,0.31) (batch-int. M256,0.02) (batch-int. M4096,0.00)};
+\addplot[forget plot, sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,300) (batch-int. M4096,300)};
+\addplot[forget plot, sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,350) (batch-int. M4096,350)};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit M16,95.5) {95};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit M64,62.5) {62};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:batch-int. M256,75.7) {76};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:batch-int. M4096,53.0) {53};
 \end{axis}
 \end{tikzpicture}
