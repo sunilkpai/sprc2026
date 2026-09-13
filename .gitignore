@@ -17,3 +17,6 @@
 qa/
 
 .DS_Store
+
+# Reference PDFs (copyrighted, keep local)
+refs/
