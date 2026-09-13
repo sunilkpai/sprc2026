@@ -13,8 +13,7 @@
 *.bbl
 *.blg
 
-# Compiled outputs (rebuild with latexmk -xelatex talk.tex)
-talk.pdf
+# Rendered slide PNGs (regenerate from talk.pdf, see README)
 qa/
 
 .DS_Store
