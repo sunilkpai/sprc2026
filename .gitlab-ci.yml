@@ -1,0 +1,14 @@
+# GitLab Pages: publishes the reveal.js deck in slides/ at
+# https://<namespace>.gitlab.io/<project>/ . The deck is static, so the job
+# only copies files. Regenerate slides/media/qr.svg with the GitLab URL if the
+# deck is served from here rather than GitHub Pages (see README).
+pages:
+  stage: deploy
+  image: alpine:3.20
+  script:
+    - rm -rf public && cp -r slides public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

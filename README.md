@@ -22,7 +22,8 @@ and a comparison of that analysis against the photonic inference processor in
 | `scripts/verify_gradient.py` | Numerical check of eqs. S3 to S8 and S12 on a random triangular mesh against finite differences. Finds one conjugation error in the printed VJP (S5) and a sign typo in S12. |
 | `scripts/energy_model.py` | Rebuilds Tables S1 to S4 and the photonic-advantage contours of fig. S8, reconciles the "2× at N = 64, M ≥ 16" claim, and puts the Lightmatter chip on the same per-op axes. |
 | `scripts/energy_breakdown.py` | Stacked per-component energy bars for inference and training: the SM model with segmented phase shifters for inputs and weights (no DACs) at 8 bits, projected to 4 bits for inference and to 12-bit readout for training, against Envise measured and digital lines, plus the contact count a segmented weight array implies. Writes `figs/energy_breakdown.tex` (pgfplots) which the deck inputs. |
-| `talk.tex`, `talk.pdf`, `figs/` | The beamer deck (metropolis, 16:9) the notes feed into. |
+| `slides/` | The talk as a reveal.js deck: `index.html`, theme, vendored reveal.js, KaTeX and Fira Sans (no CDN, works offline), the two Science training movies, and the generated chart SVG. Deployed to GitHub Pages at https://sunilkpai.github.io/sprc2026/ by `.github/workflows/pages.yml`; `.gitlab-ci.yml` does the same on GitLab Pages. |
+| `talk.tex`, `talk.pdf`, `figs/` | The earlier beamer version of the deck (metropolis, 16:9). Kept for the PDF; the reveal.js deck is the one being maintained. |
 | `refs/` | Local copies of the source PDFs. Git-ignored; see below. |
 
 ## Running the checks
@@ -50,16 +51,29 @@ python3 scripts/energy_model.py
 The Nature main text is paywalled. The comparison note says which statements rest
 on the SI, the Lightmatter blog, or secondary coverage.
 
-## Building the deck
+## The deck
+
+Serve `slides/` from any static server and open it; press `s` for the speaker
+view with notes, `f` for fullscreen, `?` for the key map.
 
 ```bash
-latexmk -xelatex talk.tex
+python3 -m http.server 8765 --directory slides
 ```
 
-Speaker notes are in `\note{}` blocks; add
-`\setbeameroption{show notes on second screen}` to see them. Rendered slide PNGs
-for review go in `qa/` (git-ignored):
+Every push to `main` that touches `slides/` redeploys
+https://sunilkpai.github.io/sprc2026/ through GitHub Actions (Settings, Pages,
+Source: GitHub Actions; the workflow enables it on first run). The QR code on the
+last slide points there. To serve from GitLab Pages instead, push the repo to
+GitLab (the included `.gitlab-ci.yml` publishes `slides/`) and regenerate the QR
+with the GitLab URL:
 
 ```bash
-gs -q -dNOPAUSE -dBATCH -sDEVICE=png16m -r110 -sOutputFile=qa/slide-%02d.png talk.pdf
+npx --yes qrcode -t svg -o slides/media/qr.svg "https://<namespace>.gitlab.io/sprc2026/"
 ```
+
+The chart on the energy slide is `slides/media/energy_breakdown.svg`, written by
+`scripts/energy_breakdown.py` together with the pgfplots version. Vendored
+libraries: reveal.js 5 (MIT), KaTeX (MIT), Fira Sans (OFL); licenses are next
+to the files under `slides/vendor/`.
+
+The beamer version still builds with `latexmk -xelatex talk.tex`.

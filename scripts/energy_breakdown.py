@@ -195,3 +195,105 @@ out = os.path.join(os.path.dirname(__file__), "..", "figs", "energy_breakdown.te
 with open(out, "w") as f:
     f.write(tex + "\n")
 print(f"\nwrote {os.path.relpath(out)}")
+
+
+# ------------------------------------------------------------------- SVG (reveal.js deck)
+PALETTE = {"slate": "#5B6B7A", "moss": "#6B8F3D", "amber": "#D9821E", "sky": "#3A8FB7",
+           "ink2": "#2E4A6B", "amber!40": "#F0CDA5", "mist": "#EEF2F6", "ink!25": "#C5C9CE",
+           "ink": "#16263A", "paper": "#FFFFFF"}
+
+
+def svg_panel(x0, y0, w, h, data, title, ymax, baselines, offscale, ylabel):
+    """One stacked-bar panel; returns SVG fragment.  Plot area inset for axes."""
+    cats = list(data)
+    L, R, T, B = 46, 8, 26, 58
+    px, py, pw, ph = x0 + L, y0 + T, w - L - R, h - T - B
+    sy = lambda v: py + ph * (1 - v / ymax)
+    out = [f'<text x="{x0 + w / 2:.0f}" y="{y0 + 14}" class="ttl">{title}</text>']
+    # grid + y axis
+    step = 100 if ymax <= 500 else 200
+    for v in range(0, int(ymax) + 1, step):
+        out.append(f'<line x1="{px}" y1="{sy(v):.1f}" x2="{px + pw}" y2="{sy(v):.1f}" class="grid"/>')
+        out.append(f'<text x="{px - 5}" y="{sy(v) + 3.5:.1f}" class="tick" text-anchor="end">{v}</text>')
+    out.append(f'<line x1="{px}" y1="{py}" x2="{px}" y2="{py + ph}" class="axis"/>')
+    out.append(f'<line x1="{px}" y1="{py + ph}" x2="{px + pw}" y2="{py + ph}" class="axis"/>')
+    if ylabel:
+        out.append(f'<text transform="translate({x0 + 11},{py + ph / 2:.0f}) rotate(-90)" class="lab" '
+                   f'text-anchor="middle">fJ per op</text>')
+    # bars
+    n = len(cats); slot = pw / n; bw = min(34, slot * 0.5)
+    for i, c in enumerate(cats):
+        cx = px + slot * (i + 0.5); base = 0.0
+        for key, color, _ in SERIES:
+            v = data[c][key] / fJ
+            if v <= 0:
+                continue
+            top = min(base + v, ymax)
+            if base < ymax:
+                out.append(f'<rect x="{cx - bw / 2:.1f}" y="{sy(top):.1f}" width="{bw:.1f}" '
+                           f'height="{sy(base) - sy(top):.1f}" fill="{PALETTE[color]}"/>')
+            base += v
+        tot = sum(data[c].values()) / fJ
+        if c in offscale:
+            side = -1 if c == cats[-1] else 1
+            anc = "end" if side < 0 else "start"
+            out.append(f'<text x="{cx + side * (bw / 2 + 6):.1f}" y="{sy(ymax * 0.55):.1f}" class="tick" '
+                       f'text-anchor="{anc}">{tot:.0f} fJ/op,</text>')
+            out.append(f'<text x="{cx + side * (bw / 2 + 6):.1f}" y="{sy(ymax * 0.55) + 12:.1f}" class="tick" '
+                       f'text-anchor="{anc}">off scale</text>')
+        else:
+            out.append(f'<text x="{cx:.1f}" y="{sy(tot) - 4:.1f}" class="tick" text-anchor="middle">{tot:.0f}</text>')
+        out.append(f'<text transform="translate({cx:.1f},{py + ph + 10}) rotate(25)" class="tick" '
+                   f'text-anchor="start">{c}</text>')
+    # baselines
+    dash = {"dashed": "8,5", "dotted": "2,4", "dashdotted": "8,4,2,4", "densely dotted": "2,2"}
+    for label, val, style, inline in baselines:
+        y = sy(val / fJ)
+        kind = style.split(",")[0]; col = PALETTE[style.split("color=")[1].strip()]
+        out.append(f'<line x1="{px}" y1="{y:.1f}" x2="{px + pw}" y2="{y:.1f}" stroke="{col}" '
+                   f'stroke-width="2" stroke-dasharray="{dash[kind]}"/>')
+        if inline:
+            out.append(f'<text x="{px + 6}" y="{y - 4:.1f}" class="tick" fill="{col}">{label} {val / fJ:.0f}</text>')
+    return "\n".join(out)
+
+
+def write_svg(path):
+    W, H = 1100, 430
+    pw = 470
+    parts = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" '
+             f'font-family="Fira Sans, Helvetica Neue, Arial, sans-serif">',
+             '<style>.ttl{font-size:14px;fill:#16263A;text-anchor:middle}.tick{font-size:10.5px;fill:#5B6B7A}'
+             '.lab{font-size:12px;fill:#5B6B7A}.grid{stroke:#EEF2F6;stroke-width:1}.axis{stroke:#5B6B7A;stroke-width:1}'
+             '.leg{font-size:11.5px;fill:#16263A}</style>',
+             f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
+             svg_panel(30, 6, pw, 330, inf, f"Inference: N = {N} MVM", YMAX, INF_BASE, ("Envise meas.",), True),
+             svg_panel(30 + pw + 60, 6, pw, 330, train, f"Training: in situ VJP/grad, N = {N}", 800, TRAIN_BASE,
+                       (f"SM 12-bit M{M_BIG}",), False)]
+    # legend
+    items = [(PALETTE[c], lab) for k, c, lab in SERIES if k in NONZERO]
+    items = [(c, lab.replace("\\\\ ", " ")) for c, lab in items]
+    lines_ = [(PALETTE[st.split("color=")[1].strip()], f"{lab} {v / fJ:.0f}", st.split(",")[0])
+              for lab, v, st, inl in INF_BASE + [TRAIN_BASE[-1]]]
+    x, y = 40, 358
+    for col, lab in items:
+        parts.append(f'<rect x="{x}" y="{y - 9}" width="11" height="11" fill="{col}"/>')
+        parts.append(f'<text x="{x + 16}" y="{y}" class="leg">{lab}</text>')
+        x += 16 + 6.3 * len(lab) + 22
+        if x > W - 260:
+            x, y = 40, y + 20
+    x, y = 40, y + 20
+    dash = {"dashed": "8,5", "dotted": "2,4", "dashdotted": "8,4,2,4", "densely dotted": "2,2"}
+    for col, lab, kind in lines_:
+        parts.append(f'<line x1="{x}" y1="{y - 4}" x2="{x + 26}" y2="{y - 4}" stroke="{col}" stroke-width="2" '
+                     f'stroke-dasharray="{dash[kind]}"/>')
+        parts.append(f'<text x="{x + 32}" y="{y}" class="leg">{lab}</text>')
+        x += 32 + 6.3 * len(lab) + 22
+        if x > W - 260:
+            x, y = 40, y + 20
+    parts.append("</svg>")
+    with open(path, "w") as f:
+        f.write("\n".join(parts) + "\n")
+    print(f"wrote {os.path.relpath(path)}")
+
+
+write_svg(os.path.join(os.path.dirname(__file__), "..", "slides", "media", "energy_breakdown.svg"))
