@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="vendor/reveal/reset.css">
 <link rel="stylesheet" href="vendor/reveal/reveal.css">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="css/theme.css?v=3">
+<link rel="stylesheet" href="css/theme.css?v=4">
 </head>
 <body>
 <div class="reveal">
@@ -347,7 +347,7 @@
   <div class="body">
     <img src="media/energy_breakdown.svg" alt="Stacked per-component energy bars for inference and training" style="max-height:470px">
     <div class="src">2023 SM model, \(N=128\), segmented phase shifters, no DACs; Envise from the Nature 2025 SI.</div>
-    <p class="small">4 bits: inference at \(14\,\mathrm{fJ/op}\), \(8\times\) under B200 FP4 and \(3.7\times\) under Jalapeño MXFP4 at the wall, before the shell. Jalapeño is an inference part, so it is absent from the training panel. Training: integrate the gradient over the batch; \(53\,\mathrm{fJ/op}\) at \(M=4096\), \(3.4\times\) under Cerebras FP16.</p>
+    <p class="small">4-bit inference: \(14\,\mathrm{fJ/op}\), \(3.7\times\) under Jalapeño before the shell. Training: batch-integrated gradients, \(53\,\mathrm{fJ/op}\) at \(M=4096\), \(3.4\times\) under Cerebras.</p>
   </div>
   <aside class="notes">[6:15] Chart basis: Science 2023 SM Tables S1 to S4 at N equals 128 and 1 gigahertz. Envise: 78 watts plus 1.6 watts optical at 65.5 TOPS, 0.25 watts in the encode path including its weight DACs, from the Nature 2025 SI. Assumptions behind the 4-bit projection: ADC energy scales as 2 to the bits (Walden); the Nature SI's thermal-limited 4 to the bits would be 16 times more optimistic. Digital op divided by 3 is the B200 FP4 to H100 INT8 ratio at the wall. Optical power scales as 4 to the bits from shot noise, so 4-bit inference needs 256 times less light and 12-bit gradient readout needs 256 times more; that is the 3.4 picojoule per op bar, 3 picojoules of it laser. Training is not projected to 4 bits because gradients need precision; instead the gradient readout is batch-integrated, which is what the SM's analog update does: the tap current is integrated over the batch and digitised once per phase shifter per batch, so a slow 12 to 16 bit ADC at f over M is enough and the average gains half of log2 M bits, six at M equals 4096. Realistic M today is thousands of tokens per weight per device for an LLM micro-batch and millions of positions per layer for a CNN, so the SM's 16 to 256 was conservative. Two ADCs, two rates: activations at 8 bits and 1 gigasample, gradients at 12 plus bits and megasamples. Segmented phase shifters everywhere means every weight cell needs b digital lines from the control die: 65 thousand contacts at 4 bits for a 128 mesh. Baselines: B200 FP4 at 110 femtojoules per op and OpenAI's Jalapeno MXFP4 ASIC at 52, both peak over package power; Cerebras WSE-3 at 180 for FP16. The honest gap is now under four times at 4 bits before any shell is counted. Three things to say. One: the 2023 tables already predicted that conversions would dominate, and Envise confirmed it with a factor of 40 between the tensor core and the package. Two: 4-bit inference is where the optics win on paper. Three: training gets a different gift, time: integrate the gradient over the batch and precision comes from averaging, not from light or from a fast ADC. Systematic tap errors do not average, so calibration is the price.</aside>
 </section>
@@ -359,14 +359,13 @@
     <div>
       <div class="lead">Heat per 128-wide mesh</div>
       <ul>
-        <li>Optics, ADCs, TIAs, laser: \(\approx2\,\mathrm{W}\). Thermal shifters would add \(800\,\mathrm{W}\)</li>
-        <li><strong>EO</strong> shifters, what Envise's \(10\,\mathrm{ns}\) weights imply: hold for free, but \(\mathrm{mm}\) to \(\mathrm{cm}\) long. <strong>MEMS</strong>: short and free, but stiction, drift and hermetic packaging are unproven at \(N^2\) scale</li>
+        <li>Optics \(\approx2\,\mathrm{W}\); thermal shifters would add \(800\,\mathrm{W}\)</li>
+        <li>EO shifters (Envise): free to hold, \(\mathrm{cm}\) long. MEMS: short, free, unproven reliability</li>
         <li>The digital shell sets the package: \(50\) to \(100\,\mathrm{W}\), air-cooled</li>
       </ul>
       <div class="lead">Cooling: capacity versus stability</div>
       <ul>
-        <li>Capacity cooling gone. Sub-kelvin uniformity stays: a TEC per die</li>
-        <li>Lasers pooled in one water-cooled shelf per rack, the only liquid</li>
+        <li>Stability, not capacity: a TEC per die; lasers pooled in one water-cooled shelf</li>
       </ul>
     </div>
     <div>
@@ -390,9 +389,9 @@
         <tr><td>16 tiles, \(10\,\mathrm{GS/s}\) I/O</td><td class="r">\(880\,\mathrm{POPS}\)</td><td class="r">\(40\)</td><td class="r">\(12\)</td></tr>
       </table>
       <ul>
-        <li>At the 2023 clock a photonic rack is \(33\times\) short of an NVL72 and draws \(1\,\mathrm{kW}\). Parity needs \(10\,\mathrm{GS/s}\) converters and \(16\) tiles per package, and fits the air envelope only at 4 bits</li>
+        <li>At \(1\,\mathrm{GS/s}\) the rack is \(33\times\) short of an NVL72 at \(1\,\mathrm{kW}\). Parity needs \(10\,\mathrm{GS/s}\) and \(16\) tiles per package; inside \(30\,\mathrm{kW}\) only at 4 bits</li>
       </ul>
-      <div class="src">Assumptions: \(10\,\mathrm{GS/s}\) converters are 5 nm ADC-based SerDes silicon (Broadcom, Marvell 112G PAM4: \(56\,\mathrm{GS/s}\), 6 to 7 ENOB, \(1\) to \(2\,\mathrm{pJ}\)); shell in 5 nm. Nodes: B200 4 nm, Jalapeño 3 nm class, Cerebras 5 nm, Groq 14 nm, Envise 12 nm. Full table in the backup.</div>
+      <div class="src">Converters: 5 nm ADC-based SerDes class (Broadcom, Marvell 112G PAM4: \(56\,\mathrm{GS/s}\), 6 to 7 ENOB, \(1\) to \(2\,\mathrm{pJ}\)); shell in 5 nm. Nodes and transistor counts in the backup.</div>
     </div>
   </div>
   <aside class="notes">[7:15] This slide is the discussion point. The claim is not that photonics is cold, it is that the kilowatt package and the metre of copper were both choices. Say the thermal-phase-shifter number out loud: 800 watts per mesh is what happens if you keep heaters. Then the honest part: the package power is the digital shell, and Envise measured 25 times the photonic core. If the shell gets to 50 femtojoules per op, an NVL72's worth of ops fits in the power budget of an air-cooled rack. But say the second table out loud: the rack fills with silicon before it fills with watts. A tile is 128 by 128 at two ops per element per clock, so 168 packages of four tiles at the 2023 model's one gigasample per second is 22 peta-ops, a thirtieth of an NVL72, drawing one kilowatt. Parity in the same rack needs ten gigasample converters on every mesh and sixteen tiles per package, a multi-reticle photonic package, and at eight bits that is forty kilowatts again; only the four-bit case lands inside thirty. That is the footprint slide at rack scale. Lasers are the one thing that still wants water, so pool them. Also in the doc but not on the slide: PUE gives a quarter back, air 1.3 to 1.5 against liquid 1.1, and memory and network power do not change.</aside>
@@ -414,18 +413,17 @@
       </table>
       <ul>
         <li>A 128-wide mesh of 2023 MZIs is \(80\times16\,\mathrm{mm}\): <span class="alert">bigger than a reticle</span></li>
-        <li>\(30\) to \(120\times\) less throughput per \(\mathrm{mm}^2\) than a GPU. Cerebras holds \(44\,\mathrm{GB}\) of weights on one wafer; a mesh would need a football field</li>
+        <li>\(30\) to \(120\times\) less throughput per \(\mathrm{mm}^2\) than a GPU; Cerebras holds \(44\,\mathrm{GB}\) on one wafer</li>
       </ul>
     </div>
     <div>
-      <div class="lead">Temporal mapping (Opticore; Hamerly et al., PRX 2019)</div>
+      <div class="lead">Temporal mapping (Opticore; Hamerly 2019)</div>
       <ul>
-        <li>Weights as pulses into a detector: \(O(N)\) devices, zero silicon per parameter</li>
-        <li>The price: every weight fetched on every use. A memory-bandwidth problem, the GPU's</li>
+        <li>Weights as pulses: \(O(N)\) devices, zero silicon per parameter, a memory-bandwidth problem instead</li>
       </ul>
       <div class="lead">Time-multiplexing the mesh</div>
       <ul>
-        <li>Block level: EO shifters, \(N^2 b\) contacts at speed, a batch per block. Keeps in situ backprop</li>
+        <li>Block level with EO shifters and \(N^2 b\) contacts: keeps \(O(N)\) conversions and in situ backprop</li>
       </ul>
     </div>
   </div>
@@ -473,8 +471,8 @@
     <div>
       <ul>
         <li>Each tile is an SVD: two meshes and \(N\) attenuators</li>
-        <li>Conversions per MAC unchanged. Error resets at every tile's ADC</li>
-        <li>Reload and HBM fetch: \(\approx2.5\,\mathrm{fJ}\) per MAC at \(M=10^4\)</li>
+        <li>Error resets at every tile's ADC</li>
+        <li>Reload and fetch: \(\approx2.5\,\mathrm{fJ}\) per MAC at \(M=10^4\)</li>
       </ul>
     </div>
   </div>
@@ -482,25 +480,20 @@
 </section>
 
 <!-- ================================================================ mlp vs attention -->
-<section style="font-size:1.12em">
+<section>
   <h2>MLP versus attention: weight-stationary or not</h2>
-  <div class="body cols small">
-    <div>
-      <div class="lead">MACs per token per layer, \(d=8192\), causal attention</div>
-      <table>
-        <tr><th>block</th><th class="r">MACs</th><th class="r">\(L=8\mathrm{k}\)</th><th class="r">\(128\mathrm{k}\)</th><th class="r">\(2\mathrm{M}\)</th></tr>
-        <tr><td>MLP (two or three matrices)</td><td class="r">\(8d^2\)</td><td class="r">\(61\%\)</td><td class="r">\(29\%\)</td><td class="r">\(3\%\)</td></tr>
-        <tr><td>Q, K, V, O projections (GQA \(8/64\): \(2.25d^2\))</td><td class="r">\(4d^2\)</td><td class="r">\(31\%\)</td><td class="r">\(14\%\)</td><td class="r">\(1.5\%\)</td></tr>
-        <tr><td>attention scores and value sum, dense causal</td><td class="r">\(\approx Ld\)</td><td class="r">\(8\%\)</td><td class="r">\(57\%\)</td><td class="r">\(96\%\)</td></tr>
+  <div class="body cols">
+    <div class="w60">
+      <div class="lead">MACs per token per layer, \(d=8192\), dense causal, by context \(L\)</div>
+      <table class="big">
+        <tr><th>block</th><th class="r">MACs</th><th class="r">\(8\mathrm{k}\)</th><th class="r">\(128\mathrm{k}\)</th><th class="r">\(2\mathrm{M}\)</th></tr>
+        <tr><td>MLP</td><td class="r">\(8d^2\)</td><td class="r">\(61\%\)</td><td class="r">\(29\%\)</td><td class="r">\(3\%\)</td></tr>
+        <tr><td>Q, K, V, O projections</td><td class="r">\(4d^2\)</td><td class="r">\(31\%\)</td><td class="r">\(14\%\)</td><td class="r">\(1.5\%\)</td></tr>
+        <tr><td>attention</td><td class="r">\(\approx Ld\)</td><td class="r">\(8\%\)</td><td class="r">\(57\%\)</td><td class="r">\(96\%\)</td></tr>
       </table>
-      <ul>
-        <li>Weights see every token: \(M\) of \(10^4\) to \(10^5\) in training</li>
-        <li>Amdahl: a free MLP buys \(2.6\times\) at \(8\mathrm{k}\), \(1.4\times\) at \(128\mathrm{k}\), \(1.03\times\) at \(2\mathrm{M}\), dense</li>
-        <li>Dense is the worst case. Shipped long-context models are windowed, sparse or hybrid: Gemma 3 \(\approx26\%\) attention at \(128\mathrm{k}\), DeepSeek-V3.2 sparse \(\approx5\%\). MoE keeps MLP compute per token, multiplies the weights: same fit for prefill and training, worse decode</li>
-      </ul>
+      <p class="small" style="margin-top:10px">Dense is the worst case. Shipped long-context models are windowed, sparse or hybrid: Gemma 3 \(\approx26\%\) at \(128\mathrm{k}\), DeepSeek-V3.2 \(\approx5\%\). MoE multiplies the weights, not the compute per token.</p>
     </div>
     <div>
-      <div class="lead">Why attention wants a different circuit</div>
       <svg class="fig" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
         <!-- left: mesh, weights inside -->
         <rect x="70" y="30" width="110" height="80" rx="6" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.6"/>
@@ -520,10 +513,9 @@
         <text x="405" y="135" font-size="11" fill="#16263A" text-anchor="middle">both operands streamed: attention</text>
         <text x="405" y="152" font-size="10" fill="#5B6B7A" text-anchor="middle">photoelectric multiplication, O(N) devices, no state</text>
       </svg>
-      <ul>
-        <li>Attention multiplies activations by activations. A mesh would be rewritten every token; stream both operands into a detector instead</li>
-        <li>Attention is <span class="alert">memory-bound</span>: \(\sim1\) MAC per byte in decode</li>
-        <li>Mesh for the MLP, streaming unit for attention. Decode is left to memory</li>
+      <ul class="small" style="margin-top:8px">
+        <li>Attention multiplies data by data; a mesh would be rewritten every token. Stream both operands into a detector instead</li>
+        <li>Attention is <span class="alert">memory-bound</span> in decode. Mesh for the MLP, streaming unit for attention, decode left to memory</li>
       </ul>
     </div>
   </div>

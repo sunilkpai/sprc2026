@@ -104,3 +104,7 @@
 .reveal .steps .c3 { border-top: 4px solid var(--moss); }
 .reveal .tag { display: inline-block; background: var(--amber); color: var(--paper); font-size: 0.5em; padding: 1px 8px; border-radius: 3px; vertical-align: middle; margin-left: 8px; }
 .reveal .appendix h2 { background: var(--slate); }
+
+/* large comparison table */
+.reveal table.big { font-size: 1.15em; width: 100%; margin-top: 8px; }
+.reveal table.big th, .reveal table.big td { padding: 9px 12px; }
