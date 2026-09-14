@@ -363,18 +363,90 @@
   <aside class="notes">[5:45] Let them run for ten seconds. What to say over them: every frame is 15 stage moves and three optical passes; the boundary in the last panel is drawn by the chip's own parameters evaluated on the computer.</aside>
 </section>
 
+<!-- ================================================================ conclusions -->
+<section style="font-size:1.1em">
+  <h2>What the paper showed, and what is new today</h2>
+  <div class="body cols">
+    <div>
+      <div class="lead">2023: the paper</div>
+      <ul>
+        <li>Backpropagation on an optical chip, for the first time</li>
+        <li>Gradients of every phase from three optical passes, of the device you have</li>
+        <li>An analog update: no digital readback of \(N^2\) parameters</li>
+        <li>Energy model: conversions dominate, not photons</li>
+      </ul>
+    </div>
+    <div>
+      <div class="lead">2026: what changed</div>
+      <ul>
+        <li>The workload is transformers: the mesh fits the MLP, in prefill and training; decode is memory-bound</li>
+        <li>Inference went to 4 bits; training still needs bf16-class activations</li>
+        <li>Envise shipped a \(128^2\) crossbar at \(1.2\,\mathrm{pJ/op}\); Jalapeño does MXFP4 at \(52\,\mathrm{fJ/op}\)</li>
+        <li>Area, not energy, is the mesh's problem: \(10^{-2}\,\mathrm{mm}^2\) per weight</li>
+      </ul>
+    </div>
+  </div>
+  <div class="src" style="margin:8px 32px 0">Energy per op, the full tradeoff table, and what I would build are in the backup slides.</div>
+  <aside class="notes">[6:30] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that already said conversions would dominate. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide crossbar and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
+</section>
+
+<!-- ================================================================ other applications -->
+<section style="font-size:1.12em">
+  <h2>Other applications: quantum and analog signal processing</h2>
+  <div class="body">
+    <div class="cols">
+      <div>
+        <div class="block"><div class="bt">Quantum photonics: exactness first</div><div class="bb"><ul>
+          <li>Meshes are the interferometers, switches, and multiplexers of linear-optical quantum computers (Carolan 2015; Xanadu and silicon platforms, <em>Nature</em> 2025)</li>
+          <li>No DAC or ADC in the data path: photons in, detector clicks out</li>
+          <li>Loss, extinction, and phase accuracy are what matter; accelerator calibration methods transfer directly</li>
+        </ul></div></div>
+      </div>
+      <div>
+        <div class="block"><div class="bt">Analog signal processing and sensing</div><div class="bb"><ul>
+          <li>Mode sorting and unscrambling for free-space and multimode links (Miller 2013; Annoni 2017)</li>
+          <li>RF photonic filtering and beamforming, lidar wavefront control, optical switching</li>
+          <li>The signal is already light: conversions only at the boundary, weights updated at kHz by feedback</li>
+        </ul></div></div>
+      </div>
+    </div>
+    <div class="cols" style="align-items:center">
+      <div style="flex:0 0 58%"><img src="media/bintree_fig1cd.png" alt="Self-configuration of a universal network and of a binary-tree vector unit, Fig. 1c and 1d of Pai et al. 2022" style="max-height:230px;width:100%;object-fit:contain"></div>
+      <div class="small"><strong>The transferable toolkit</strong>: self-correcting binary-tree cascades, power monitoring with two detectors instead of taps, and in situ gradient measurement. Built to make an accelerator trustworthy; worth more where the mesh <span class="alert">is</span> the signal path. <span class="src">Pai et al., arXiv:2210.16935; JSTQE 2020; Science 2023.</span></div>
+    </div>
+  </div>
+  <aside class="notes">[8:00] Do not land a conclusion here. Just show that the same three papers have an obvious home in two fields that never needed the GPU comparison.</aside>
+</section>
+
+<!-- ================================================================ questions -->
+<section class="standout">
+  <h1>Questions?</h1>
+  <div class="body cols" style="align-items:center">
+    <div class="w36 center"><img class="qr" src="media/qr.svg" alt="QR code linking to these slides"><div class="small" style="margin-top:8px;color:#EEF2F6">these slides</div></div>
+    <div class="links">
+      &#127760;&ensp;<a href="https://sunilkpai.github.io/sprc2026/">sunilkpai.github.io/sprc2026</a> (slides, notes, scripts)<br>
+      &#9998;&ensp;<a href="https://sunilkpai.github.io/blog/">sunilkpai.github.io/blog</a><br>
+      &#128188;&ensp;linkedin.com/in/sunil-pai-96286539<br>
+      &#128038;&ensp;@sunilkpai<br>
+      &#127891;&ensp;Google Scholar: Sunil Pai<br>
+      &#9993;&ensp;sunilkpai93@gmail.com
+    </div>
+  </div>
+  <aside class="notes">[9:00] Leave the QR up during questions. It goes to the slides; the repo with the SM analysis and scripts is linked from the deck's README.</aside>
+</section>
+
 <!-- ================================================================ energy breakdown -->
-<section>
-  <h2>Energy per operation: the 2023 model, Envise, and a 4-bit projection</h2>
+<section class="appendix">
+  <h2>Energy per operation: the 2023 model, Envise, and a 4-bit projection <span class="tag">backup</span></h2>
   <div class="body">
     <img src="media/energy_breakdown.svg" alt="Stacked per-component energy bars for inference and training, projected from the 2023 model, with Envise measured and digital reference lines" style="max-height:600px; width:100%">
   </div>
-  <aside class="notes">[6:30] All photonic bars are projected from the 2023 model; Envise is measured. Say it. Chart basis: Science 2023 SM Tables S1 to S4 at N equals 128 and 1 gigahertz. Envise: 78 watts plus 1.6 watts optical at 65.5 TOPS, 0.25 watts in the encode path including its weight DACs, from the Nature 2025 SI. Assumptions behind the 4-bit projection: ADC energy scales as 2 to the bits (Walden); the Nature SI's thermal-limited 4 to the bits would be 16 times more optimistic. Digital op divided by 3 is the B200 FP4 to H100 INT8 ratio at the wall. Optical power scales as 4 to the bits from shot noise, so 4-bit inference needs 256 times less light and 12-bit gradient readout needs 256 times more; that is the 3.4 picojoule per op bar, 3 picojoules of it laser. Training runs bf16 activations, and bf16 is an 8-bit significand with an 8-bit exponent; the per-vector normalisation in the 2023 protocol supplies a block exponent, so the analog path carries the 8-bit mantissa and needs an Envise-class 11-bit ADC for accumulation headroom, not a 16-bit converter. That is the 141 femtojoule bar: the ADC term goes from 22 to 110 and everything else stays. It is 1.3 times under Cerebras at FP16 and 5 times under an H100, and it loses per-element exponents, which is the honest caveat. The gradient readout is batch-integrated, which is what the SM's analog update does: the tap current is integrated over the batch and digitised once per phase shifter per batch, so a slow 12 to 16 bit ADC at f over M is enough and the average gains half of log2 M bits, six at M equals 4096. Realistic M today is thousands of tokens per weight per device for an LLM micro-batch and millions of positions per layer for a CNN, so the SM's 16 to 256 was conservative. Two ADCs, two rates: activations at 8 bits and 1 gigasample, gradients at 12 plus bits and megasamples. Segmented phase shifters everywhere means every weight cell needs b digital lines from the control die: 65 thousand contacts at 4 bits for a 128 mesh. Baselines: B200 FP8 at 220 and FP4 at 110 femtojoules per op, OpenAI's Jalapeno MXFP4 ASIC at 52, all peak over package power; Cerebras WSE-3 at 180 for FP16. Say the activation point: a mesh's weight precision is free per op, because a phase is held rather than re-encoded, so W4A8, the format Kimi K3 and DeepSeek actually run, costs the same as W8A8: 45 femtojoules, five times under B200 FP8. Only if the activations go to four bits does the ADC collapse and the bar fall to 14. The honest gap at four bits is under four times before any shell is counted. Three things to say. One: the 2023 tables already predicted that conversions would dominate, and Envise confirmed it with a factor of 40 between the tensor core and the package. Two: 4-bit inference is where the optics win on paper. Three: training gets a different gift, time: integrate the gradient over the batch and precision comes from averaging, not from light or from a fast ADC. Systematic tap errors do not average, so calibration is the price.</aside>
+  <aside class="notes">Backup. All photonic bars are projected from the 2023 model; Envise is measured. Say it. Chart basis: Science 2023 SM Tables S1 to S4 at N equals 128 and 1 gigahertz. Envise: 78 watts plus 1.6 watts optical at 65.5 TOPS, 0.25 watts in the encode path including its weight DACs, from the Nature 2025 SI. Assumptions behind the 4-bit projection: ADC energy scales as 2 to the bits (Walden); the Nature SI's thermal-limited 4 to the bits would be 16 times more optimistic. Digital op divided by 3 is the B200 FP4 to H100 INT8 ratio at the wall. Optical power scales as 4 to the bits from shot noise, so 4-bit inference needs 256 times less light and 12-bit gradient readout needs 256 times more; that is the 3.4 picojoule per op bar, 3 picojoules of it laser. Training runs bf16 activations, and bf16 is an 8-bit significand with an 8-bit exponent; the per-vector normalisation in the 2023 protocol supplies a block exponent, so the analog path carries the 8-bit mantissa and needs an Envise-class 11-bit ADC for accumulation headroom, not a 16-bit converter. That is the 141 femtojoule bar: the ADC term goes from 22 to 110 and everything else stays. It is 1.3 times under Cerebras at FP16 and 5 times under an H100, and it loses per-element exponents, which is the honest caveat. The gradient readout is batch-integrated, which is what the SM's analog update does: the tap current is integrated over the batch and digitised once per phase shifter per batch, so a slow 12 to 16 bit ADC at f over M is enough and the average gains half of log2 M bits, six at M equals 4096. Realistic M today is thousands of tokens per weight per device for an LLM micro-batch and millions of positions per layer for a CNN, so the SM's 16 to 256 was conservative. Two ADCs, two rates: activations at 8 bits and 1 gigasample, gradients at 12 plus bits and megasamples. Segmented phase shifters everywhere means every weight cell needs b digital lines from the control die: 65 thousand contacts at 4 bits for a 128 mesh. Baselines: B200 FP8 at 220 and FP4 at 110 femtojoules per op, OpenAI's Jalapeno MXFP4 ASIC at 52, all peak over package power; Cerebras WSE-3 at 180 for FP16. Say the activation point: a mesh's weight precision is free per op, because a phase is held rather than re-encoded, so W4A8, the format Kimi K3 and DeepSeek actually run, costs the same as W8A8: 45 femtojoules, five times under B200 FP8. Only if the activations go to four bits does the ADC collapse and the bar fall to 14. The honest gap at four bits is under four times before any shell is counted. Three things to say. One: the 2023 tables already predicted that conversions would dominate, and Envise confirmed it with a factor of 40 between the tensor core and the package. Two: 4-bit inference is where the optics win on paper. Three: training gets a different gift, time: integrate the gradient over the batch and precision comes from averaging, not from light or from a fast ADC. Systematic tap errors do not average, so calibration is the price.</aside>
 </section>
 
 <!-- ================================================================ tradeoffs -->
-<section>
-  <h2>Tradeoffs: a photonic mesh against the best digital chips</h2>
+<section class="appendix">
+  <h2>Tradeoffs: a photonic mesh against the best digital chips <span class="tag">backup</span></h2>
   <div class="body">
     <table class="dense">
       <tr><th style="width:20%"></th><th style="width:42%">photonic mesh, projected from the 2023 model</th><th>best digital, 2026, vendor peak</th></tr>
@@ -388,14 +460,14 @@
     </table>
     <div class="src">Mesh: 2023 SM model, \(N=128\), segmented phase shifters, 5 nm SerDes-class converters; every number in that column is a projection. Digital: vendor peak over package power; Jalapeño node undisclosed, Cerebras peak as quoted. Full table, rack, area and assumptions in the backup.</div>
   </div>
-  <aside class="notes">[7:30] This is the slide to leave up. Read it top to bottom. Energy per op the mesh wins, by four times at four bits before its shell, and by three to four times in training with batch-integrated gradients. Area it loses by two to three orders of magnitude, and that is the row that decides racks: at the 2023 clock a rack of meshes is a thirtieth of an NVL72, and parity needs ten-gigasample converters and sixteen tiles per package. Weights do not fit in silicon, so they stream from HBM like everyone else's. Holding a phase has no clean answer. Envise's electro-optic cells are sub-millimetre with no holding current, but a weight cell only needs zero-to-one amplitude; a mesh phase needs two pi, and at CMOS voltages a depletion shifter is centimetre-class, while a ring gives two pi in ten microns but drifts with wavelength and temperature. MEMS is short and free and unproven. Then the two rows that are not physics: the digital shell, which nobody has built under a picojoule per op yet, and reliability, a million control loops and hourly recalibration on the only chip that exists. Say plainly that every number in the mesh column is projected. The next slide says what I would build.</aside>
+  <aside class="notes">Backup. This is the slide to leave up. Read it top to bottom. Energy per op the mesh wins, by four times at four bits before its shell, and by three to four times in training with batch-integrated gradients. Area it loses by two to three orders of magnitude, and that is the row that decides racks: at the 2023 clock a rack of meshes is a thirtieth of an NVL72, and parity needs ten-gigasample converters and sixteen tiles per package. Weights do not fit in silicon, so they stream from HBM like everyone else's. Holding a phase has no clean answer. Envise's electro-optic cells are sub-millimetre with no holding current, but a weight cell only needs zero-to-one amplitude; a mesh phase needs two pi, and at CMOS voltages a depletion shifter is centimetre-class, while a ring gives two pi in ten microns but drifts with wavelength and temperature. MEMS is short and free and unproven. Then the two rows that are not physics: the digital shell, which nobody has built under a picojoule per op yet, and reliability, a million control loops and hourly recalibration on the only chip that exists. Say plainly that every number in the mesh column is projected. The next slide says what I would build.</aside>
 </section>
 
 
 
 <!-- ================================================================ verdict -->
-<section>
-  <h2>Where light belongs: a photonic MLP engine for training and prefill</h2>
+<section class="appendix">
+  <h2>Where light belongs: a photonic MLP engine for training and prefill <span class="tag">backup</span></h2>
   <div class="body cols" style="font-size:1.15em">
     <div>
       <div class="lead">What to build</div>
@@ -416,52 +488,7 @@
       </ul>
     </div>
   </div>
-  <aside class="notes">[8:15] This is the claim, and I would rather be argued with than agreed with. Build the weight-stationary part of a transformer out of block-multiplexed electro-optic mesh tiles fed from HBM, train it with the in situ gradient integrated over the batch, put attention on a streaming detector, and pool the lasers. It is a training and prefill engine. It is not a decode engine, because decode is memory-bound on every device ever built. Three things are unproven, and they are the three rows at the bottom of the last table: the shell, the phase holding, and the reliability. The one thing it has that nothing digital has is the last line: the chip computes its own gradients.</aside>
-</section>
-
-<!-- ================================================================ questions -->
-<section class="standout">
-  <h1>Questions?</h1>
-  <div class="body cols" style="align-items:center">
-    <div class="w36 center"><img class="qr" src="media/qr.svg" alt="QR code linking to these slides"><div class="small" style="margin-top:8px;color:#EEF2F6">these slides</div></div>
-    <div class="links">
-      &#127760;&ensp;<a href="https://sunilkpai.github.io/sprc2026/">sunilkpai.github.io/sprc2026</a> (slides, notes, scripts)<br>
-      &#9998;&ensp;<a href="https://sunilkpai.github.io/blog/">sunilkpai.github.io/blog</a><br>
-      &#128188;&ensp;linkedin.com/in/sunil-pai-96286539<br>
-      &#128038;&ensp;@sunilkpai<br>
-      &#127891;&ensp;Google Scholar: Sunil Pai<br>
-      &#9993;&ensp;sunilkpai93@gmail.com
-    </div>
-  </div>
-  <aside class="notes">[9:00] Leave the QR up during questions. It goes to the slides; the repo with the SM analysis and scripts is linked from the deck's README.</aside>
-</section>
-
-<!-- ================================================================ other applications -->
-<section class="appendix" style="font-size:1.12em">
-  <h2>Other applications: quantum and analog signal processing <span class="tag">backup</span></h2>
-  <div class="body">
-    <div class="cols">
-      <div>
-        <div class="block"><div class="bt">Quantum photonics: exactness first</div><div class="bb"><ul>
-          <li>Meshes are the interferometers, switches, and multiplexers of linear-optical quantum computers (Carolan 2015; Xanadu and silicon platforms, <em>Nature</em> 2025)</li>
-          <li>No DAC or ADC in the data path: photons in, detector clicks out</li>
-          <li>Loss, extinction, and phase accuracy are what matter; accelerator calibration methods transfer directly</li>
-        </ul></div></div>
-      </div>
-      <div>
-        <div class="block"><div class="bt">Analog signal processing and sensing</div><div class="bb"><ul>
-          <li>Mode sorting and unscrambling for free-space and multimode links (Miller 2013; Annoni 2017)</li>
-          <li>RF photonic filtering and beamforming, lidar wavefront control, optical switching</li>
-          <li>The signal is already light: conversions only at the boundary, weights updated at kHz by feedback</li>
-        </ul></div></div>
-      </div>
-    </div>
-    <div class="cols" style="align-items:center">
-      <div class="w36"><img src="media/parallelnull_a.png" alt="Parallel nullification programming of a feedforward mesh" style="max-height:150px"></div>
-      <div class="small"><strong>The transferable toolkit</strong>: parallel programming of feedforward meshes, power monitoring with two detectors instead of taps, and in situ gradient measurement. Each was built to make an accelerator trustworthy; each is worth more where the mesh <span class="alert">is</span> the signal path. <span class="src">Pai et al., JSTQE 2020; Nanophotonics 2023; Science 2023.</span></div>
-    </div>
-  </div>
-  <aside class="notes">Backup. Do not land a conclusion here. Just show that the same three papers have an obvious home in two fields that never needed the GPU comparison.</aside>
+  <aside class="notes">Backup. This is the claim, and I would rather be argued with than agreed with. Build the weight-stationary part of a transformer out of block-multiplexed electro-optic mesh tiles fed from HBM, train it with the in situ gradient integrated over the batch, put attention on a streaming detector, and pool the lasers. It is a training and prefill engine. It is not a decode engine, because decode is memory-bound on every device ever built. Three things are unproven, and they are the three rows at the bottom of the last table: the shell, the phase holding, and the reliability. The one thing it has that nothing digital has is the last line: the chip computes its own gradients.</aside>
 </section>
 
 <!-- ================================================================ appendix: assumptions -->
