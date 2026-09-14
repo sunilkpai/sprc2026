@@ -34,12 +34,12 @@
   <div class="body cols" style="align-items:center">
     <div class="w40">
       <div class="stat"><div class="n">\(>\$300\mathrm{B}\)</div><div class="d">AI datacenter capex per year, 2025 hyperscaler guidance</div></div>
-      <div class="stat"><div class="n">\(4\% \to 12\%\)</div><div class="d">US electricity to datacenters, 2023 to 2028 projection</div></div>
+      <div class="stat"><div class="n">\(4\% \to 7\text{–}12\%\)</div><div class="d">US electricity to datacenters, 2023 to 2028 (LBNL range)</div></div>
       <div class="stat"><div class="n">\(\mathrm{GW}\)</div><div class="d">single AI campuses now sized in gigawatts</div></div>
     </div>
     <div>
-      <div class="block"><div class="bt">2022: an analog chip that learns with light</div><div class="bb">Photonic mesh, in situ backpropagation, trained on chip. The premise: the multiply is the bottleneck, and light does it for free.</div></div>
-      <div class="block"><div class="bt">2026: AGI-class models, and the workload changed</div><div class="bb">Transformers, inference at 4 bits, decode bound by memory, not multiplies. The cost of intelligence is now an energy and capex problem.</div></div>
+      <div class="block"><div class="bt">2022: an analog chip that learns with light</div><div class="bb">A mesh trained on chip by in situ backpropagation, on the premise that the multiply is the bottleneck.</div></div>
+      <div class="block"><div class="bt">2026: AGI-class models, and the workload changed</div><div class="bb">Transformers, 4-bit inference, decode bound by memory. Intelligence is now an energy and capex problem.</div></div>
       <div class="block"><div class="bt">Purpose of this talk</div><div class="bb">Stimulate a discussion about the role of photonic analog computing in AI, now that the bottlenecks of near-AGI LLM designs are understood: memory, precision, area, and where the multiplies actually are.</div></div>
     </div>
   </div>
@@ -78,7 +78,7 @@
         </g>
         <text x="250" y="190" font-size="14" fill="#16263A" text-anchor="middle"><tspan font-style="italic">y</tspan> = U(<tspan font-style="italic">θ</tspan>, <tspan font-style="italic">φ</tspan>) <tspan font-style="italic">x</tspan>&#8195;&#8195;N(N−1)/2 MZIs</text>
       </svg>
-      <video src="media/mzi_nullify.mp4" data-autoplay autoplay loop muted playsinline style="max-height:170px; margin-top:4px"></video>
+      <video src="media/mzi_nullify.mp4" data-autoplay autoplay loop muted playsinline style="max-height:200px; margin-top:4px"></video>
       <p class="small" style="margin-top:6px">An MZI: \(\phi\), coupler, \(\theta\), coupler. Sweep \(\theta,\phi\) and all the light goes to one port. A mesh of them is <span class="alert">any</span> \(N\times N\) unitary.</p>
     </div>
     <div>
@@ -204,7 +204,7 @@
       <ul>
         <li>A <strong>token</strong> is a word piece, a vector of length \(d\) (\(8192\) for a 70B model), through \(80\) of these blocks</li>
         <li><strong>Green</strong>: weights that never change at inference. <strong>Amber</strong>: the token against every earlier one, from the <strong>KV cache</strong></li>
-        <li>In current models the MLP is <strong>roughly half the MACs per token</strong>; attention takes the other half at long context. Training looks like prefill, thousands of tokens per weight</li>
+        <li>In current models the MLP is <strong>a third to a half of the MACs per token</strong>; attention takes the rest at long context (backup). Training looks like prefill, thousands of tokens per weight</li>
         <li><span class="alert">The mesh fits prefill and training.</span> Decode is a memory problem for any multiplier</li>
       </ul>
     </div>
@@ -212,6 +212,24 @@
   <aside class="notes">[1:45] Definitions first, this is a photonics room. A token is a word piece; the model turns it into a vector of eight thousand numbers and pushes it through eighty copies of the block on the left. Green boxes are ordinary matrix-times-vector with a weight matrix that never changes during inference; that is the thing an optical mesh can hold. The amber box is attention: the new token looks back at every earlier token in the conversation, whose keys and values were computed earlier and are kept in memory, the KV cache. On the right, the two regimes. Prefill is reading the prompt: all its tokens go through at once, so each weight is fetched once and reused for every token, and the chip is busy multiplying. That is the mesh's case, and training looks the same with thousands of tokens per weight. Decode is writing the answer: one token per step, and every step reads every weight and the whole cache from memory to produce a single vector, about one multiply per byte fetched. No multiplier helps there, optical or not. Photonics was adopted in the datacenter for moving numbers between chips; the multiply stayed electronic.</aside>
 </section>
 
+<!-- ================================================================ what changed -->
+<section style="font-size:1.32em">
+  <h2>What changed after 2022?</h2>
+  <div class="body">
+    <div class="cols">
+      <div>
+        <div class="block"><div class="bt">Precision collapsed</div><div class="bb">FP8 in 2022, FP4 in 2024. Inference walked into the regime analog optics always needed.</div></div>
+        <div class="block"><div class="bt">Attention moved the bottleneck</div><div class="bb">The MLP is compute-bound; attention in decode is bandwidth-bound. A faster multiply helps the first and not the second.</div></div>
+      </div>
+      <div>
+        <div class="block"><div class="bt">Inference market share is growing</div><div class="bb">ChatGPT, then test-time compute. Inference is a rising share of deployed FLOPs and spend; training is not shrinking, it is being outgrown.</div></div>
+        <div class="block"><div class="bt">ADC efficiency hasn't improved</div><div class="bb">Conversion energy per sample has barely moved while logic kept scaling, and every activation pays it twice.</div></div>
+      </div>
+    </div>
+    <p class="verdict">Four conditions for optics to win: wide fan-in <span class="slate">(still hard)</span>, low precision <span class="moss">(now true)</span>, static weights <span class="moss">(true for inference)</span>, data already analog <span class="slate">(not in a datacenter)</span>.</p>
+  </div>
+  <aside class="notes">[2:30] Two of the four conditions flipped in our favor since 2022. The two that did not are both about where the data lives. Hold that: it is why the verdict at the end is about prefill and training, not decode.</aside>
+</section>
 <!-- ================================================================ theory -->
 <section>
   <h2>Optical neural network theory: three ways to hold a matrix</h2>
@@ -278,10 +296,10 @@
         </table>
       </div>
     </div>
-    <p class="center" style="margin-top:10px">All three pay for conversions at the edge, \(O(N)\) per \(N^2\) MACs. They differ in what holds the weight: a phase, a cell, or nothing.</p>
+    <p class="center" style="margin-top:10px">All three pay for <strong>conversions at the edge</strong>, \(O(N)\) per \(N^2\) MACs, the term the energy slide is about. They differ in what holds the weight: a phase, a cell, or nothing.</p>
     <p class="center small slate" style="margin-top:2px">The nonlinearity \(f\) stays electronic here. Optical nonlinearities exist, electro-optic, saturable, all-optical, and are a talk of their own; not covered today.</p>
   </div>
-  <aside class="notes">[2:30] Three ways to make light do a matrix. The mesh holds the weights as phases and does the multiply and the sum by interference, so it needs coherence across the whole array and one interferometer per weight. The crossbar, which is what Envise actually is, holds the weights as attenuation cells, broadcasts the input, and sums photocurrents on a wire, so there is no phase to hold but still a device per weight. Temporal mapping holds nothing: the weights arrive as pulses from memory and multiply the input at a detector, so the silicon is order N and the cost moves to memory bandwidth. All three convert at the edge, order N per N squared multiplies; that shared term is the energy story later. Say once that the nonlinearity stays electronic: optical nonlinearities, electro-optic, saturable, all-optical, are real and interesting, and the 2023 SM even sketches a low-loss distributed one, but they are a separate talk and none of the energy numbers here depend on them. What differs is where the weight lives, and that decides footprint, stability, training, and what happens in decode.</aside>
+  <aside class="notes">[3:00] Three ways to make light do a matrix. The mesh holds the weights as phases and does the multiply and the sum by interference, so it needs coherence across the whole array and one interferometer per weight. The crossbar, which is what Envise actually is, holds the weights as attenuation cells, broadcasts the input, and sums photocurrents on a wire, so there is no phase to hold but still a device per weight. Temporal mapping holds nothing: the weights arrive as pulses from memory and multiply the input at a detector, so the silicon is order N and the cost moves to memory bandwidth. All three convert at the edge, order N per N squared multiplies; that shared term is the energy story later. Say once that the nonlinearity stays electronic: optical nonlinearities, electro-optic, saturable, all-optical, are real and interesting, and the 2023 SM even sketches a low-loss distributed one, but they are a separate talk and none of the energy numbers here depend on them. What differs is where the weight lives, and that decides footprint, stability, training, and what happens in decode.</aside>
 </section>
 
 <!-- ================================================================ method -->
@@ -296,9 +314,9 @@
     </div>
     <div class="eq center small" style="margin:4px 0 0">\[ \underbrace{\textcolor{#3A8FB7}{\frac{\partial\mathcal{L}}{\partial\eta} = -\,\mathrm{Im}\!\left(x_\eta\,x_{\mathrm{adj},\eta}\right)}}_{\textcolor{#3A8FB7}{\text{adjoint method}}} \;=\; \underbrace{\tfrac12\left(p_{\eta,\mathrm{sum}} - p_\eta - p_{\eta,\mathrm{adj}}\right)}_{\textcolor{#5B6B7A}{\text{digital subtraction}}} \;=\; \underbrace{\textcolor{#D9821E}{\tfrac14\left(p_{\eta,+} - p_{\eta,-}\right)}}_{\textcolor{#D9821E}{\text{experimental implementation}}} \]</div>
     
-    <div class="src" style="margin-top:0">Fig. 1E, Pai et al., <em>Science</em> 380, 398 (2023).</div>
+    <p class="small center" style="margin:4px 0 0">This is what makes a mesh trainable at all: the gradient of every phase, of the device you have, without a model of it. Fig. 1E, Pai et al., <em>Science</em> 380, 398 (2023).</p>
   </div>
-  <aside class="notes">[3:30] Point at the three colored paths. Forward, backward, sum. The gradient is a power measurement: interference between the forward field and the back-propagated error at each phase shifter, exactly the adjoint method from inverse design, and it does not care about fabrication error because the chip is doing the differentiation. Third formula is the analog version: toggle the adjoint phase, high-pass filter, done.</aside>
+  <aside class="notes">[4:00] Point at the three colored paths. Forward, backward, sum. The gradient is a power measurement: interference between the forward field and the back-propagated error at each phase shifter, exactly the adjoint method from inverse design, and it does not care about fabrication error because the chip is doing the differentiation. Third formula is the analog version: toggle the adjoint phase, high-pass filter, done.</aside>
 </section>
 
 <!-- ================================================================ apparatus -->
@@ -310,6 +328,7 @@
       <ul class="xsmall" style="margin-top:8px">
         <li><strong>A, B</strong>: 15 MZIs, TiN heaters, a tap at every shifter, an IR camera on a stage</li>
         <li><strong>C to F</strong>: the <span class="alert">analog update</span>. Toggle \(\zeta\), integrate the AC tap power, write the voltage</li>
+        <li>\(1000\) iterations took \(31\) hours: all of it microscope-stage motion, none of it physics</li>
       </ul>
     </div>
     <div>
@@ -318,27 +337,28 @@
       <div class="src">Fig. 2 and Fig. S1, Pai et al. (2023). Ring and moons trained on chip to \(90\) to \(98\%\).</div>
     </div>
   </div>
-  <aside class="notes">[4:30] This is what a research demonstration looks like: the detector is a camera, the "ADC" is a microscope stage, and the phase shifters are heaters at 50 milliwatts each. Panels C to F are the part to dwell on: the analog update. Toggle the adjoint phase, the AC part of the tap power is the gradient, integrate it over the batch, write the voltage. That is the batch-gradient story on the energy slide, demonstrated on one MZI with op-amps. Every number in the energy model later replaces one of these with an integrated part. The point of the slide is that the protocol worked on a chip with real loss and real crosstalk.</aside>
+  <aside class="notes">[5:00] This is what a research demonstration looks like: the detector is a camera, the "ADC" is a microscope stage, and the phase shifters are heaters at 50 milliwatts each. Panels C to F are the part to dwell on: the analog update. Toggle the adjoint phase, the AC part of the tap power is the gradient, integrate it over the batch, write the voltage. That is the batch-gradient story on the energy slide, demonstrated on one MZI with op-amps. Every number in the energy model later replaces one of these with an integrated part. The point of the slide is that the protocol worked on a chip with real loss and real crosstalk.</aside>
 </section>
 
 <!-- ================================================================ training movies -->
 <section data-autoplay>
   <h2>On-chip training, as it happened</h2>
+  <p class="body" style="margin:0 0 6px"><strong>The first demonstration of backpropagation on an optical chip.</strong> Watch the tap powers in the three passes, then the boundary forming in the last panel.</p>
   <div class="body cols">
     <div>
       <figure>
-        <video src="media/movie_s1_circle.mov" controls muted loop playsinline preload="auto" style="max-height:520px" data-autoplay></video>
+        <video src="media/movie_s1_circle.mov" controls muted loop playsinline preload="auto" style="max-height:470px" data-autoplay></video>
         <figcaption>Movie S1: circle. \(1000\) iterations, \(31\) hours.</figcaption>
       </figure>
     </div>
     <div>
       <figure>
-        <video src="media/movie_s2_moons.mov" controls muted loop playsinline preload="auto" style="max-height:520px" data-autoplay></video>
+        <video src="media/movie_s2_moons.mov" controls muted loop playsinline preload="auto" style="max-height:470px" data-autoplay></video>
         <figcaption>Movie S2: moons. Forward, backward, sum, then the learned boundary.</figcaption>
       </figure>
     </div>
   </div>
-  <aside class="notes">[5:15] Let them run for ten seconds. What to say over them: every frame is 15 stage moves and three optical passes; the boundary in the last panel is drawn by the chip's own parameters evaluated on the computer.</aside>
+  <aside class="notes">[5:45] Let them run for ten seconds. What to say over them: every frame is 15 stage moves and three optical passes; the boundary in the last panel is drawn by the chip's own parameters evaluated on the computer.</aside>
 </section>
 
 <!-- ================================================================ energy breakdown -->
@@ -347,9 +367,9 @@
   <div class="body">
     <img src="media/energy_breakdown.svg" alt="Stacked per-component energy bars for inference and training" style="max-height:470px">
     <div class="src">2023 SM model, \(N=128\), segmented phase shifters, no DACs; Envise from the Nature 2025 SI.</div>
-    <p class="small">Activations set the cost. Inference W4A8 is the \(45\,\mathrm{fJ/op}\) bar, \(5\times\) under B200 FP8; W4A4 is \(14\). Training at bf16-class activations, an 8-bit mantissa with a block exponent and an 11-bit ADC, is \(141\,\mathrm{fJ/op}\) at \(M=4096\), \(1.3\times\) under Cerebras FP16 and \(5\times\) under H100 FP16.</p>
+    <p class="small">All photonic bars are <strong>projected</strong> from the 2023 model. Inference W4A8 is \(45\,\mathrm{fJ/op}\), \(5\times\) under B200 FP8; W4A4 is \(14\), a shot-noise limit rather than a design. Training at bf16-class activations (8-bit mantissa, block exponent, 11-bit ADC) is \(141\,\mathrm{fJ/op}\) at \(M=4096\), \(1.3\times\) under Cerebras FP16: the 2023 analog update, integrated over the batch.</p>
   </div>
-  <aside class="notes">[6:15] Chart basis: Science 2023 SM Tables S1 to S4 at N equals 128 and 1 gigahertz. Envise: 78 watts plus 1.6 watts optical at 65.5 TOPS, 0.25 watts in the encode path including its weight DACs, from the Nature 2025 SI. Assumptions behind the 4-bit projection: ADC energy scales as 2 to the bits (Walden); the Nature SI's thermal-limited 4 to the bits would be 16 times more optimistic. Digital op divided by 3 is the B200 FP4 to H100 INT8 ratio at the wall. Optical power scales as 4 to the bits from shot noise, so 4-bit inference needs 256 times less light and 12-bit gradient readout needs 256 times more; that is the 3.4 picojoule per op bar, 3 picojoules of it laser. Training runs bf16 activations, and bf16 is an 8-bit significand with an 8-bit exponent; the per-vector normalisation in the 2023 protocol supplies a block exponent, so the analog path carries the 8-bit mantissa and needs an Envise-class 11-bit ADC for accumulation headroom, not a 16-bit converter. That is the 141 femtojoule bar: the ADC term goes from 22 to 110 and everything else stays. It is 1.3 times under Cerebras at FP16 and 5 times under an H100, and it loses per-element exponents, which is the honest caveat. The gradient readout is batch-integrated, which is what the SM's analog update does: the tap current is integrated over the batch and digitised once per phase shifter per batch, so a slow 12 to 16 bit ADC at f over M is enough and the average gains half of log2 M bits, six at M equals 4096. Realistic M today is thousands of tokens per weight per device for an LLM micro-batch and millions of positions per layer for a CNN, so the SM's 16 to 256 was conservative. Two ADCs, two rates: activations at 8 bits and 1 gigasample, gradients at 12 plus bits and megasamples. Segmented phase shifters everywhere means every weight cell needs b digital lines from the control die: 65 thousand contacts at 4 bits for a 128 mesh. Baselines: B200 FP8 at 220 and FP4 at 110 femtojoules per op, OpenAI's Jalapeno MXFP4 ASIC at 52, all peak over package power; Cerebras WSE-3 at 180 for FP16. Say the activation point: a mesh's weight precision is free per op, because a phase is held rather than re-encoded, so W4A8, the format Kimi K3 and DeepSeek actually run, costs the same as W8A8: 45 femtojoules, five times under B200 FP8. Only if the activations go to four bits does the ADC collapse and the bar fall to 14. The honest gap at four bits is under four times before any shell is counted. Three things to say. One: the 2023 tables already predicted that conversions would dominate, and Envise confirmed it with a factor of 40 between the tensor core and the package. Two: 4-bit inference is where the optics win on paper. Three: training gets a different gift, time: integrate the gradient over the batch and precision comes from averaging, not from light or from a fast ADC. Systematic tap errors do not average, so calibration is the price.</aside>
+  <aside class="notes">[6:30] Chart basis: Science 2023 SM Tables S1 to S4 at N equals 128 and 1 gigahertz. Envise: 78 watts plus 1.6 watts optical at 65.5 TOPS, 0.25 watts in the encode path including its weight DACs, from the Nature 2025 SI. Assumptions behind the 4-bit projection: ADC energy scales as 2 to the bits (Walden); the Nature SI's thermal-limited 4 to the bits would be 16 times more optimistic. Digital op divided by 3 is the B200 FP4 to H100 INT8 ratio at the wall. Optical power scales as 4 to the bits from shot noise, so 4-bit inference needs 256 times less light and 12-bit gradient readout needs 256 times more; that is the 3.4 picojoule per op bar, 3 picojoules of it laser. Training runs bf16 activations, and bf16 is an 8-bit significand with an 8-bit exponent; the per-vector normalisation in the 2023 protocol supplies a block exponent, so the analog path carries the 8-bit mantissa and needs an Envise-class 11-bit ADC for accumulation headroom, not a 16-bit converter. That is the 141 femtojoule bar: the ADC term goes from 22 to 110 and everything else stays. It is 1.3 times under Cerebras at FP16 and 5 times under an H100, and it loses per-element exponents, which is the honest caveat. The gradient readout is batch-integrated, which is what the SM's analog update does: the tap current is integrated over the batch and digitised once per phase shifter per batch, so a slow 12 to 16 bit ADC at f over M is enough and the average gains half of log2 M bits, six at M equals 4096. Realistic M today is thousands of tokens per weight per device for an LLM micro-batch and millions of positions per layer for a CNN, so the SM's 16 to 256 was conservative. Two ADCs, two rates: activations at 8 bits and 1 gigasample, gradients at 12 plus bits and megasamples. Segmented phase shifters everywhere means every weight cell needs b digital lines from the control die: 65 thousand contacts at 4 bits for a 128 mesh. Baselines: B200 FP8 at 220 and FP4 at 110 femtojoules per op, OpenAI's Jalapeno MXFP4 ASIC at 52, all peak over package power; Cerebras WSE-3 at 180 for FP16. Say the activation point: a mesh's weight precision is free per op, because a phase is held rather than re-encoded, so W4A8, the format Kimi K3 and DeepSeek actually run, costs the same as W8A8: 45 femtojoules, five times under B200 FP8. Only if the activations go to four bits does the ADC collapse and the bar fall to 14. The honest gap at four bits is under four times before any shell is counted. Three things to say. One: the 2023 tables already predicted that conversions would dominate, and Envise confirmed it with a factor of 40 between the tensor core and the package. Two: 4-bit inference is where the optics win on paper. Three: training gets a different gift, time: integrate the gradient over the batch and precision comes from averaging, not from light or from a fast ADC. Systematic tap errors do not average, so calibration is the price.</aside>
 </section>
 
 <!-- ================================================================ tradeoffs -->
@@ -357,41 +377,46 @@
   <h2>Tradeoffs: a photonic mesh against the best digital chips</h2>
   <div class="body">
     <table class="dense">
-      <tr><th style="width:22%"></th><th style="width:41%">photonic mesh, 2023 model projected</th><th>best digital, 2026</th></tr>
-      <tr><td>energy per op, inference</td><td>\(45\,\mathrm{fJ}\) at W4A8, \(14\) at W4A4; multiply engine only</td><td>B200 FP8 \(220\,\mathrm{fJ}\), FP4 \(110\); Jalapeño MXFP4 \(52\)</td></tr>
-      <tr><td>energy per op, training</td><td>\(141\,\mathrm{fJ}\) at bf16-class activations (8-bit mantissa, block exponent, 11-bit ADC); \(53\) at A8</td><td>Cerebras FP16 \(184\,\mathrm{fJ}\); H100 FP16 \(707\)</td></tr>
-      <tr><td>silicon per weight</td><td>\(10^{-2}\,\mathrm{mm}^2\), one interferometer per weight</td><td>\(10^{-4}\) GPU, \(10^{-5}\) Cerebras SRAM</td></tr>
-      <tr><td>throughput per \(\mathrm{mm}^2\)</td><td>\(0.05\) to \(0.2\,\mathrm{TOPS}\) realised; \(\sim1\) at \(10\,\mathrm{GS/s}\)</td><td>B200 \(5.6\,\mathrm{TOPS}\)</td></tr>
-      <tr><td>weights live in</td><td>\(86\mathrm{k}\) per reticle, the rest streamed from HBM</td><td>HBM4 \(216\,\mathrm{GiB}\); Cerebras \(44\,\mathrm{GB}\) on wafer</td></tr>
-      <tr><td>package, cooling</td><td>\(50\) to \(100\,\mathrm{W}\), air; lasers pooled, water-cooled</td><td>\(700\,\mathrm{W}\) to \(1\,\mathrm{kW}\), liquid</td></tr>
-      <tr><td>ops per rack</td><td>\(22\,\mathrm{POPS}\) at \(1\,\mathrm{GS/s}\); parity at \(10\,\mathrm{GS/s}\), 16 tiles per package</td><td>NVL72 \(720\,\mathrm{POPS}\), \(120\,\mathrm{kW}\)</td></tr>
-      <tr><td>precision</td><td>4 to 8 bits; gradients gain \(\tfrac12\log_2 M\) bits by integration</td><td>FP4, FP8 inference; BF16 training</td></tr>
-      <tr><td>holding a weight</td><td>thermal \(800\,\mathrm{W}\) per mesh. EO holds a crossbar\'s \(0\) to \(1\) weight in a sub-mm cell; a mesh phase needs \(2\pi\): depletion cm-class, rings drift. MEMS unproven</td><td>SRAM and HBM, solved</td></tr>
-      <tr><td>training on chip</td><td>in situ: every gradient in three optical passes</td><td>digital backprop</td></tr>
-      <tr><td>where it fits</td><td><span class="alert">MLP and projections, prefill and training</span>; attention streams; decode is memory-bound</td><td>everything, today</td></tr>
+      <tr><th style="width:20%"></th><th style="width:42%">photonic mesh, projected from the 2023 model</th><th>best digital, 2026, vendor peak</th></tr>
+      <tr><td>energy per op, inference</td><td>\(45\,\mathrm{fJ}\) at W4A8; \(14\) at W4A4 (shot-noise limit). Multiply engine only</td><td>B200 FP8 \(220\), FP4 \(110\); Jalapeño MXFP4 \(52\)</td></tr>
+      <tr><td>energy per op, training</td><td>\(141\,\mathrm{fJ}\), bf16-class activations as 8-bit mantissa plus block exponent, gradients integrated over the batch</td><td>Cerebras FP16 \(184\); H100 FP16 \(707\)</td></tr>
+      <tr><td>silicon</td><td>\(10^{-2}\,\mathrm{mm}^2\) per weight; \(0.05\) to \(0.2\,\mathrm{TOPS/mm}^2\) realised, \(\sim1\) at \(10\,\mathrm{GS/s}\)</td><td>\(10^{-4}\) to \(10^{-5}\,\mathrm{mm}^2\) per weight; B200 \(5.6\,\mathrm{TOPS/mm}^2\)</td></tr>
+      <tr><td>rack</td><td>\(22\,\mathrm{POPS}\) at \(1\,\mathrm{GS/s}\); parity needs \(10\,\mathrm{GS/s}\) and 16 tiles per package. \(50\) to \(100\,\mathrm{W}\) packages, air-cooled</td><td>NVL72 \(720\,\mathrm{POPS}\) at \(120\,\mathrm{kW}\), liquid</td></tr>
+      <tr><td>holding a weight</td><td>thermal \(800\,\mathrm{W}\) per mesh; EO short for a \(0\) to \(1\) cell, cm-class for a \(2\pi\) phase; rings drift; MEMS unproven</td><td>SRAM and HBM, solved</td></tr>
+      <tr><td>digital shell</td><td><span class="alert">unknown.</span> Envise measured \(1.19\,\mathrm{pJ/op}\), \(25\times\) its optics; the model needs \(\lesssim50\,\mathrm{fJ/op}\) in 5 nm</td><td>included in the numbers above</td></tr>
+      <tr><td>reliability</td><td>hourly recalibration, \(10^6\) control loops (Envise); no MEMS PDK; sub-kelvin uniformity</td><td>solved</td></tr>
     </table>
-    <div class="src">Mesh: 2023 SM model, \(N=128\), segmented phase shifters, 5 nm SerDes-class converters. Digital: vendor peak over package power. Rack, area, assumptions in the backup.</div>
+    <div class="src">Mesh: 2023 SM model, \(N=128\), segmented phase shifters, 5 nm SerDes-class converters; every number in that column is a projection. Digital: vendor peak over package power; Jalapeño node undisclosed, Cerebras peak as quoted. Full table, rack, area and assumptions in the backup.</div>
   </div>
-  <aside class="notes">[7:15] This is the slide to leave up. Read it top to bottom. Energy per op the mesh wins, by four times at four bits before its shell, and by three to four times in training with batch-integrated gradients. Area it loses by two to three orders of magnitude, and that is the row that decides racks: at the 2023 clock a rack of meshes is a thirtieth of an NVL72, and parity needs ten-gigasample converters and sixteen tiles per package. Weights do not fit in silicon, so they stream from HBM like everyone else's. Holding a phase has no clean answer. Envise's electro-optic cells are sub-millimetre with no holding current, but a weight cell only needs zero-to-one amplitude; a mesh phase needs two pi, and at CMOS voltages a depletion shifter is centimetre-class, while a ring gives two pi in ten microns but drifts with wavelength and temperature. MEMS is short and free and unproven. What the mesh has that nothing digital has is in situ training. Where it fits: the weight-stationary half of a transformer, in prefill and training. Decode is a memory problem for everyone.</aside>
+  <aside class="notes">[7:30] This is the slide to leave up. Read it top to bottom. Energy per op the mesh wins, by four times at four bits before its shell, and by three to four times in training with batch-integrated gradients. Area it loses by two to three orders of magnitude, and that is the row that decides racks: at the 2023 clock a rack of meshes is a thirtieth of an NVL72, and parity needs ten-gigasample converters and sixteen tiles per package. Weights do not fit in silicon, so they stream from HBM like everyone else's. Holding a phase has no clean answer. Envise's electro-optic cells are sub-millimetre with no holding current, but a weight cell only needs zero-to-one amplitude; a mesh phase needs two pi, and at CMOS voltages a depletion shifter is centimetre-class, while a ring gives two pi in ten microns but drifts with wavelength and temperature. MEMS is short and free and unproven. Then the two rows that are not physics: the digital shell, which nobody has built under a picojoule per op yet, and reliability, a million control loops and hourly recalibration on the only chip that exists. Say plainly that every number in the mesh column is projected. The next slide says what I would build.</aside>
 </section>
 
-<!-- ================================================================ what changed -->
-<section style="font-size:1.32em">
-  <h2>What changed after 2022?</h2>
-  <div class="body">
-    <div class="cols">
-      <div>
-        <div class="block"><div class="bt">Precision collapsed</div><div class="bb">FP8 in 2022, FP4 in 2024. Inference walked into the regime analog optics always needed.</div></div>
-        <div class="block"><div class="bt">Attention moved the bottleneck</div><div class="bb">The MLP is compute-bound; attention in decode is bandwidth-bound. A faster multiply helps the first and not the second.</div></div>
-      </div>
-      <div>
-        <div class="block"><div class="bt">Inference market share is growing</div><div class="bb">ChatGPT, then test-time compute. Inference is a rising share of deployed FLOPs and spend; training is not shrinking, it is being outgrown.</div></div>
-        <div class="block"><div class="bt">ADC efficiency hasn't improved</div><div class="bb">Conversion energy per sample has barely moved while logic kept scaling, and every activation pays it twice.</div></div>
-      </div>
+
+
+<!-- ================================================================ verdict -->
+<section>
+  <h2>Where light belongs: a photonic MLP engine for training and prefill</h2>
+  <div class="body cols" style="font-size:1.08em">
+    <div>
+      <div class="lead">What I would build</div>
+      <ul>
+        <li>\(128^2\) EO-mesh tiles, block-multiplexed from HBM, segmented weights on a hybrid-bonded contact array, converters at \(10\,\mathrm{GS/s}\)</li>
+        <li>In situ gradients, integrated over the batch: \(12\)-bit gradients from \(8\)-bit light</li>
+        <li>A streaming photoelectric unit for attention, both operands as pulses</li>
+        <li>Lasers pooled in one water-cooled shelf; air-cooled compute; a TEC per die for stability</li>
+      </ul>
     </div>
-    <p class="verdict">Revisit the four conditions: fan-in large <span class="slate">(still hard)</span>, precision low <span class="moss">(now true)</span>, weights static <span class="moss">(true for inference)</span>, data already analog <span class="slate">(not in a datacenter)</span>.</p>
+    <div>
+      <div class="lead">What it is, and is not</div>
+      <ul>
+        <li><span class="alert">Training and prefill</span> of the weight-stationary third-to-half of a transformer, at \(3\) to \(5\times\) the energy efficiency of the best digital part</li>
+        <li>Not a decode engine. Decode is a memory problem for everyone</li>
+        <li>Not proven: the digital shell under \(50\,\mathrm{fJ/op}\), \(2\pi\) phase holding without heaters, a million loops running for years</li>
+        <li>What nothing digital has: the chip computes its own gradients</li>
+      </ul>
+    </div>
   </div>
-  <aside class="notes">[8:15] Two of the four flipped in our favor. The two that did not are both about where the data lives, which is the hint for the last slide.</aside>
+  <aside class="notes">[8:15] This is the claim, and I would rather be argued with than agreed with. Build the weight-stationary part of a transformer out of block-multiplexed electro-optic mesh tiles fed from HBM, train it with the in situ gradient integrated over the batch, put attention on a streaming detector, and pool the lasers. It is a training and prefill engine. It is not a decode engine, because decode is memory-bound on every device ever built. Three things are unproven, and they are the three rows at the bottom of the last table: the shell, the phase holding, and the reliability. The one thing it has that nothing digital has is the last line: the chip computes its own gradients.</aside>
 </section>
 
 <!-- ================================================================ questions -->
@@ -653,6 +678,28 @@
     </div>
   </div>
   <aside class="notes">Backup. This is the slide for the skeptic in the room. Energy per op can be good and the chip still loses because cost is area, and photonics is a hundred times worse per weight. Opticore's answer is to stop storing weights in silicon at all and stream them as pulses; the price is that weights now move on every use, so they inherit the GPU's arithmetic-intensity problem and an HBM stack. The mesh can play the same game at block level if the phase shifters switch in nanoseconds and the control die can push the bits, and unlike temporal mapping it keeps a stationary device to hang a gradient loop on. Sources: docs/footprint-tdm.md.</aside>
+</section>
+
+<!-- ================================================================ appendix: full tradeoffs -->
+<section class="appendix">
+  <h2>Tradeoffs, full table <span class="tag">backup</span></h2>
+  <div class="body">
+    <table class="dense">
+      <tr><th style="width:22%"></th><th style="width:41%">photonic mesh, 2023 model projected</th><th>best digital, 2026</th></tr>
+      <tr><td>energy per op, inference</td><td>\(45\,\mathrm{fJ}\) at W4A8, \(14\) at W4A4; multiply engine only</td><td>B200 FP8 \(220\,\mathrm{fJ}\), FP4 \(110\); Jalapeño MXFP4 \(52\)</td></tr>
+      <tr><td>energy per op, training</td><td>\(141\,\mathrm{fJ}\) at bf16-class activations (8-bit mantissa, block exponent, 11-bit ADC); \(53\) at A8</td><td>Cerebras FP16 \(184\,\mathrm{fJ}\); H100 FP16 \(707\)</td></tr>
+      <tr><td>silicon per weight</td><td>\(10^{-2}\,\mathrm{mm}^2\), one interferometer per weight</td><td>\(10^{-4}\) GPU, \(10^{-5}\) Cerebras SRAM</td></tr>
+      <tr><td>throughput per \(\mathrm{mm}^2\)</td><td>\(0.05\) to \(0.2\,\mathrm{TOPS}\) realised; \(\sim1\) at \(10\,\mathrm{GS/s}\)</td><td>B200 \(5.6\,\mathrm{TOPS}\)</td></tr>
+      <tr><td>weights live in</td><td>\(86\mathrm{k}\) per reticle, the rest streamed from HBM</td><td>HBM4 \(216\,\mathrm{GiB}\); Cerebras \(44\,\mathrm{GB}\) on wafer</td></tr>
+      <tr><td>package, cooling</td><td>\(50\) to \(100\,\mathrm{W}\), air; lasers pooled, water-cooled</td><td>\(700\,\mathrm{W}\) to \(1\,\mathrm{kW}\), liquid</td></tr>
+      <tr><td>ops per rack</td><td>\(22\,\mathrm{POPS}\) at \(1\,\mathrm{GS/s}\); parity at \(10\,\mathrm{GS/s}\), 16 tiles per package</td><td>NVL72 \(720\,\mathrm{POPS}\), \(120\,\mathrm{kW}\)</td></tr>
+      <tr><td>precision</td><td>4 to 8 bits; gradients gain \(\tfrac12\log_2 M\) bits by integration</td><td>FP4, FP8 inference; BF16 training</td></tr>
+      <tr><td>holding a weight</td><td>thermal \(800\,\mathrm{W}\) per mesh. EO holds a crossbar\'s \(0\) to \(1\) weight in a sub-mm cell; a mesh phase needs \(2\pi\): depletion cm-class, rings drift. MEMS unproven</td><td>SRAM and HBM, solved</td></tr>
+      <tr><td>training on chip</td><td>in situ: every gradient in three optical passes</td><td>digital backprop</td></tr>
+      <tr><td>where it fits</td><td><span class="alert">MLP and projections, prefill and training</span>; attention streams; decode is memory-bound</td><td>everything, today</td></tr>
+    </table>
+  </div>
+  <aside class="notes">Backup: the eleven-row version of the tradeoffs table.</aside>
 </section>
 
 <!-- ================================================================ appendix -->

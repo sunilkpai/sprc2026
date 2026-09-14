@@ -148,10 +148,10 @@ SERIES = [("digital I/O prep", "slate", "digital I/O prep"),
           ("DAC", "amber", "input DAC"),
           ("ADC", "sky", "ADC"),
           ("TIA", "ink2", "TIA (per example)"),
-          ("gradient readout", "sky!50", "gradient readout, once per batch (12-bit ADC + integrator)"),
+          ("gradient readout", "sky!50", "gradient readout, once per batch"),
           ("optical power", "amber!40", "optical power"),
           ("switches", "mist", "switches"),
-          ("rest of system", "ink!25", f"Envise DCI, rest of system: {LM_REST / fJ:.0f}, off scale")]
+          ("rest of system", "ink!25", f"Envise digital, {LM_REST / fJ:.0f}, off scale")]
 YMAX = 460.0
 
 
@@ -302,6 +302,10 @@ def svg_panel(x0, y0, w, h, data, title, ymax, baselines, offscale, ylabel):
     return "\n".join(out)
 
 
+INF_BASE_DECK = [b for b in INF_BASE if b[0].startswith(("B200 FP8", "Jalapeno", "Cerebras"))]
+TRAIN_BASE_DECK = [b for b in TRAIN_BASE if b[0].startswith("Cerebras")]
+
+
 def write_svg(path):
     W, H = 1100, 430
     pw = 470
@@ -309,21 +313,21 @@ def write_svg(path):
              f'font-family="Fira Sans, Helvetica Neue, Arial, sans-serif">',
              '<style>.ttl{font-size:14px;fill:#16263A;text-anchor:middle}.tick{font-size:10.5px;fill:#5B6B7A}'
              '.lab{font-size:12px;fill:#5B6B7A}.grid{stroke:#EEF2F6;stroke-width:1}.axis{stroke:#5B6B7A;stroke-width:1}'
-             '.leg{font-size:11.5px;fill:#16263A}</style>',
+             '.leg{font-size:14px;fill:#16263A}</style>',
              f'<rect width="{W}" height="{H}" fill="#FFFFFF"/>',
-             svg_panel(30, 6, pw, 330, inf, f"Inference: N = {N} MVM", YMAX, INF_BASE, ("Envise meas.",), True),
+             svg_panel(30, 6, pw, 330, inf, f"Inference: N = {N} MVM", YMAX, INF_BASE_DECK, ("Envise meas.",), True),
              svg_panel(30 + pw + 60, 6, pw, 330, train, f"Training: in situ VJP/grad, N = {N}", TRAIN_YMAX,
-                       TRAIN_BASE, (), False)]
+                       TRAIN_BASE_DECK, (), False)]
     # legend
     items = [(PALETTE[c], lab) for k, c, lab in SERIES if k in NONZERO]
-    items = [(c, lab.replace("\\\\ ", " ")) for c, lab in items]
+    items = [(c, lab.replace("\\\\ ", " ").replace("\\ ", " ")) for c, lab in items]
     lines_ = [(PALETTE[st.split("color=")[1].strip()], f"{lab} {v / fJ:.0f}", st.split(",")[0])
-              for lab, v, st, inl in INF_BASE]
+              for lab, v, st, inl in INF_BASE_DECK]
     x, y = 40, 358
     for col, lab in items:
-        parts.append(f'<rect x="{x}" y="{y - 9}" width="11" height="11" fill="{col}"/>')
-        parts.append(f'<text x="{x + 16}" y="{y}" class="leg">{lab}</text>')
-        x += 16 + 6.3 * len(lab) + 22
+        parts.append(f'<rect x="{x}" y="{y - 10}" width="12" height="12" fill="{col}"/>')
+        parts.append(f'<text x="{x + 17}" y="{y}" class="leg">{lab}</text>')
+        x += 17 + 7.6 * len(lab) + 24
         if x > W - 260:
             x, y = 40, y + 20
     x, y = 40, y + 20
@@ -332,7 +336,7 @@ def write_svg(path):
         parts.append(f'<line x1="{x}" y1="{y - 4}" x2="{x + 26}" y2="{y - 4}" stroke="{col}" stroke-width="2" '
                      f'stroke-dasharray="{dash[kind]}"/>')
         parts.append(f'<text x="{x + 32}" y="{y}" class="leg">{lab}</text>')
-        x += 32 + 6.3 * len(lab) + 22
+        x += 32 + 7.6 * len(lab) + 24
         if x > W - 260:
             x, y = 40, y + 20
     parts.append("</svg>")
