@@ -4,8 +4,26 @@
     {
       "name": "slides",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8765", "--directory", "slides"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8765",
+        "--directory",
+        "slides"
+      ],
       "port": 8765
+    },
+    {
+      "name": "defense",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "8766",
+        "--directory",
+        "/Users/sunilpai/Documents/defense"
+      ],
+      "port": 8766
     }
   ]
 }
