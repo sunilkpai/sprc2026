@@ -396,23 +396,23 @@
 <!-- ================================================================ verdict -->
 <section>
   <h2>Where light belongs: a photonic MLP engine for training and prefill</h2>
-  <div class="body cols" style="font-size:1.08em">
+  <div class="body cols" style="font-size:1.15em">
     <div>
-      <div class="lead">What I would build</div>
+      <div class="lead">What to build</div>
       <ul>
-        <li>\(128^2\) EO-mesh tiles, block-multiplexed from HBM, segmented weights on a hybrid-bonded contact array, converters at \(10\,\mathrm{GS/s}\)</li>
-        <li>In situ gradients, integrated over the batch: \(12\)-bit gradients from \(8\)-bit light</li>
-        <li>A streaming photoelectric unit for attention, both operands as pulses</li>
-        <li>Lasers pooled in one water-cooled shelf; air-cooled compute; a TEC per die for stability</li>
+        <li>EO mesh tiles, block-multiplexed from HBM, \(10\,\mathrm{GS/s}\) converters</li>
+        <li>In situ gradients, integrated over the batch</li>
+        <li>A streaming detector for attention</li>
+        <li>Pooled lasers, air-cooled compute</li>
       </ul>
     </div>
     <div>
-      <div class="lead">What it is, and is not</div>
+      <div class="lead">What it is</div>
       <ul>
-        <li><span class="alert">Training and prefill</span> of the weight-stationary third-to-half of a transformer, at \(3\) to \(5\times\) the energy efficiency of the best digital part</li>
-        <li>Not a decode engine. Decode is a memory problem for everyone</li>
-        <li>Not proven: the digital shell under \(50\,\mathrm{fJ/op}\), \(2\pi\) phase holding without heaters, a million loops running for years</li>
-        <li>What nothing digital has: the chip computes its own gradients</li>
+        <li><span class="alert">Training and prefill</span>, at \(3\) to \(5\times\) the best digital efficiency</li>
+        <li>Not a decode engine</li>
+        <li>Unproven: the digital shell, phase holding, reliability</li>
+        <li>Unique: the chip computes its own gradients</li>
       </ul>
     </div>
   </div>
