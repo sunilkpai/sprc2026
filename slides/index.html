@@ -427,7 +427,7 @@
         <li>Transformers: the mesh fits the MLP in prefill and training; decode is memory-bound</li>
         <li>Inference went to 4 bits; training still needs bf16-class activations</li>
         <li>Envise: \(128^2\) crossbar at \(1.2\,\mathrm{pJ/op}\); Jalapeño: MXFP4 at \(52\,\mathrm{fJ/op}\)</li>
-        <li>Area is the mesh's problem, \(10^{-2}\,\mathrm{mm}^2\) per weight: time-division multiplexing at \(10\,\mathrm{GS/s}\) is required</li>
+        <li>Mesh has poor footprint efficiency (\(10^{-2}\,\mathrm{mm}^2\) per weight), requires time-division multiplexing</li>
       </ul>
     </div>
   </div>
