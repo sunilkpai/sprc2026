@@ -391,6 +391,7 @@
       <ul>
         <li>At the 2023 clock a photonic rack is \(33\times\) short of an NVL72 and draws \(1\,\mathrm{kW}\). Parity needs \(10\,\mathrm{GS/s}\) converters and \(16\) tiles per package, and fits the air envelope only at 4 bits</li>
       </ul>
+      <div class="src">Assumptions: \(10\,\mathrm{GS/s}\) converters are 5 nm ADC-based SerDes silicon (Broadcom, Marvell 112G PAM4 DSPs: \(56\,\mathrm{GS/s}\), 6 to 7 ENOB, \(1\) to \(2\,\mathrm{pJ}\) per sample); digital shell in 5 nm. Nodes: B200 4 nm, \(208\,\mathrm{B}\) transistors; Jalapeño 3 nm class, undisclosed; Cerebras WSE-3 5 nm, \(4\,\mathrm{T}\); Groq v1 14 nm; Envise DCI 12 nm, \(50\,\mathrm{B}\). Details in the backup.</div>
     </div>
   </div>
   <aside class="notes">[7:15] This slide is the discussion point. The claim is not that photonics is cold, it is that the kilowatt package and the metre of copper were both choices. Say the thermal-phase-shifter number out loud: 800 watts per mesh is what happens if you keep heaters. Then the honest part: the package power is the digital shell, and Envise measured 25 times the photonic core. If the shell gets to 50 femtojoules per op, an NVL72's worth of ops fits in the power budget of an air-cooled rack. But say the second table out loud: the rack fills with silicon before it fills with watts. A tile is 128 by 128 at two ops per element per clock, so 168 packages of four tiles at the 2023 model's one gigasample per second is 22 peta-ops, a thirtieth of an NVL72, drawing one kilowatt. Parity in the same rack needs ten gigasample converters on every mesh and sixteen tiles per package, a multi-reticle photonic package, and at eight bits that is forty kilowatts again; only the four-bit case lands inside thirty. That is the footprint slide at rack scale. Lasers are the one thing that still wants water, so pool them. Also in the doc but not on the slide: PUE gives a quarter back, air 1.3 to 1.5 against liquid 1.1, and memory and network power do not change.</aside>
@@ -590,6 +591,42 @@
     </div>
   </div>
   <aside class="notes">Backup. Do not land a conclusion here. Just show that the same three papers have an obvious home in two fields that never needed the GPU comparison.</aside>
+</section>
+
+<!-- ================================================================ appendix: assumptions -->
+<section class="appendix">
+  <h2>Assumptions behind the rack and energy tables <span class="tag">backup</span></h2>
+  <div class="body cols xsmall">
+    <div>
+      <div class="lead">Is \(10\,\mathrm{GS/s}\) per lane today's technology?</div>
+      <table>
+        <tr><th>part</th><th>status</th><th class="r">energy</th></tr>
+        <tr><td>input modulators</td><td>Si MZM \(50+\,\mathrm{GBaud}\), TFLN \(100+\); segmented EO encoder on \(b\) SerDes-class lines</td><td class="r">\(10\,\mathrm{fJ}\) to \(1\,\mathrm{pJ}\)</td></tr>
+        <tr><td>4-bit ADC</td><td>flash, \(10\) to \(50\,\mathrm{GS/s}\), routine</td><td class="r">\(0.1\) to \(0.5\,\mathrm{pJ}\)</td></tr>
+        <tr><td>8-bit nominal ADC</td><td>time-interleaved SAR in 112G PAM4 receivers: \(56\,\mathrm{GS/s}\), \(5.5\) to \(6.5\) ENOB, 5 nm (Broadcom, Marvell); coherent DSPs \(130\) to \(200\,\mathrm{GS/s}\) in 5 and 3 nm (Ciena WaveLogic 6, Marvell Orion)</td><td class="r">\(1\) to \(3\,\mathrm{pJ}\)</td></tr>
+        <tr><td>10 to 12-bit ADC</td><td>not at \(10\,\mathrm{GS/s}\): best \(9.4\) ENOB at \(5\,\mathrm{GS/s}\) (Ramkaj 2020, cited by Lightmatter); jitter-limited</td><td class="r">\(32\,\mathrm{pJ}\)</td></tr>
+        <tr><td>photodiodes, TIAs</td><td>25G-class parts; the 2023 model's \(7\,\mathrm{mW}\) TIA is already a \(10\,\mathrm{GS/s}\) part</td><td class="r">\(0.7\,\mathrm{pJ}\)</td></tr>
+        <tr><td>the mesh</td><td>static weights, no clock; rectangular mesh has equal stage count on every path, skew is picoseconds vs a \(100\,\mathrm{ps}\) symbol</td><td class="r">–</td></tr>
+        <tr><td>laser</td><td>\(1\,\mathrm{mW}\) per mode at \(10\,\mathrm{GS/s}\) is \(8\times10^5\) photons per symbol, above the \(\sim10^5\) for 8 bits</td><td class="r">\(100\,\mathrm{fJ}\)</td></tr>
+        <tr><td>digital shell</td><td>\(10\,\mathrm{Tb/s}\) of activations in and out per tile: a coherent-DSP-class 5 nm design. Envise's clock tree stalled at \(500\,\mathrm{MHz}\) in 12 nm</td><td class="r">\(2\) to \(3\,\mathrm{W}\) per tile</td></tr>
+      </table>
+    </div>
+    <div>
+      <div class="lead">Comparators: node, transistors, headline numbers</div>
+      <table>
+        <tr><th>chip</th><th>node</th><th class="r">transistors</th><th>peak, power</th></tr>
+        <tr><td>NVIDIA B200</td><td>TSMC 4NP</td><td class="r">\(208\,\mathrm{B}\)</td><td>\(9\,\mathrm{PFLOPS}\) dense FP4, \(1\,\mathrm{kW}\)</td></tr>
+        <tr><td>NVIDIA H100</td><td>TSMC 4N</td><td class="r">\(80\,\mathrm{B}\)</td><td>\(2\,\mathrm{POPS}\) INT8, \(700\,\mathrm{W}\)</td></tr>
+        <tr><td>OpenAI / Broadcom Jalapeño</td><td>3 nm class, undisclosed</td><td class="r">undisclosed</td><td>\(13.4\,\mathrm{PFLOPS}\) MXFP4, \(700\,\mathrm{W}\); \(216\,\mathrm{GiB}\) HBM4, \(15.4\,\mathrm{TB/s}\)</td></tr>
+        <tr><td>Cerebras WSE-3</td><td>TSMC 5 nm</td><td class="r">\(4\,\mathrm{T}\)</td><td>\(125\,\mathrm{PFLOPS}\) FP16, \(\approx23\,\mathrm{kW}\); \(44\,\mathrm{GB}\) SRAM</td></tr>
+        <tr><td>Groq LPU v1</td><td>GF 14 nm</td><td class="r">\(27\,\mathrm{B}\)</td><td>\(750\,\mathrm{TOPS}\) INT8, \(\approx300\,\mathrm{W}\); \(230\,\mathrm{MB}\) SRAM</td></tr>
+        <tr><td>Lightmatter Envise</td><td>GF 12 nm DCI + GF SiPh</td><td class="r">\(50\,\mathrm{B}\)</td><td>\(65.5\,\mathrm{TOPS}\) ABFP16, \(78\,\mathrm{W}\)</td></tr>
+        <tr><td>2023 chip</td><td>AMF SiPh, TiN heaters</td><td class="r">–</td><td>\(6\times6\) mesh, camera readout</td></tr>
+      </table>
+      <div class="src">Rack rows: \(2\mathrm{U}\) sleds, \(8\) packages each, \(168\) per rack; a tile is a \(128\times128\) SVD pair of meshes at compact-MZI density, about half a reticle; clock is the converter rate. Vendor peak figures over package power; Jalapeño from Hot Chips 2026, Cerebras and Groq from vendor materials, transistor counts as published.</div>
+    </div>
+  </div>
+  <aside class="notes">Backup for the question "is 10 gigasamples real". Four bits: yes, flash converters. Eight bits nominal: yes, at six to seven effective bits, which is what every 112G PAM4 receiver already does in 5 nanometre silicon, and ABFP-style scaling tolerates it for inference. Ten to twelve bits: no, and it does not matter, because the only thing that needs it is the gradient readout and that runs at f over M. The part that is genuinely hard is the digital shell: ten terabits per second of activations per tile is a coherent-DSP-class design, and Envise's twelve nanometre control die stalling at five hundred megahertz is the cautionary tale.</aside>
 </section>
 
 <!-- ================================================================ appendix -->

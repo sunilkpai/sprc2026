@@ -194,6 +194,41 @@ the rack is nearly empty of compute. Parity in the same volume needs both
 package, and at 8 bits that is back above the air-cooled envelope. Only the
 4-bit case reaches parity inside 30 kW.
 
+### Is 10 GS/s per lane today's technology?
+
+| part | status | energy per sample |
+|---|---|---|
+| input modulators | silicon MZMs at 50+ GBaud, thin-film LiNbO₃ at 100+; a segmented EO encoder driven by $b$ SerDes-class lines at 10 Gb/s | 10 fJ to 1 pJ with driver |
+| 4-bit ADC | flash converters at 10 to 50 GS/s, routine | 0.1 to 0.5 pJ |
+| 8-bit nominal ADC | time-interleaved SAR in 112G PAM4 receivers: 56 GS/s at 5.5 to 6.5 ENOB in 5 nm (Broadcom, Marvell DSPs); coherent-optics DSPs run ADC/DAC at 130 to 200 GS/s in 5 nm and 3 nm (Ciena WaveLogic 6, Marvell Orion class). True 8 ENOB at 10 GS/s needs clock jitter under about 1 ps and costs more | 1 to 3 pJ |
+| 10 to 12-bit ADC | not at 10 GS/s. Best published near this rate: 9.4 ENOB at 5 GS/s, 158.6 mW (Ramkaj et al. 2020, the part Lightmatter cites) | 32 pJ |
+| photodiodes, TIAs | 25G-class parts; the 2023 model's 7 mW TIA is already a 10 GS/s part | 0.7 pJ |
+| the mesh | weights static, so no clock on the optics; the limit is path-length matching, and a rectangular mesh has the same stage count on every path, so skew is fabrication-level picoseconds against a 100 ps symbol. Tight at 100 GS/s, not at 10 | – |
+| laser | 1 mW per mode at 10 GS/s is 100 fJ per symbol, about $8\times10^5$ photons, above the $\sim10^5$ an 8-bit detection needs; the optical term per op falls 10× with clock | 100 fJ |
+| digital shell | 128 lanes × 10 GS/s × 8 bits is 10 Tb/s of activations in and out per tile, plus the nonlinearity at 1.3 T elements per second per tile: a coherent-DSP-class 5 nm design. Envise's 12 nm control die stalled at 500 MHz on its clock tree | 2 to 3 W per tile at the model's 12 ops per element |
+
+So the 4-bit rows of the table are today's telecom silicon end to end; the
+8-bit rows are today's silicon at 6 to 7 effective bits, which ABFP-style
+scaling tolerates for inference; 10 to 12 bits at this rate is not available
+and is not needed, since the gradient readout runs at $f/M$. The hard part is
+the shell, which every photonic accelerator so far has been limited by.
+
+### Comparators: node, transistors, headline numbers
+
+| chip | node | transistors | headline |
+|---|---|---|---|
+| NVIDIA B200 | TSMC 4NP | 208 B | ~9 PFLOPS dense FP4 at ~1 kW |
+| NVIDIA H100 | TSMC 4N | 80 B | ~2 POPS INT8 at 700 W |
+| OpenAI / Broadcom Jalapeño | 3 nm class, undisclosed | undisclosed | 13.4 PFLOPS MXFP4 at 700 W; 216 GiB HBM4 at 15.4 TB/s (Hot Chips 2026) |
+| Cerebras WSE-3 | TSMC 5 nm | 4 T | 125 PFLOPS FP16 at ~23 kW; 44 GB SRAM, 21 PB/s |
+| Groq LPU v1 | GlobalFoundries 14 nm | ~27 B | 750 TOPS INT8 at ~300 W; 230 MB SRAM |
+| Lightmatter Envise | GF 12 nm control dies + GF silicon photonics | 50 B across the package | 65.5 TOPS ABFP16 at 78 W (Nature 2025) |
+| 2023 chip | AMF silicon photonics, TiN heaters | – | 6 × 6 mesh, camera readout |
+
+Rack rows assume 2U sleds of 8 packages, 168 per rack; a tile is a
+128 × 128 SVD pair of meshes at compact-MZI density, about half a reticle;
+the clock is the converter rate. Vendor peak figures over package power.
+
 Three consequences:
 
 - The binding constraint moves from watts per op to ops per package, which is
