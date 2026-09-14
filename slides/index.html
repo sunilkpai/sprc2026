@@ -424,15 +424,15 @@
     <div>
       <div class="lead">2026: what changed</div>
       <ul>
-        <li>The workload is transformers: the mesh fits the MLP, in prefill and training; decode is memory-bound</li>
+        <li>Transformers: the mesh fits the MLP in prefill and training; decode is memory-bound</li>
         <li>Inference went to 4 bits; training still needs bf16-class activations</li>
-        <li>Envise shipped a \(128^2\) crossbar at \(1.2\,\mathrm{pJ/op}\); Jalapeño does MXFP4 at \(52\,\mathrm{fJ/op}\)</li>
-        <li>Area, not energy, is the mesh's problem: \(10^{-2}\,\mathrm{mm}^2\) per weight; time-division multiplexing at \(10\,\mathrm{GS/s}\) is required to beat the footprint bottleneck</li>
+        <li>Envise: \(128^2\) crossbar at \(1.2\,\mathrm{pJ/op}\); Jalapeño: MXFP4 at \(52\,\mathrm{fJ/op}\)</li>
+        <li>Area is the mesh's problem, \(10^{-2}\,\mathrm{mm}^2\) per weight: time-division multiplexing at \(10\,\mathrm{GS/s}\) is required</li>
       </ul>
     </div>
   </div>
-  <div class="src" style="margin:8px 32px 0">Energy per op, the full tradeoff table, and what I would build are in the backup slides.</div>
-  <aside class="notes">[7:15] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that already said conversions would dominate. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide crossbar and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
+  <div class="block" style="margin:10px 32px 0"><div class="bt">Main message</div><div class="bb">Most optical-computing marketing misses the <span class="alert">electrical bottleneck</span>: the multiply is nearly free, the conversions around it are not. Innovations that reduce conversions per operation are what make these technologies worth the investment.</div></div>
+  <aside class="notes">[7:15] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that already said conversions would dominate. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide crossbar and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The main message, and the thing I would like argued with: most optical-computing marketing misses the electrical bottleneck. The multiply is nearly free in every one of these schemes, mesh, crossbar or temporal mapping; what is not free is the DAC, the ADC and the memory read around it, and those are the same parts a GPU uses. Envise measured a factor of forty between core and package. So the innovations worth funding are the ones that reduce conversions per operation: wider fan-in, batch-integrated readout, activations that stay optical between layers, weights that never move. Without those, the investment does not pay. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
 </section>
 
 <!-- ================================================================ other applications -->
