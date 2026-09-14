@@ -129,6 +129,25 @@ for M in (16, 256, M_LLM):
           f"{N * (N - 1) * (E_ADC_GRAD + E_TIA_GRAD) / OPS_TRAIN / M / fJ:6.1f} fJ/op; "
           f"SNR gain from integration sqrt(M) = {M ** 0.5:5.1f} = {0.5 * __import__('math').log2(M):.1f} bits")
 
+# ------------------------------------------ projecting to today's converters (5 nm)
+# The mesh has no clock of its own; the converters set it.  Re-cost the 2023 inference
+# model with 5 nm converters (docs/rack-design.md sec. 5.2): 8-bit-nominal time-interleaved
+# SAR from 112G PAM4 receivers at 1 to 3 pJ per sample, 4-bit flash at 0.1 to 0.5 pJ, both
+# at 10 GS/s; bf16-class training keeps the 11-bit, 7 pJ ADC, which does not exist at 10 GS/s.
+print("\nProjection to 5 nm converters at 10 GS/s (energy per op; throughput per 128-mesh = 2 N^2 f)")
+adc_per_pJ = inf["SM W8A8, = W4A8"]["ADC"] / DEFAULT["E_ADC"]      # fJ/op per pJ of ADC energy
+for name, base, lo, hi in (("W8A8, 5 nm TI-SAR 1-3 pJ", inf["SM W8A8, = W4A8"], 1 * pJ, 3 * pJ),
+                           ("W4A4, 5 nm flash 0.1-0.5 pJ", inf["SM W4A4"], 0.1 * pJ, 0.5 * pJ)):
+    rest = sum(v for k, v in base.items() if k != "ADC")
+    print(f"  {name:30s} {(rest + adc_per_pJ * lo) / fJ:5.0f} to {(rest + adc_per_pJ * hi) / fJ:3.0f} fJ/op; "
+          f"ADC share {adc_per_pJ * lo / (rest + adc_per_pJ * lo):.0%} to {adc_per_pJ * hi / (rest + adc_per_pJ * hi):.0%}; "
+          f"ADC+TIA {(adc_per_pJ * hi + base['TIA']) / (rest + adc_per_pJ * hi):.0%} at the high end")
+bf = train[f"bf16-class M{M_LLM}"]
+print(f"  {'bf16-class training, 11-bit 7 pJ':30s} {sum(bf.values()) / fJ:5.0f} fJ/op; ADC share {bf['ADC'] / sum(bf.values()):.0%}; "
+      f"clock capped at 0.5-1 GS/s by the 11-bit ADC")
+for f_clk in (1e9, 10e9):
+    print(f"  throughput per mesh at {f_clk / 1e9:.0f} GS/s: {2 * N**2 * f_clk / 1e12:.0f} TOPS")
+
 # ---------------------------------------------- what segmented weights cost in contacts
 # A b-bit segmented phase shifter needs b digital lines from the control die, so an N x N
 # mesh (N(N-1) phases) needs ~ N^2 b vertical interconnects: a bump / hybrid-bond array
