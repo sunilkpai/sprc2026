@@ -261,8 +261,8 @@
       <div class="c2"><span class="k">2&ensp;Backward.</span> Send the error \(y_{\mathrm{adj}}\) from the output; record \(p_{\eta,\mathrm{adj}}\).</div>
       <div class="c3"><span class="k">3&ensp;Sum.</span> Send \(x - i\,x_{\mathrm{adj}}^{*}\); the tap power is the gradient.</div>
     </div>
-    <div class="eq center" style="margin:8px 0 4px">\[ \frac{\partial\mathcal{L}}{\partial\eta} = -\,\mathrm{Im}\!\left(x_\eta\,x_{\mathrm{adj},\eta}\right) = \tfrac12\left(p_{\eta,\mathrm{sum}} - p_\eta - p_{\eta,\mathrm{adj}}\right) = \tfrac14\left(p_{\eta,+} - p_{\eta,-}\right) \]</div>
-    <p class="small center" style="margin:0">Every phase's gradient, of the device you have, in three passes. The adjoint method of inverse design.</p>
+    <div class="eq center" style="margin:10px 0 4px">\[ \underbrace{\textcolor{#3A8FB7}{\frac{\partial\mathcal{L}}{\partial\eta} = -\,\mathrm{Im}\!\left(x_\eta\,x_{\mathrm{adj},\eta}\right)}}_{\textcolor{#3A8FB7}{\text{adjoint method}}} \;=\; \underbrace{\tfrac12\left(p_{\eta,\mathrm{sum}} - p_\eta - p_{\eta,\mathrm{adj}}\right)}_{\textcolor{#5B6B7A}{\text{digital subtraction}}} \;=\; \underbrace{\textcolor{#D9821E}{\tfrac14\left(p_{\eta,+} - p_{\eta,-}\right)}}_{\textcolor{#D9821E}{\text{experimental implementation}}} \]</div>
+    
     <div class="src">Fig. 1E, Pai et al., <em>Science</em> 380, 398 (2023).</div>
   </div>
   <aside class="notes">[3:30] Point at the three colored paths. Forward, backward, sum. The gradient is a power measurement: interference between the forward field and the back-propagated error at each phase shifter, exactly the adjoint method from inverse design, and it does not care about fabrication error because the chip is doing the differentiation. Third formula is the analog version: toggle the adjoint phase, high-pass filter, done.</aside>
