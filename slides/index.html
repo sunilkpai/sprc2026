@@ -43,7 +43,7 @@
       <div class="block"><div class="bt">Purpose of this talk</div><div class="bb">Stimulate a discussion about the role of photonic analog computing in AI, now that the bottlenecks of near-AGI LLM designs are understood.</div></div>
     </div>
   </div>
-  <aside class="notes">[0:20] Motivation in one breath. The numbers on the left are the crisis: capex above three hundred billion a year across the hyperscalers on 2025 guidance, datacenters going from about four percent of US electricity in 2023 to a projected seven to twelve percent by 2028 in the Berkeley Lab report, and campuses now sized in gigawatts. In 2022 we built a chip that trains with light, on the premise that the multiply was the expensive thing. Since then the models reached what we now call AGI-class capability and the workload changed underneath us: transformers, four-bit inference, decode that waits on memory. The purpose of the talk is to stimulate a discussion about the role of photonic analog computing in AI, now that we understand where near-AGI LLM designs actually bottleneck: memory bandwidth in decode, precision in training, silicon area per weight, and the split between weight-stationary multiplies and attention. Redo the 2022 argument against that, and against the 2026 competition. I will give my own answers, and I would rather be argued with than agreed with.</aside>
+  <aside class="notes">[0:15] Motivation in one breath. The numbers on the left are the crisis: capex above three hundred billion a year across the hyperscalers on 2025 guidance, datacenters going from about four percent of US electricity in 2023 to a projected seven to twelve percent by 2028 in the Berkeley Lab report, and campuses now sized in gigawatts. In 2022 we built a chip that trains with light, on the premise that the multiply was the expensive thing. Since then the models reached what we now call AGI-class capability and the workload changed underneath us: transformers, four-bit inference, decode that waits on memory. The purpose of the talk is to stimulate a discussion about the role of photonic analog computing in AI, now that we understand where near-AGI LLM designs actually bottleneck: memory bandwidth in decode, precision in training, silicon area per weight, and the split between weight-stationary multiplies and attention. Redo the 2022 argument against that, and against the 2026 competition. I will give my own answers, and I would rather be argued with than agreed with.</aside>
 </section>
 
 <!-- ================================================================ 2010s thesis + mesh -->
@@ -115,7 +115,7 @@
       </g>
     </svg>
   </div>
-  <aside class="notes">[0:50] One device, five literatures: universal linear optics after Reck and Clements, self-configuring optics after Miller, quantum photonics after Carolan, neural networks after Shen, programmable photonics after Bogaerts. The animation is the primitive: sweep the two phases of one MZI and steer all the light into one port; that is how a mesh is programmed and how it is read out. Two communities adopted the same hardware for opposite reasons. Quantum needs the mesh to be exact. AI needs it to be cheap. Keep that tension in mind.</aside>
+  <aside class="notes">[1:00] One device, five literatures: universal linear optics after Reck and Clements, self-configuring optics after Miller, quantum photonics after Carolan, neural networks after Shen, programmable photonics after Bogaerts. The animation is the primitive: sweep the two phases of one MZI and steer all the light into one port; that is how a mesh is programmed and how it is read out. Two communities adopted the same hardware for opposite reasons. Quantum needs the mesh to be exact. AI needs it to be cheap. Keep that tension in mind.</aside>
 </section>
 
 <!-- ================================================================ other applications -->
@@ -151,7 +151,7 @@
       </div>
     </div>
   </div>
-  <aside class="notes">[1:30] Do not land a conclusion here. Three places where the mesh is the signal path and there is no GPU to compare against: quantum, analog signal processing, and the edge, where the budget is milliwatts and a few ports. The figure is the self-correcting configuration: you send in the vector you want the row to be, and null each interferometer's output by feedback; every fabrication error is absorbed because you measure the device rather than model it. A balanced binary tree nulls its columns in parallel, log N steps instead of N minus one. It is the same power measurement that gives the gradient in the Science paper.</aside>
+  <aside class="notes">[2:00] Do not land a conclusion here. Three places where the mesh is the signal path and there is no GPU to compare against: quantum, analog signal processing, and the edge, where the budget is milliwatts and a few ports. The figure is the self-correcting configuration: you send in the vector you want the row to be, and null each interferometer's output by feedback; every fabrication error is absorbed because you measure the device rather than model it. A balanced binary tree nulls its columns in parallel, log N steps instead of N minus one. It is the same power measurement that gives the gradient in the Science paper.</aside>
 </section>
 
 <!-- ================================================================ transformer workload -->
@@ -244,7 +244,7 @@
       </ul>
     </div>
   </div>
-  <aside class="notes">[2:15] Definitions first, this is a photonics room. A token is a word piece; the model turns it into a vector of eight thousand numbers and pushes it through eighty copies of the block on the left. Green boxes are ordinary matrix-times-vector with a weight matrix that never changes during inference; that is the thing an optical mesh can hold. The amber box is attention: the new token looks back at every earlier token in the conversation, whose keys and values were computed earlier and are kept in memory, the KV cache. On the right, the two regimes. Prefill is reading the prompt: all its tokens go through at once, so each weight is fetched once and reused for every token, and the chip is busy multiplying. That is the mesh's case, and training looks the same with thousands of tokens per weight. Decode is writing the answer: one token per step, and every step reads every weight and the whole cache from memory to produce a single vector, about one multiply per byte fetched. No multiplier helps there, optical or not. Photonics was adopted in the datacenter for moving numbers between chips; the multiply stayed electronic.</aside>
+  <aside class="notes">[2:45] Definitions first, this is a photonics room. A token is a word piece; the model turns it into a vector of eight thousand numbers and pushes it through eighty copies of the block on the left. Green boxes are ordinary matrix-times-vector with a weight matrix that never changes during inference; that is the thing an optical mesh can hold. The amber box is attention: the new token looks back at every earlier token in the conversation, whose keys and values were computed earlier and are kept in memory, the KV cache. On the right, the two regimes. Prefill is reading the prompt: all its tokens go through at once, so each weight is fetched once and reused for every token, and the chip is busy multiplying. That is the mesh's case, and training looks the same with thousands of tokens per weight. Decode is writing the answer: one token per step, and every step reads every weight and the whole cache from memory to produce a single vector, about one multiply per byte fetched. No multiplier helps there, optical or not. Photonics was adopted in the datacenter for moving numbers between chips; the multiply stayed electronic.</aside>
 </section>
 
 <!-- ================================================================ what changed -->
@@ -263,7 +263,7 @@
     </div>
     <p class="verdict">Four conditions for optics to win: wide fan-in <span class="slate">(still hard)</span>, low precision <span class="moss">(now true)</span>, static weights <span class="moss">(true for inference)</span>, data already analog <span class="slate">(not in a datacenter)</span>.</p>
   </div>
-  <aside class="notes">[3:00] Two of the four conditions flipped in our favor since 2022. The two that did not are both about where the data lives. Hold that: it is why the verdict at the end is about prefill and training, not decode.</aside>
+  <aside class="notes">[3:45] Two of the four conditions flipped in our favor since 2022. The two that did not are both about where the data lives. Hold that: it is why the verdict at the end is about prefill and training, not decode.</aside>
 </section>
 <!-- ================================================================ theory -->
 <section>
@@ -337,7 +337,7 @@
     
     
   </div>
-  <aside class="notes">[3:30] Three ways to make light do a matrix. The mesh holds the weights as phases and does the multiply and the sum by interference, so it needs coherence across the whole array and one interferometer per weight. The crossbar, which is what Envise actually is, holds the weights as attenuation cells, broadcasts the input, and sums photocurrents on a wire, so there is no phase to hold but still a device per weight. Temporal mapping holds nothing: the weights arrive as pulses from memory and multiply the input at a detector, so the silicon is order N and the cost moves to memory bandwidth. All three convert at the edge, order N per N squared multiplies; that shared term is the energy story later. Say once that the nonlinearity stays electronic: optical nonlinearities, electro-optic, saturable, all-optical, are real and interesting, and the 2023 SM even sketches a low-loss distributed one, but they are a separate talk and none of the energy numbers here depend on them. What differs is where the weight lives, and that decides footprint, stability, training, and what happens in decode.</aside>
+  <aside class="notes">[4:30] Three ways to make light do a matrix. The mesh holds the weights as phases and does the multiply and the sum by interference, so it needs coherence across the whole array and one interferometer per weight. The crossbar, which is what Envise actually is, holds the weights as attenuation cells, broadcasts the input, and sums photocurrents on a wire, so there is no phase to hold but still a device per weight. Temporal mapping holds nothing: the weights arrive as pulses from memory and multiply the input at a detector, so the silicon is order N and the cost moves to memory bandwidth. All three convert at the edge, order N per N squared multiplies; that shared term is the energy story later. Say once that the nonlinearity stays electronic: optical nonlinearities, electro-optic, saturable, all-optical, are real and interesting, and the 2023 SM even sketches a low-loss distributed one, but they are a separate talk and none of the energy numbers here depend on them. What differs is where the weight lives, and that decides footprint, stability, training, and what happens in decode.</aside>
 </section>
 
 <!-- ================================================================ method -->
@@ -354,7 +354,7 @@
     
     <p class="small center" style="margin:4px 0 0">The gradient of every phase shifter is measured on the chip itself, so fabrication errors are included automatically and no model of the device is needed. Fig. 1E, Pai et al., <em>Science</em> 380, 398 (2023).</p>
   </div>
-  <aside class="notes">[4:30] Point at the three colored paths. Forward, backward, sum. The gradient is a power measurement: interference between the forward field and the back-propagated error at each phase shifter, exactly the adjoint method from inverse design, and it does not care about fabrication error because the chip is doing the differentiation. Third formula is the analog version: toggle the adjoint phase, high-pass filter, done.</aside>
+  <aside class="notes">[5:30] Point at the three colored paths. Forward, backward, sum. The gradient is a power measurement: interference between the forward field and the back-propagated error at each phase shifter, exactly the adjoint method from inverse design, and it does not care about fabrication error because the chip is doing the differentiation. Third formula is the analog version: toggle the adjoint phase, high-pass filter, done.</aside>
 </section>
 
 <!-- ================================================================ apparatus -->
@@ -375,7 +375,7 @@
       <div class="src">Fig. 2 and Fig. S1, Pai et al. (2023). Ring and moons trained on chip to \(90\) to \(98\%\).</div>
     </div>
   </div>
-  <aside class="notes">[5:30] This is what a research demonstration looks like: the detector is a camera, the "ADC" is a microscope stage, and the phase shifters are heaters at 50 milliwatts each. Panels C to F are the part to dwell on: the analog update. Toggle the adjoint phase, the AC part of the tap power is the gradient, integrate it over the batch, write the voltage. That is the batch-gradient story on the energy slide, demonstrated on one MZI with op-amps. Every number in the energy model later replaces one of these with an integrated part. The point of the slide is that the protocol worked on a chip with real loss and real crosstalk.</aside>
+  <aside class="notes">[6:30] This is what a research demonstration looks like: the detector is a camera, the "ADC" is a microscope stage, and the phase shifters are heaters at 50 milliwatts each. Panels C to F are the part to dwell on: the analog update. Toggle the adjoint phase, the AC part of the tap power is the gradient, integrate it over the batch, write the voltage. That is the batch-gradient story on the energy slide, demonstrated on one MZI with op-amps. Every number in the energy model later replaces one of these with an integrated part. The point of the slide is that the protocol worked on a chip with real loss and real crosstalk.</aside>
 </section>
 
 <!-- ================================================================ training movies -->
@@ -396,7 +396,7 @@
       </figure>
     </div>
   </div>
-  <aside class="notes">[6:15] Let them run for ten seconds. What to say over them: every frame is 15 stage moves and three optical passes; the boundary in the last panel is drawn by the chip's own parameters evaluated on the computer.</aside>
+  <aside class="notes">[7:30] Let them run for ten seconds. What to say over them: every frame is 15 stage moves and three optical passes; the boundary in the last panel is drawn by the chip's own parameters evaluated on the computer.</aside>
 </section>
 
 <!-- ================================================================ conclusions -->
@@ -409,7 +409,7 @@
         <li>Backpropagation on an optical chip, for the first time</li>
         <li>Gradients of every phase from three optical passes, of the device you have</li>
         <li>An analog update: no digital readback of \(N^2\) parameters</li>
-        <li>Energy model: the <span class="alert">ADC is the bottleneck</span>, not photons; today's converters change the clock, not the energy (<a href="#/converters">backup</a>)</li>
+        <li>Energy model: the <span class="alert">ADC is the bottleneck</span>, not photons (<a href="#/converters">backup</a>)</li>
       </ul>
     </div>
     <div>
@@ -423,7 +423,7 @@
     </div>
   </div>
   <div class="block" style="margin:10px 32px 0"><div class="bt">Main message</div><div class="bb">Most optical-computing marketing misses the <span class="alert">electrical bottleneck</span>: the multiply is nearly free, but NOT the conversions. Innovations that <span class="alert">reduce conversions per operation</span> are what make these technologies worth the investment.</div></div>
-  <aside class="notes">[6:45] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that already said conversions would dominate: the ADC is half the energy at 8 bits and the only clock in the system, and a 5 nanometre converter changes the clock, not the energy per op; the projection is in the backup. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide crossbar and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The main message, and the thing I would like argued with: most optical-computing marketing misses the electrical bottleneck. The multiply is nearly free in every one of these schemes, mesh, crossbar or temporal mapping; what is not free is the DAC, the ADC and the memory read around it, and those are the same parts a GPU uses. Envise measured a factor of forty between core and package. So the innovations worth funding are the ones that reduce conversions per operation: wider fan-in, batch-integrated readout, activations that stay optical between layers, weights that never move. Without those, the investment does not pay. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
+  <aside class="notes">[8:15] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that already said conversions would dominate: the ADC is half the energy at 8 bits and the only clock in the system, and a 5 nanometre converter changes the clock, not the energy per op; the projection is in the backup. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide crossbar and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The main message, and the thing I would like argued with: most optical-computing marketing misses the electrical bottleneck. The multiply is nearly free in every one of these schemes, mesh, crossbar or temporal mapping; what is not free is the DAC, the ADC and the memory read around it, and those are the same parts a GPU uses. Envise measured a factor of forty between core and package. So the innovations worth funding are the ones that reduce conversions per operation: wider fan-in, batch-integrated readout, activations that stay optical between layers, weights that never move. Without those, the investment does not pay. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
 </section>
 
 <!-- ================================================================ questions -->
@@ -440,7 +440,7 @@
       &#9993;&ensp;sunilkpai93@gmail.com
     </div>
   </div>
-  <aside class="notes">[9:00] Leave the QR up during questions. It goes to the slides; the repo with the SM analysis and scripts is linked from the deck's README.</aside>
+  <aside class="notes">[9:30] Leave the QR up during questions. It goes to the slides; the repo with the SM analysis and scripts is linked from the deck's README.</aside>
 </section>
 
 <!-- ================================================================ projection to today -->
