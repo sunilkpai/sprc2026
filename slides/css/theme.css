@@ -108,3 +108,7 @@
 /* large comparison table */
 .reveal table.big { font-size: 1.15em; width: 100%; margin-top: 8px; }
 .reveal table.big th, .reveal table.big td { padding: 9px 12px; }
+
+/* dense tradeoff table */
+.reveal table.dense { font-size: 0.70em; width: 100%; margin-top: 0; line-height: 1.25; }
+.reveal table.dense th, .reveal table.dense td { padding: 5px 10px; vertical-align: top; }

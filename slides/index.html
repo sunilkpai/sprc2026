@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="vendor/reveal/reset.css">
 <link rel="stylesheet" href="vendor/reveal/reveal.css">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="css/theme.css?v=4">
+<link rel="stylesheet" href="css/theme.css?v=7">
 </head>
 <body>
 <div class="reveal">
@@ -352,82 +352,27 @@
   <aside class="notes">[6:15] Chart basis: Science 2023 SM Tables S1 to S4 at N equals 128 and 1 gigahertz. Envise: 78 watts plus 1.6 watts optical at 65.5 TOPS, 0.25 watts in the encode path including its weight DACs, from the Nature 2025 SI. Assumptions behind the 4-bit projection: ADC energy scales as 2 to the bits (Walden); the Nature SI's thermal-limited 4 to the bits would be 16 times more optimistic. Digital op divided by 3 is the B200 FP4 to H100 INT8 ratio at the wall. Optical power scales as 4 to the bits from shot noise, so 4-bit inference needs 256 times less light and 12-bit gradient readout needs 256 times more; that is the 3.4 picojoule per op bar, 3 picojoules of it laser. Training is not projected to 4 bits because gradients need precision; instead the gradient readout is batch-integrated, which is what the SM's analog update does: the tap current is integrated over the batch and digitised once per phase shifter per batch, so a slow 12 to 16 bit ADC at f over M is enough and the average gains half of log2 M bits, six at M equals 4096. Realistic M today is thousands of tokens per weight per device for an LLM micro-batch and millions of positions per layer for a CNN, so the SM's 16 to 256 was conservative. Two ADCs, two rates: activations at 8 bits and 1 gigasample, gradients at 12 plus bits and megasamples. Segmented phase shifters everywhere means every weight cell needs b digital lines from the control die: 65 thousand contacts at 4 bits for a 128 mesh. Baselines: B200 FP4 at 110 femtojoules per op and OpenAI's Jalapeno MXFP4 ASIC at 52, both peak over package power; Cerebras WSE-3 at 180 for FP16. The honest gap is now under four times at 4 bits before any shell is counted. Three things to say. One: the 2023 tables already predicted that conversions would dominate, and Envise confirmed it with a factor of 40 between the tensor core and the package. Two: 4-bit inference is where the optics win on paper. Three: training gets a different gift, time: integrate the gradient over the batch and precision comes from averaging, not from light or from a fast ADC. Systematic tap errors do not average, so calibration is the price.</aside>
 </section>
 
-<!-- ================================================================ rack design -->
+<!-- ================================================================ tradeoffs -->
 <section>
-  <h2>Rack design when the accelerator is \(100\,\mathrm{W}\), not \(1\,\mathrm{kW}\)</h2>
-  <div class="body cols small">
-    <div>
-      <div class="lead">Heat per 128-wide mesh</div>
-      <ul>
-        <li>Optics \(\approx2\,\mathrm{W}\); thermal shifters would add \(800\,\mathrm{W}\)</li>
-        <li>EO shifters (Envise): free to hold, \(\mathrm{cm}\) long. MEMS: short, free, unproven reliability</li>
-        <li>The digital shell sets the package: \(50\) to \(100\,\mathrm{W}\), air-cooled</li>
-      </ul>
-      <div class="lead">Cooling: capacity versus stability</div>
-      <ul>
-        <li>Stability, not capacity: a TEC per die; lasers pooled in one water-cooled shelf</li>
-      </ul>
-    </div>
-    <div>
-      <div class="lead">Ops in a \(30\,\mathrm{kW}\) air-cooled rack</div>
-      <table>
-        <tr><th>\(\mathrm{pJ/op}\), full system</th><th class="r">ops per rack</th><th>vs NVL72</th></tr>
-        <tr><td>\(1.2\)&emsp;Envise measured</td><td class="r">\(25\,\mathrm{POPS}\)</td><td>\(29\times\) less</td></tr>
-        <tr><td>\(0.40\)&emsp;Groq LPU, INT8</td><td class="r">\(75\,\mathrm{POPS}\)</td><td>\(10\times\) less, 14 nm</td></tr>
-        <tr><td>\(0.30\)&emsp;8-bit digital model</td><td class="r">\(100\,\mathrm{POPS}\)</td><td>\(7\times\) less</td></tr>
-        <tr><td>\(0.18\)&emsp;Cerebras WSE-3, FP16</td><td class="r">\(160\,\mathrm{POPS}\)</td><td>\(4\times\) less, 16-bit</td></tr>
-        <tr><td>\(0.052\)&ensp;Jalapeño, MXFP4</td><td class="r">\(580\,\mathrm{POPS}\)</td><td>near parity</td></tr>
-        <tr><td>\(0.045\)&ensp;2023 model, 8-bit</td><td class="r">\(670\,\mathrm{POPS}\)</td><td>parity, \(\tfrac14\) power</td></tr>
-        <tr><td>\(0.014\)&ensp;2023 model, 4-bit</td><td class="r">\(2.1\,\mathrm{EOPS}\)</td><td>\(3\times\) more</td></tr>
-      </table>
-      <div class="src">NVL72: \(\approx720\,\mathrm{PFLOPS}\) dense FP4 at \(\approx120\,\mathrm{kW}\), liquid. Jalapeño: \(13.4\,\mathrm{PFLOPS}\) MXFP4 at \(700\,\mathrm{W}\) (Hot Chips 2026). Cerebras: \(125\,\mathrm{PFLOPS}\) FP16 at \(\approx23\,\mathrm{kW}\).</div>
-      <div class="lead">But the rack fills with silicon before it fills with watts</div>
-      <table>
-        <tr><th>168 packages per rack</th><th class="r">ops per rack</th><th class="r">kW, 8-bit</th><th class="r">kW, 4-bit</th></tr>
-        <tr><td>4 tiles, \(1\,\mathrm{GS/s}\) I/O (2023 model)</td><td class="r">\(22\,\mathrm{POPS}\)</td><td class="r">\(1\)</td><td class="r">\(0.3\)</td></tr>
-        <tr><td>4 tiles, \(10\,\mathrm{GS/s}\) I/O</td><td class="r">\(220\,\mathrm{POPS}\)</td><td class="r">\(10\)</td><td class="r">\(3\)</td></tr>
-        <tr><td>16 tiles, \(10\,\mathrm{GS/s}\) I/O</td><td class="r">\(880\,\mathrm{POPS}\)</td><td class="r">\(40\)</td><td class="r">\(12\)</td></tr>
-      </table>
-      <ul>
-        <li>At \(1\,\mathrm{GS/s}\) the rack is \(33\times\) short of an NVL72 at \(1\,\mathrm{kW}\). Parity needs \(10\,\mathrm{GS/s}\) and \(16\) tiles per package; inside \(30\,\mathrm{kW}\) only at 4 bits</li>
-      </ul>
-      <div class="src">Converters: 5 nm ADC-based SerDes class (Broadcom, Marvell 112G PAM4: \(56\,\mathrm{GS/s}\), 6 to 7 ENOB, \(1\) to \(2\,\mathrm{pJ}\)); shell in 5 nm. Nodes and transistor counts in the backup.</div>
-    </div>
+  <h2>Tradeoffs: a photonic mesh against the best digital chips</h2>
+  <div class="body">
+    <table class="dense">
+      <tr><th style="width:22%"></th><th style="width:41%">photonic mesh, 2023 model projected</th><th>best digital, 2026</th></tr>
+      <tr><td>energy per op, inference</td><td>\(14\,\mathrm{fJ}\) at 4 bits, multiply engine only</td><td>Jalapeño MXFP4 \(52\,\mathrm{fJ}\); B200 FP4 \(110\)</td></tr>
+      <tr><td>energy per op, training</td><td>\(53\,\mathrm{fJ}\), 8-bit activations, batch-integrated gradients</td><td>Cerebras FP16 \(184\,\mathrm{fJ}\); H100 FP16 \(707\)</td></tr>
+      <tr><td>silicon per weight</td><td>\(10^{-2}\,\mathrm{mm}^2\), one interferometer per weight</td><td>\(10^{-4}\) GPU, \(10^{-5}\) Cerebras SRAM</td></tr>
+      <tr><td>throughput per \(\mathrm{mm}^2\)</td><td>\(0.05\) to \(0.2\,\mathrm{TOPS}\) realised; \(\sim1\) at \(10\,\mathrm{GS/s}\)</td><td>B200 \(5.6\,\mathrm{TOPS}\)</td></tr>
+      <tr><td>weights live in</td><td>\(86\mathrm{k}\) per reticle, the rest streamed from HBM</td><td>HBM4 \(216\,\mathrm{GiB}\); Cerebras \(44\,\mathrm{GB}\) on wafer</td></tr>
+      <tr><td>package, cooling</td><td>\(50\) to \(100\,\mathrm{W}\), air; lasers pooled, water-cooled</td><td>\(700\,\mathrm{W}\) to \(1\,\mathrm{kW}\), liquid</td></tr>
+      <tr><td>ops per rack</td><td>\(22\,\mathrm{POPS}\) at \(1\,\mathrm{GS/s}\); parity at \(10\,\mathrm{GS/s}\), 16 tiles per package</td><td>NVL72 \(720\,\mathrm{POPS}\), \(120\,\mathrm{kW}\)</td></tr>
+      <tr><td>precision</td><td>4 to 8 bits; gradients gain \(\tfrac12\log_2 M\) bits by integration</td><td>FP4, FP8 inference; BF16 training</td></tr>
+      <tr><td>holding a weight</td><td>thermal \(800\,\mathrm{W}\) per mesh; EO free but \(\mathrm{cm}\) long; MEMS unproven</td><td>SRAM and HBM, solved</td></tr>
+      <tr><td>training on chip</td><td>in situ: every gradient in three optical passes</td><td>digital backprop</td></tr>
+      <tr><td>where it fits</td><td><span class="alert">MLP and projections, prefill and training</span>; attention streams; decode is memory-bound</td><td>everything, today</td></tr>
+    </table>
+    <div class="src">Mesh: 2023 SM model, \(N=128\), segmented phase shifters, 5 nm SerDes-class converters. Digital: vendor peak over package power. Rack, area, assumptions in the backup.</div>
   </div>
-  <aside class="notes">[7:15] This slide is the discussion point. The claim is not that photonics is cold, it is that the kilowatt package and the metre of copper were both choices. Say the thermal-phase-shifter number out loud: 800 watts per mesh is what happens if you keep heaters. Then the honest part: the package power is the digital shell, and Envise measured 25 times the photonic core. If the shell gets to 50 femtojoules per op, an NVL72's worth of ops fits in the power budget of an air-cooled rack. But say the second table out loud: the rack fills with silicon before it fills with watts. A tile is 128 by 128 at two ops per element per clock, so 168 packages of four tiles at the 2023 model's one gigasample per second is 22 peta-ops, a thirtieth of an NVL72, drawing one kilowatt. Parity in the same rack needs ten gigasample converters on every mesh and sixteen tiles per package, a multi-reticle photonic package, and at eight bits that is forty kilowatts again; only the four-bit case lands inside thirty. That is the footprint slide at rack scale. Lasers are the one thing that still wants water, so pool them. Also in the doc but not on the slide: PUE gives a quarter back, air 1.3 to 1.5 against liquid 1.1, and memory and network power do not change.</aside>
-</section>
-
-<!-- ================================================================ footprint -->
-<section>
-  <h2>Area: one device per weight</h2>
-  <div class="body cols">
-    <div>
-      <div class="lead">Silicon per weight</div>
-      <table>
-        <tr><th></th><th class="r">\(\mathrm{mm}^2\) per weight</th><th class="r">TOPS per \(\mathrm{mm}^2\)</th></tr>
-        <tr><td>2023 chip MZI, \(625\,\mu\mathrm{m}\) long</td><td class="r">\(0.08\)</td><td class="r">–</td></tr>
-        <tr><td>compact MZI, EO or MEMS</td><td class="r">\(0.01\)</td><td class="r">–</td></tr>
-        <tr><td>Envise PTC, \(128^2\) in \(349\,\mathrm{mm}^2\)</td><td class="r">\(0.021\)</td><td class="r">\(0.05\) to \(0.19\)</td></tr>
-        <tr><td>Cerebras WSE-3, weights in SRAM</td><td class="r">\(\sim10^{-5}\)</td><td class="r">\(\sim2.7\)</td></tr>
-        <tr><td>B200 die, FP4 MAC + SRAM</td><td class="r">\(\sim10^{-4}\)</td><td class="r">\(\sim5.6\)</td></tr>
-      </table>
-      <ul>
-        <li>A 128-wide mesh of 2023 MZIs is \(80\times16\,\mathrm{mm}\): <span class="alert">bigger than a reticle</span></li>
-        <li>\(30\) to \(120\times\) less throughput per \(\mathrm{mm}^2\) than a GPU; Cerebras holds \(44\,\mathrm{GB}\) on one wafer</li>
-      </ul>
-    </div>
-    <div>
-      <div class="lead">Temporal mapping (Opticore; Hamerly 2019)</div>
-      <ul>
-        <li>Weights as pulses: \(O(N)\) devices, zero silicon per parameter, a memory-bandwidth problem instead</li>
-      </ul>
-      <div class="lead">Time-multiplexing the mesh</div>
-      <ul>
-        <li>Block level with EO shifters and \(N^2 b\) contacts: keeps \(O(N)\) conversions and in situ backprop</li>
-      </ul>
-    </div>
-  </div>
-  <aside class="notes">[7:50] This is the slide for the skeptic in the room. Energy per op can be good and the chip still loses because cost is area, and photonics is a hundred times worse per weight. Opticore's answer is to stop storing weights in silicon at all and stream them as pulses; the price is that weights now move on every use, so they inherit the GPU's arithmetic-intensity problem and an HBM stack. The mesh can play the same game at block level if the phase shifters switch in nanoseconds and the control die can push the bits, and unlike temporal mapping it keeps a stationary device to hang a gradient loop on. Sources: docs/footprint-tdm.md.</aside>
+  <aside class="notes">[7:15] This is the slide to leave up. Read it top to bottom. Energy per op the mesh wins, by four times at four bits before its shell, and by three to four times in training with batch-integrated gradients. Area it loses by two to three orders of magnitude, and that is the row that decides racks: at the 2023 clock a rack of meshes is a thirtieth of an NVL72, and parity needs ten-gigasample converters and sixteen tiles per package. Weights do not fit in silicon, so they stream from HBM like everyone else's. Holding a phase has no clean answer: thermal costs power, EO costs length, MEMS is unproven. What the mesh has that nothing digital has is in situ training. Where it fits: the weight-stationary half of a transformer, in prefill and training. Decode is a memory problem for everyone.</aside>
 </section>
 
 <!-- ================================================================ what changed -->
@@ -446,7 +391,7 @@
     </div>
     <p class="verdict">Revisit the four conditions: fan-in large <span class="slate">(still hard)</span>, precision low <span class="moss">(now true)</span>, weights static <span class="moss">(true for inference)</span>, data already analog <span class="slate">(not in a datacenter)</span>.</p>
   </div>
-  <aside class="notes">[8:30] Two of the four flipped in our favor. The two that did not are both about where the data lives, which is the hint for the last slide.</aside>
+  <aside class="notes">[8:15] Two of the four flipped in our favor. The two that did not are both about where the data lives, which is the hint for the last slide.</aside>
 </section>
 
 <!-- ================================================================ questions -->
@@ -463,7 +408,7 @@
       &#9993;&ensp;sunilkpai93@gmail.com
     </div>
   </div>
-  <aside class="notes">[9:15] Leave the QR up during questions. It goes to the slides; the repo with the SM analysis and scripts is linked from the deck's README.</aside>
+  <aside class="notes">[9:00] Leave the QR up during questions. It goes to the slides; the repo with the SM analysis and scripts is linked from the deck's README.</aside>
 </section>
 
 <!-- ================================================================ other applications -->
@@ -630,6 +575,84 @@
     </div>
   </div>
   <aside class="notes">Backup. The question always comes: your mesh is 128 wide, my matrix is 28 thousand. The answer is tiling, and it is better than it sounds. Every tile is its own SVD, its output is digitised, so error is capped per tile rather than compounding over the whole matrix. The conversion cost per MAC is exactly what it was for one mesh. What tiling does cost is weight traffic, and that is the same rule every accelerator lives under: reuse each tile over enough vectors. At ten thousand tokens per weight per step, which is what training does, it is under three femtojoules per MAC.</aside>
+</section>
+
+<!-- ================================================================ rack design -->
+<section class="appendix">
+  <h2>Rack design when the accelerator is \(100\,\mathrm{W}\), not \(1\,\mathrm{kW}\) <span class="tag">backup</span></h2>
+  <div class="body cols small">
+    <div>
+      <div class="lead">Heat per 128-wide mesh</div>
+      <ul>
+        <li>Optics \(\approx2\,\mathrm{W}\); thermal shifters would add \(800\,\mathrm{W}\)</li>
+        <li>EO shifters (Envise): free to hold, \(\mathrm{cm}\) long. MEMS: short, free, unproven reliability</li>
+        <li>The digital shell sets the package: \(50\) to \(100\,\mathrm{W}\), air-cooled</li>
+      </ul>
+      <div class="lead">Cooling: capacity versus stability</div>
+      <ul>
+        <li>Stability, not capacity: a TEC per die; lasers pooled in one water-cooled shelf</li>
+      </ul>
+    </div>
+    <div>
+      <div class="lead">Ops in a \(30\,\mathrm{kW}\) air-cooled rack</div>
+      <table>
+        <tr><th>\(\mathrm{pJ/op}\), full system</th><th class="r">ops per rack</th><th>vs NVL72</th></tr>
+        <tr><td>\(1.2\)&emsp;Envise measured</td><td class="r">\(25\,\mathrm{POPS}\)</td><td>\(29\times\) less</td></tr>
+        <tr><td>\(0.40\)&emsp;Groq LPU, INT8</td><td class="r">\(75\,\mathrm{POPS}\)</td><td>\(10\times\) less, 14 nm</td></tr>
+        <tr><td>\(0.30\)&emsp;8-bit digital model</td><td class="r">\(100\,\mathrm{POPS}\)</td><td>\(7\times\) less</td></tr>
+        <tr><td>\(0.18\)&emsp;Cerebras WSE-3, FP16</td><td class="r">\(160\,\mathrm{POPS}\)</td><td>\(4\times\) less, 16-bit</td></tr>
+        <tr><td>\(0.052\)&ensp;Jalapeño, MXFP4</td><td class="r">\(580\,\mathrm{POPS}\)</td><td>near parity</td></tr>
+        <tr><td>\(0.045\)&ensp;2023 model, 8-bit</td><td class="r">\(670\,\mathrm{POPS}\)</td><td>parity, \(\tfrac14\) power</td></tr>
+        <tr><td>\(0.014\)&ensp;2023 model, 4-bit</td><td class="r">\(2.1\,\mathrm{EOPS}\)</td><td>\(3\times\) more</td></tr>
+      </table>
+      <div class="src">NVL72: \(\approx720\,\mathrm{PFLOPS}\) dense FP4 at \(\approx120\,\mathrm{kW}\), liquid. Jalapeño: \(13.4\,\mathrm{PFLOPS}\) MXFP4 at \(700\,\mathrm{W}\) (Hot Chips 2026). Cerebras: \(125\,\mathrm{PFLOPS}\) FP16 at \(\approx23\,\mathrm{kW}\).</div>
+      <div class="lead">But the rack fills with silicon before it fills with watts</div>
+      <table>
+        <tr><th>168 packages per rack</th><th class="r">ops per rack</th><th class="r">kW, 8-bit</th><th class="r">kW, 4-bit</th></tr>
+        <tr><td>4 tiles, \(1\,\mathrm{GS/s}\) I/O (2023 model)</td><td class="r">\(22\,\mathrm{POPS}\)</td><td class="r">\(1\)</td><td class="r">\(0.3\)</td></tr>
+        <tr><td>4 tiles, \(10\,\mathrm{GS/s}\) I/O</td><td class="r">\(220\,\mathrm{POPS}\)</td><td class="r">\(10\)</td><td class="r">\(3\)</td></tr>
+        <tr><td>16 tiles, \(10\,\mathrm{GS/s}\) I/O</td><td class="r">\(880\,\mathrm{POPS}\)</td><td class="r">\(40\)</td><td class="r">\(12\)</td></tr>
+      </table>
+      <ul>
+        <li>At \(1\,\mathrm{GS/s}\) the rack is \(33\times\) short of an NVL72 at \(1\,\mathrm{kW}\). Parity needs \(10\,\mathrm{GS/s}\) and \(16\) tiles per package; inside \(30\,\mathrm{kW}\) only at 4 bits</li>
+      </ul>
+      <div class="src">Converters: 5 nm ADC-based SerDes class (Broadcom, Marvell 112G PAM4: \(56\,\mathrm{GS/s}\), 6 to 7 ENOB, \(1\) to \(2\,\mathrm{pJ}\)); shell in 5 nm. Nodes and transistor counts in the backup.</div>
+    </div>
+  </div>
+  <aside class="notes">Backup. This slide is the discussion point. The claim is not that photonics is cold, it is that the kilowatt package and the metre of copper were both choices. Say the thermal-phase-shifter number out loud: 800 watts per mesh is what happens if you keep heaters. Then the honest part: the package power is the digital shell, and Envise measured 25 times the photonic core. If the shell gets to 50 femtojoules per op, an NVL72's worth of ops fits in the power budget of an air-cooled rack. But say the second table out loud: the rack fills with silicon before it fills with watts. A tile is 128 by 128 at two ops per element per clock, so 168 packages of four tiles at the 2023 model's one gigasample per second is 22 peta-ops, a thirtieth of an NVL72, drawing one kilowatt. Parity in the same rack needs ten gigasample converters on every mesh and sixteen tiles per package, a multi-reticle photonic package, and at eight bits that is forty kilowatts again; only the four-bit case lands inside thirty. That is the footprint slide at rack scale. Lasers are the one thing that still wants water, so pool them. Also in the doc but not on the slide: PUE gives a quarter back, air 1.3 to 1.5 against liquid 1.1, and memory and network power do not change.</aside>
+</section>
+
+<!-- ================================================================ footprint -->
+<section class="appendix">
+  <h2>Area: one device per weight <span class="tag">backup</span></h2>
+  <div class="body cols">
+    <div>
+      <div class="lead">Silicon per weight</div>
+      <table>
+        <tr><th></th><th class="r">\(\mathrm{mm}^2\) per weight</th><th class="r">TOPS per \(\mathrm{mm}^2\)</th></tr>
+        <tr><td>2023 chip MZI, \(625\,\mu\mathrm{m}\) long</td><td class="r">\(0.08\)</td><td class="r">–</td></tr>
+        <tr><td>compact MZI, EO or MEMS</td><td class="r">\(0.01\)</td><td class="r">–</td></tr>
+        <tr><td>Envise PTC, \(128^2\) in \(349\,\mathrm{mm}^2\)</td><td class="r">\(0.021\)</td><td class="r">\(0.05\) to \(0.19\)</td></tr>
+        <tr><td>Cerebras WSE-3, weights in SRAM</td><td class="r">\(\sim10^{-5}\)</td><td class="r">\(\sim2.7\)</td></tr>
+        <tr><td>B200 die, FP4 MAC + SRAM</td><td class="r">\(\sim10^{-4}\)</td><td class="r">\(\sim5.6\)</td></tr>
+      </table>
+      <ul>
+        <li>A 128-wide mesh of 2023 MZIs is \(80\times16\,\mathrm{mm}\): <span class="alert">bigger than a reticle</span></li>
+        <li>\(30\) to \(120\times\) less throughput per \(\mathrm{mm}^2\) than a GPU; Cerebras holds \(44\,\mathrm{GB}\) on one wafer</li>
+      </ul>
+    </div>
+    <div>
+      <div class="lead">Temporal mapping (Opticore; Hamerly 2019)</div>
+      <ul>
+        <li>Weights as pulses: \(O(N)\) devices, zero silicon per parameter, a memory-bandwidth problem instead</li>
+      </ul>
+      <div class="lead">Time-multiplexing the mesh</div>
+      <ul>
+        <li>Block level with EO shifters and \(N^2 b\) contacts: keeps \(O(N)\) conversions and in situ backprop</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Backup. This is the slide for the skeptic in the room. Energy per op can be good and the chip still loses because cost is area, and photonics is a hundred times worse per weight. Opticore's answer is to stop storing weights in silicon at all and stream them as pulses; the price is that weights now move on every use, so they inherit the GPU's arithmetic-intensity problem and an HBM stack. The mesh can play the same game at block level if the phase shifters switch in nanoseconds and the control die can push the bits, and unlike temporal mapping it keeps a stationary device to hang a gradient loop on. Sources: docs/footprint-tdm.md.</aside>
 </section>
 
 <!-- ================================================================ appendix -->
