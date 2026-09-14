@@ -155,7 +155,7 @@
   <h2>Three optical neural network architectures</h2>
   <div class="body">
     <figure style="margin-bottom:8px">
-      <img src="media/onn_multilayer.png" alt="A multilayer optical neural network: forward pass above, adjoint backward pass below, with optical layers U and electronic nonlinearities f" style="max-height:330px">
+      <img src="media/onn_multilayer.png" alt="A multilayer optical neural network: forward pass above, adjoint backward pass below, with optical layers U and electronic nonlinearities f" style="max-height:290px">
       <figcaption>A multilayer optical neural network, forward pass above and backward pass below: light does each \(U^{(\ell)}\), electronics does each \(f^{(\ell)}\).</figcaption>
     </figure>
     <div class="cols">
@@ -180,42 +180,12 @@
       <!-- 2. broadcast and weight -->
       <div>
         <div class="lead center" style="font-size:0.7em; margin:0">Optical fan-out, electronic weights</div>
-        <svg class="fig tight" viewBox="0 0 300 138" xmlns="http://www.w3.org/2000/svg">
-          <!-- inputs and 1:N splitters -->
-          <g font-size="10" fill="#3A8FB7" text-anchor="end"><text x="22" y="34">x₁</text><text x="22" y="74">x₂</text><text x="22" y="114">x₃</text></g>
-          <g stroke="#3A8FB7" stroke-width="1.6"><line x1="26" y1="30" x2="44" y2="30"/><line x1="26" y1="70" x2="44" y2="70"/><line x1="26" y1="110" x2="44" y2="110"/></g>
-          <g fill="#D6E6F0" stroke="#3A8FB7" stroke-width="1.2"><rect x="44" y="22" width="18" height="16" rx="2"/><rect x="44" y="62" width="18" height="16" rx="2"/><rect x="44" y="102" width="18" height="16" rx="2"/></g>
-          <g font-size="7" fill="#16263A" text-anchor="middle"><text x="53" y="33">1:N</text><text x="53" y="73">1:N</text><text x="53" y="113">1:N</text></g>
-          <!-- fan-out: input j to row i -->
-          <g stroke="#3A8FB7" stroke-width="1" fill="none" opacity="0.85">
-            <path d="M62 30 C86 30 86 30 108 30"/><path d="M62 30 C86 30 86 70 108 70"/><path d="M62 30 C86 30 86 110 108 110"/>
-            <path d="M62 70 C86 70 86 30 138 30"/><path d="M62 70 C86 70 86 70 138 70"/><path d="M62 70 C86 70 86 110 138 110"/>
-            <path d="M62 110 C86 110 86 30 168 30"/><path d="M62 110 C86 110 86 70 168 70"/><path d="M62 110 C86 110 86 110 168 110"/>
-          </g>
-          <g fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.2">
-            <circle cx="112" cy="30" r="4"/><circle cx="142" cy="30" r="4"/><circle cx="172" cy="30" r="4"/>
-            <circle cx="112" cy="70" r="4"/><circle cx="142" cy="70" r="4"/><circle cx="172" cy="70" r="4"/>
-            <circle cx="112" cy="110" r="4"/><circle cx="142" cy="110" r="4"/><circle cx="172" cy="110" r="4"/>
-          </g>
-          <!-- weight cells, one per (i, j) -->
-          <g fill="#F5DDBD" stroke="#D9821E" stroke-width="1.3">
-            <rect x="118" y="22" width="16" height="16"/><rect x="148" y="22" width="16" height="16"/><rect x="178" y="22" width="16" height="16"/>
-            <rect x="118" y="62" width="16" height="16"/><rect x="148" y="62" width="16" height="16"/><rect x="178" y="62" width="16" height="16"/>
-            <rect x="118" y="102" width="16" height="16"/><rect x="148" y="102" width="16" height="16"/><rect x="178" y="102" width="16" height="16"/>
-          </g>
-          <g stroke="#5B6B7A" stroke-width="1.2"><line x1="134" y1="30" x2="148" y2="30"/><line x1="164" y1="30" x2="178" y2="30"/><line x1="194" y1="30" x2="230" y2="30"/>
-            <line x1="134" y1="70" x2="148" y2="70"/><line x1="164" y1="70" x2="178" y2="70"/><line x1="194" y1="70" x2="230" y2="70"/>
-            <line x1="134" y1="110" x2="148" y2="110"/><line x1="164" y1="110" x2="178" y2="110"/><line x1="194" y1="110" x2="230" y2="110"/></g>
-          <!-- detectors summing each row -->
-          <g fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.3"><circle cx="238" cy="30" r="7"/><circle cx="238" cy="70" r="7"/><circle cx="238" cy="110" r="7"/></g>
-          <g font-size="10" fill="#6B8F3D" text-anchor="start"><text x="250" y="34">Σ I → y₁</text><text x="250" y="74">Σ I → y₂</text><text x="250" y="114">Σ I → y₃</text></g>
-          <text x="150" y="134" font-size="8" fill="#5B6B7A" text-anchor="middle">input split N ways to photodetectors; a resistive DAC scales each photocurrent; currents summed per output</text>
-        </svg>
+        <img src="media/envise_fig3a.png" alt="Envise photonic tensor core architecture, 4 by 4 example: DACs and vector encoders, weight cells with differential lines, TIAs and ADCs. Fig. 3a of Ahmed et al., Nature 2025" style="max-height:150px;max-width:100%;display:block;margin:2px auto 0">
         <table class="tight">
           <tr><td>weights</td><td>\(N^2\) resistive DACs, held</td></tr>
           <tr><td>multiply, sum</td><td>current scaling, wire sum</td></tr>
           <tr><td>devices</td><td>\(N^2\) detector cells, no interference</td></tr>
-          <tr><td>who</td><td>Envise, <em>Nature</em> 2025</td></tr>
+          <tr><td>who</td><td>Envise; Fig. 3a, <em>Nature</em> 2025</td></tr>
         </table>
       </div>
       <!-- 3. temporal -->
