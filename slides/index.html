@@ -202,9 +202,9 @@
     </div>
     <div class="small">
       <ul>
-        <li>A <strong>token</strong> is a word piece: a vector of length \(d\), \(8192\) for a 70B model, passed through \(80\) of these blocks</li>
-        <li><strong>Green</strong>: multiply by a fixed weight matrix. <strong>Amber</strong>: compare the token with every earlier one, kept in the KV cache</li>
-        <li>The MLP is a third to a half of the multiplies</li>
+        <li><strong>Transformer</strong>: a token (a word piece, a vector of length \(d\)) passes through \(80\) copies of the block on the left to predict the next token</li>
+        <li><strong>MLP</strong> (green): two fixed weight matrices with a nonlinearity between them; the same weights for every token</li>
+        <li><strong>Attention</strong> (amber): the token is compared with every earlier token, whose keys and values sit in the KV cache</li>
       </ul>
     </div>
   </div>
