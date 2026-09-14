@@ -314,7 +314,9 @@ one that runs slowly.
 | SM 4-bit, segmented PS | 1.6 | 0.1 | 1.3 | 10.9 | 0.03 | | 14 |
 
 Digital reference lines: the model's own 8-bit baseline 300, H100 INT8 350,
-B200 FP4 110, the model's 4-bit baseline 100.
+B200 FP4 110, and OpenAI's Jalapeño MXFP4 ASIC at 52 (13.4 PFLOPS at a 700 W
+package, Hot Chips 2026). Jalapeño is the honest 4-bit target: the photonic
+4-bit engine at 14 fJ per op is 3.7× under it before any shell is counted.
 
 **Training, $N=128$, fJ per op**
 
@@ -325,7 +327,10 @@ B200 FP4 110, the model's 4-bit baseline 100.
 | batch-integrated 12-bit gradients, $M=4096$ | 7.0 | 0.2 | 21.6 | 10.9 | 1.5 | 11.7 | 53 |
 
 Gradient readout = $N(N-1)\,(20\ \mathrm{pJ\ ADC} + 5\ \mathrm{pJ\ TIA{+}integrator})/(4N^2M)$.
-Digital reference lines: model 8-bit 300, H100 INT8 350, H100 FP16 707.
+Digital reference lines: model 8-bit 300, H100 INT8 350, Cerebras WSE-3 FP16
+at 180 (125 PFLOPS at about 23 kW). Cerebras is the relevant training
+comparator because it keeps the weights on the wafer, which is the digital
+answer to the same footprint problem the mesh has.
 
 What the two tables say:
 

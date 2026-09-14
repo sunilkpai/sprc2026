@@ -120,66 +120,97 @@
 
 <!-- ================================================================ transformer workload -->
 <section>
-  <h2>The post-GPT workload: one transformer layer, per token</h2>
+  <h2>The post-GPT workload: a transformer, and prefill versus decode</h2>
   <div class="body cols">
-    <div class="w48">
-      <svg class="fig" viewBox="0 0 600 330" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
-        <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5B6B7A"/></marker></defs>
-        <!-- token in -->
-        <text x="18" y="50" font-size="13" fill="#16263A">token</text>
-        <line x1="60" y1="45" x2="92" y2="45" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
-        <!-- projections -->
-        <rect x="96" y="22" width="110" height="46" rx="5" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.6"/>
-        <text x="151" y="41" font-size="12" fill="#16263A" text-anchor="middle">Q, K, V projections</text>
-        <text x="151" y="58" font-size="11" fill="#5B6B7A" text-anchor="middle">4d² MACs, weights</text>
-        <line x1="206" y1="45" x2="238" y2="45" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
-        <!-- attention -->
-        <rect x="242" y="14" width="150" height="62" rx="5" fill="#F5DDBD" stroke="#D9821E" stroke-width="1.6"/>
-        <text x="317" y="34" font-size="12" fill="#16263A" text-anchor="middle">attention over L cached keys</text>
-        <text x="317" y="50" font-size="11" fill="#5B6B7A" text-anchor="middle">QKᵀ, softmax, ΣV: ≈Ld MACs</text>
-        <text x="317" y="66" font-size="11" fill="#5B6B7A" text-anchor="middle">activations × activations</text>
-        <!-- KV cache -->
-        <rect x="262" y="96" width="110" height="34" rx="5" fill="#EEF2F6" stroke="#5B6B7A" stroke-width="1.4" stroke-dasharray="4,3"/>
-        <text x="317" y="117" font-size="11" fill="#5B6B7A" text-anchor="middle">KV cache, in HBM</text>
-        <line x1="300" y1="96" x2="300" y2="80" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar)"/>
-        <line x1="334" y1="76" x2="334" y2="92" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar)"/>
-        <line x1="392" y1="45" x2="424" y2="45" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
-        <!-- O projection -->
-        <rect x="428" y="22" width="90" height="46" rx="5" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.6"/>
-        <text x="473" y="41" font-size="12" fill="#16263A" text-anchor="middle">O projection</text>
-        <text x="473" y="58" font-size="11" fill="#5B6B7A" text-anchor="middle">weights</text>
-        <!-- residual + norm -->
-        <path d="M518 45 H560 V160 H96" fill="none" stroke="#5B6B7A" stroke-width="1.6"/>
-        <text x="575" y="110" font-size="11" fill="#5B6B7A" text-anchor="middle" transform="rotate(90 575 110)">residual, norm</text>
-        <line x1="96" y1="160" x2="96" y2="196" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
-        <!-- MLP -->
-        <rect x="40" y="200" width="112" height="70" rx="5" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.6"/>
-        <text x="96" y="222" font-size="12" fill="#16263A" text-anchor="middle">MLP</text>
-        <text x="96" y="239" font-size="11" fill="#5B6B7A" text-anchor="middle">up, gate, down</text>
-        <text x="96" y="256" font-size="11" fill="#5B6B7A" text-anchor="middle">8d² MACs, weights</text>
-        <line x1="152" y1="235" x2="184" y2="235" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
-        <rect x="188" y="215" width="100" height="40" rx="5" fill="#EEF2F6" stroke="#5B6B7A" stroke-width="1.4"/>
-        <text x="238" y="240" font-size="12" fill="#16263A" text-anchor="middle">nonlinearity</text>
-        <line x1="288" y1="235" x2="320" y2="235" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
-        <text x="326" y="240" font-size="13" fill="#16263A">next layer, × 80</text>
+    <div class="w60">
+      <svg class="fig" viewBox="0 0 760 440" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
+        <defs><marker id="ar2" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#5B6B7A"/></marker></defs>
+        <!-- ============ architecture, vertical stack ============ -->
+        <g font-size="11" text-anchor="middle">
+          <text x="150" y="16" font-size="12" font-weight="600" fill="#16263A">one decoder block, repeated ×80</text>
+          <!-- input -->
+          <text x="150" y="38" fill="#5B6B7A">token vector, length d</text>
+          <line x1="150" y1="42" x2="150" y2="56" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar2)"/>
+          <!-- norm -->
+          <rect x="100" y="58" width="100" height="20" rx="4" fill="#EEF2F6" stroke="#5B6B7A" stroke-width="1.2"/><text x="150" y="72" fill="#16263A">norm</text>
+          <line x1="150" y1="78" x2="150" y2="92" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar2)"/>
+          <!-- QKV -->
+          <rect x="70" y="94" width="160" height="24" rx="4" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.4"/><text x="150" y="110" fill="#16263A">Q, K, V linear:  3d<tspan font-size="8" dy="-5">2</tspan><tspan dy="5"> </tspan></text>
+          <line x1="150" y1="118" x2="150" y2="132" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar2)"/>
+          <!-- attention -->
+          <rect x="70" y="134" width="160" height="40" rx="4" fill="#F5DDBD" stroke="#D9821E" stroke-width="1.4"/>
+          <text x="150" y="150" fill="#16263A">softmax(QK<tspan font-size="8" dy="-5">T</tspan><tspan dy="5"> </tspan>) V</text><text x="150" y="166" fill="#5B6B7A">over L cached tokens:  ≈ Ld</text>
+          <!-- KV cache -->
+          <rect x="248" y="134" width="52" height="40" rx="4" fill="#EEF2F6" stroke="#5B6B7A" stroke-width="1.2" stroke-dasharray="3,3"/><text x="274" y="151" fill="#5B6B7A">KV</text><text x="274" y="166" fill="#5B6B7A">cache</text>
+          <line x1="230" y1="154" x2="246" y2="154" stroke="#5B6B7A" stroke-width="1.2"/>
+          <line x1="150" y1="174" x2="150" y2="188" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar2)"/>
+          <!-- O -->
+          <rect x="70" y="190" width="160" height="24" rx="4" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.4"/><text x="150" y="206" fill="#16263A">output linear:  d<tspan font-size="8" dy="-5">2</tspan><tspan dy="5"> </tspan></text>
+          <!-- residual 1 -->
+          <circle cx="150" cy="234" r="8" fill="#FFFFFF" stroke="#5B6B7A" stroke-width="1.2"/><text x="150" y="238" fill="#5B6B7A">+</text>
+          <line x1="150" y1="214" x2="150" y2="225" stroke="#5B6B7A" stroke-width="1.4"/>
+          <path d="M150 48 H40 V234 H141" fill="none" stroke="#5B6B7A" stroke-width="1.2"/>
+          <line x1="150" y1="242" x2="150" y2="256" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar2)"/>
+          <!-- norm 2 -->
+          <rect x="100" y="258" width="100" height="20" rx="4" fill="#EEF2F6" stroke="#5B6B7A" stroke-width="1.2"/><text x="150" y="272" fill="#16263A">norm</text>
+          <line x1="150" y1="278" x2="150" y2="292" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar2)"/>
+          <!-- MLP up -->
+          <rect x="70" y="294" width="160" height="24" rx="4" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.4"/><text x="150" y="310" fill="#16263A">MLP up, gate:  (16/3) d<tspan font-size="8" dy="-5">2</tspan><tspan dy="5"> </tspan></text>
+          <line x1="150" y1="318" x2="150" y2="330" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar2)"/>
+          <rect x="100" y="332" width="100" height="20" rx="4" fill="#EEF2F6" stroke="#5B6B7A" stroke-width="1.2"/><text x="150" y="346" fill="#16263A">SiLU, product</text>
+          <line x1="150" y1="352" x2="150" y2="364" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar2)"/>
+          <rect x="70" y="366" width="160" height="24" rx="4" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.4"/><text x="150" y="382" fill="#16263A">MLP down:  (8/3) d<tspan font-size="8" dy="-5">2</tspan><tspan dy="5"> </tspan></text>
+          <!-- residual 2 -->
+          <circle cx="150" cy="410" r="8" fill="#FFFFFF" stroke="#5B6B7A" stroke-width="1.2"/><text x="150" y="414" fill="#5B6B7A">+</text>
+          <line x1="150" y1="390" x2="150" y2="401" stroke="#5B6B7A" stroke-width="1.4"/>
+          <path d="M150 248 H40 V410 H141" fill="none" stroke="#5B6B7A" stroke-width="1.2"/>
+          <line x1="150" y1="418" x2="150" y2="432" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar2)"/>
+        </g>
+        <!-- ============ prefill vs decode ============ -->
+        <g font-size="11">
+          <!-- prefill -->
+          <text x="520" y="16" font-size="12" font-weight="600" fill="#16263A" text-anchor="middle">prefill: read the prompt</text>
+          <rect x="360" y="30" width="60" height="120" rx="4" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.4"/><text x="390" y="95" fill="#16263A" text-anchor="middle">W</text>
+          <text x="432" y="95" fill="#16263A">×</text>
+          <g fill="#D6E6F0" stroke="#3A8FB7" stroke-width="1">
+            <rect x="450" y="30" width="12" height="120"/><rect x="464" y="30" width="12" height="120"/><rect x="478" y="30" width="12" height="120"/><rect x="492" y="30" width="12" height="120"/><rect x="506" y="30" width="12" height="120"/><rect x="520" y="30" width="12" height="120"/><rect x="534" y="30" width="12" height="120"/><rect x="548" y="30" width="12" height="120"/>
+          </g>
+          <text x="505" y="164" fill="#5B6B7A" text-anchor="middle">all L prompt tokens at once</text>
+          <text x="520" y="186" fill="#16263A" text-anchor="middle">W read once, used L times: M = L</text>
+          <text x="520" y="202" fill="#6B8F3D" text-anchor="middle" font-weight="600">compute-bound. Weights sit still</text>
+          <!-- decode -->
+          <text x="520" y="240" font-size="12" font-weight="600" fill="#16263A" text-anchor="middle">decode: write the answer, one token per step</text>
+          <rect x="360" y="254" width="60" height="120" rx="4" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.4"/><text x="390" y="319" fill="#16263A" text-anchor="middle">W</text>
+          <text x="432" y="319" fill="#16263A">×</text>
+          <rect x="450" y="254" width="12" height="120" fill="#D6E6F0" stroke="#3A8FB7" stroke-width="1"/>
+          <text x="470" y="262" fill="#5B6B7A">one new token</text>
+          <!-- kv cache growing -->
+          <g fill="#F5DDBD" stroke="#D9821E" stroke-width="1">
+            <rect x="560" y="284" width="10" height="60"/><rect x="572" y="284" width="10" height="60"/><rect x="584" y="284" width="10" height="60"/><rect x="596" y="284" width="10" height="60"/><rect x="608" y="284" width="10" height="60"/><rect x="620" y="284" width="10" height="60"/>
+            <rect x="632" y="284" width="10" height="60" stroke-dasharray="2,2" fill="none"/>
+          </g>
+          <text x="600" y="276" fill="#5B6B7A" text-anchor="middle">KV cache, +1 per step</text>
+          <text x="600" y="360" fill="#5B6B7A" text-anchor="middle">re-read every step</text>
+          <text x="520" y="396" fill="#16263A" text-anchor="middle">every weight and the whole cache read for one vector</text>
+          <text x="520" y="412" fill="#D9821E" text-anchor="middle" font-weight="600">memory-bound: ~1 MAC per byte</text>
+        </g>
         <!-- legend -->
-        <rect x="40" y="298" width="14" height="12" fill="#E3ECD6" stroke="#6B8F3D"/><text x="60" y="309" font-size="11" fill="#16263A">weights stationary: matrix times vector</text>
-        <rect x="290" y="298" width="14" height="12" fill="#F5DDBD" stroke="#D9821E"/><text x="310" y="309" font-size="11" fill="#16263A">both operands change every token</text>
-        <rect x="500" y="298" width="14" height="12" fill="#EEF2F6" stroke="#5B6B7A"/><text x="520" y="309" font-size="11" fill="#16263A">digital</text>
+        <rect x="360" y="428" width="12" height="10" fill="#E3ECD6" stroke="#6B8F3D"/><text x="376" y="437" font-size="10" fill="#16263A">weights, stationary</text>
+        <rect x="490" y="428" width="12" height="10" fill="#F5DDBD" stroke="#D9821E"/><text x="506" y="437" font-size="10" fill="#16263A">data × data</text>
+        <rect x="590" y="428" width="12" height="10" fill="#EEF2F6" stroke="#5B6B7A"/><text x="606" y="437" font-size="10" fill="#16263A">digital</text>
       </svg>
     </div>
     <div class="small">
       <ul>
-        <li>A <strong>token</strong> is a word piece. Each becomes a vector of length \(d\), \(8192\) for a 70B model, and passes through \(80\) layers like this one</li>
-        <li><strong>Green</strong>: multiply that vector by a fixed weight matrix, \(12d^2\) MACs per token. The same weights serve every token: they sit still</li>
-        <li><strong>Amber, attention</strong>: the new token compares itself with every earlier token in the context. Their stored keys and values are the <strong>KV cache</strong>. \(\approx Ld\) MACs, both operands are data</li>
-        <li><strong>Prefill</strong>: the prompt's tokens go through together, thousands sharing each weight. Compute-bound</li>
-        <li><strong>Decode</strong>: the reply comes out one token at a time. Each step reads every weight and the whole KV cache for one vector: \(\sim1\) MAC per byte, memory-bound</li>
-        <li>Inference precision fell to FP8, then FP4. Training keeps 16 bits for gradients</li>
+        <li>A <strong>token</strong> is a word piece, a vector of length \(d\) (\(8192\) for a 70B model). It passes through \(80\) of these blocks</li>
+        <li><strong>Green</strong> layers multiply by a weight matrix that never changes at inference: \(12d^2\) MACs per token. <strong>Amber</strong> attention compares the token with every earlier one, whose keys and values sit in the <strong>KV cache</strong>: \(\approx Ld\)</li>
+        <li><strong>Prefill</strong> reads the prompt: all \(L\) tokens at once, each weight reused \(L\) times. <strong>Decode</strong> writes the answer: one token per step, every weight and the whole cache read for one vector</li>
+        <li>Training looks like prefill, with thousands of tokens per weight per step</li>
+        <li><span class="alert">The mesh fits prefill and training.</span> Decode is a memory problem for any multiplier</li>
       </ul>
-      </div>
+    </div>
   </div>
-  <aside class="notes">[1:45] Definitions first, this is a photonics room. A token is a word piece; the model turns it into a vector of eight thousand numbers and pushes it through eighty copies of this layer. Green boxes are ordinary matrix-times-vector with a weight matrix that never changes during inference: that is the thing an optical mesh can hold. The amber box is attention: the new token looks back at every earlier token in the conversation, whose keys and values were computed earlier and are kept in memory, the KV cache. Prefill is reading the prompt: all its tokens go through at once, so each weight is reused thousands of times and the chip is busy multiplying. Decode is writing the answer: one token per step, and every step has to read every weight and the whole cache from memory to produce one vector, so the chip spends its time waiting on memory, about one multiply per byte fetched. Photonics was adopted in the datacenter for moving numbers between chips, co-packaged optics; the multiply stayed electronic. Set up the workload before the hardware. Green boxes are matrix-times-vector with weights that sit still: that is two thirds of the multiplies at short context and the part a mesh can hold. The amber box is attention: the query meets keys and values that were computed on earlier tokens and live in the KV cache, so both operands change every token. Then the two regimes. In prefill and training a weight is reused across thousands of tokens and the machine is compute-bound. In decode each request contributes one token per step, so every weight and every cached key is read once per use, and the machine waits on HBM. Keep those two boxes and two regimes in mind; the whole talk sorts hardware into them.</aside>
+  <aside class="notes">[1:45] Definitions first, this is a photonics room. A token is a word piece; the model turns it into a vector of eight thousand numbers and pushes it through eighty copies of the block on the left. Green boxes are ordinary matrix-times-vector with a weight matrix that never changes during inference; that is the thing an optical mesh can hold. The amber box is attention: the new token looks back at every earlier token in the conversation, whose keys and values were computed earlier and are kept in memory, the KV cache. On the right, the two regimes. Prefill is reading the prompt: all its tokens go through at once, so each weight is fetched once and reused for every token, and the chip is busy multiplying. That is the mesh's case, and training looks the same with thousands of tokens per weight. Decode is writing the answer: one token per step, and every step reads every weight and the whole cache from memory to produce a single vector, about one multiply per byte fetched. No multiplier helps there, optical or not. Photonics was adopted in the datacenter for moving numbers between chips; the multiply stayed electronic.</aside>
 </section>
 
 <!-- ================================================================ theory -->
@@ -316,9 +347,9 @@
   <div class="body">
     <img src="media/energy_breakdown.svg" alt="Stacked per-component energy bars for inference and training" style="max-height:470px">
     <div class="src">2023 SM model, \(N=128\), segmented phase shifters, no DACs; Envise from the Nature 2025 SI.</div>
-    <p class="small">4 bits: inference \(7\times\) under digital. Training: integrate the gradient over the batch; \(53\,\mathrm{fJ/op}\) at \(M=4096\), with 6 extra gradient bits.</p>
+    <p class="small">4 bits: inference at \(14\,\mathrm{fJ/op}\), \(8\times\) under B200 FP4 and \(3.7\times\) under Jalapeño MXFP4 at the wall, before the shell. Training: integrate the gradient over the batch; \(53\,\mathrm{fJ/op}\) at \(M=4096\), \(3.4\times\) under Cerebras FP16.</p>
   </div>
-  <aside class="notes">[6:15] Chart basis: Science 2023 SM Tables S1 to S4 at N equals 128 and 1 gigahertz. Envise: 78 watts plus 1.6 watts optical at 65.5 TOPS, 0.25 watts in the encode path including its weight DACs, from the Nature 2025 SI. Assumptions behind the 4-bit projection: ADC energy scales as 2 to the bits (Walden); the Nature SI's thermal-limited 4 to the bits would be 16 times more optimistic. Digital op divided by 3 is the B200 FP4 to H100 INT8 ratio at the wall. Optical power scales as 4 to the bits from shot noise, so 4-bit inference needs 256 times less light and 12-bit gradient readout needs 256 times more; that is the 3.4 picojoule per op bar, 3 picojoules of it laser. Training is not projected to 4 bits because gradients need precision; instead the gradient readout is batch-integrated, which is what the SM's analog update does: the tap current is integrated over the batch and digitised once per phase shifter per batch, so a slow 12 to 16 bit ADC at f over M is enough and the average gains half of log2 M bits, six at M equals 4096. Realistic M today is thousands of tokens per weight per device for an LLM micro-batch and millions of positions per layer for a CNN, so the SM's 16 to 256 was conservative. Two ADCs, two rates: activations at 8 bits and 1 gigasample, gradients at 12 plus bits and megasamples. Segmented phase shifters everywhere means every weight cell needs b digital lines from the control die: 65 thousand contacts at 4 bits for a 128 mesh. Three things to say. One: the 2023 tables already predicted that conversions would dominate, and Envise confirmed it with a factor of 40 between the tensor core and the package. Two: 4-bit inference is where the optics win on paper. Three: training gets a different gift, time: integrate the gradient over the batch and precision comes from averaging, not from light or from a fast ADC. Systematic tap errors do not average, so calibration is the price.</aside>
+  <aside class="notes">[6:15] Chart basis: Science 2023 SM Tables S1 to S4 at N equals 128 and 1 gigahertz. Envise: 78 watts plus 1.6 watts optical at 65.5 TOPS, 0.25 watts in the encode path including its weight DACs, from the Nature 2025 SI. Assumptions behind the 4-bit projection: ADC energy scales as 2 to the bits (Walden); the Nature SI's thermal-limited 4 to the bits would be 16 times more optimistic. Digital op divided by 3 is the B200 FP4 to H100 INT8 ratio at the wall. Optical power scales as 4 to the bits from shot noise, so 4-bit inference needs 256 times less light and 12-bit gradient readout needs 256 times more; that is the 3.4 picojoule per op bar, 3 picojoules of it laser. Training is not projected to 4 bits because gradients need precision; instead the gradient readout is batch-integrated, which is what the SM's analog update does: the tap current is integrated over the batch and digitised once per phase shifter per batch, so a slow 12 to 16 bit ADC at f over M is enough and the average gains half of log2 M bits, six at M equals 4096. Realistic M today is thousands of tokens per weight per device for an LLM micro-batch and millions of positions per layer for a CNN, so the SM's 16 to 256 was conservative. Two ADCs, two rates: activations at 8 bits and 1 gigasample, gradients at 12 plus bits and megasamples. Segmented phase shifters everywhere means every weight cell needs b digital lines from the control die: 65 thousand contacts at 4 bits for a 128 mesh. Baselines: B200 FP4 at 110 femtojoules per op and OpenAI's Jalapeno MXFP4 ASIC at 52, both peak over package power; Cerebras WSE-3 at 180 for FP16. The honest gap is now under four times at 4 bits before any shell is counted. Three things to say. One: the 2023 tables already predicted that conversions would dominate, and Envise confirmed it with a factor of 40 between the tensor core and the package. Two: 4-bit inference is where the optics win on paper. Three: training gets a different gift, time: integrate the gradient over the batch and precision comes from averaging, not from light or from a fast ADC. Systematic tap errors do not average, so calibration is the price.</aside>
 </section>
 
 <!-- ================================================================ rack design -->
@@ -343,10 +374,12 @@
         <tr><th>\(\mathrm{pJ/op}\), full system</th><th class="r">ops per rack</th><th>vs NVL72</th></tr>
         <tr><td>\(1.2\)&emsp;Envise measured</td><td class="r">\(25\,\mathrm{POPS}\)</td><td>\(29\times\) less</td></tr>
         <tr><td>\(0.30\)&emsp;8-bit digital model</td><td class="r">\(100\,\mathrm{POPS}\)</td><td>\(7\times\) less</td></tr>
+        <tr><td>\(0.18\)&emsp;Cerebras WSE-3, FP16</td><td class="r">\(160\,\mathrm{POPS}\)</td><td>\(4\times\) less, 16-bit</td></tr>
+        <tr><td>\(0.052\)&ensp;Jalapeño, MXFP4</td><td class="r">\(580\,\mathrm{POPS}\)</td><td>near parity</td></tr>
         <tr><td>\(0.045\)&ensp;2023 model, 8-bit</td><td class="r">\(670\,\mathrm{POPS}\)</td><td>parity, \(\tfrac14\) power</td></tr>
         <tr><td>\(0.014\)&ensp;2023 model, 4-bit</td><td class="r">\(2.1\,\mathrm{EOPS}\)</td><td>\(3\times\) more</td></tr>
       </table>
-      <div class="src">NVL72: \(\approx720\,\mathrm{PFLOPS}\) dense FP4 at \(\approx120\,\mathrm{kW}\), liquid.</div>
+      <div class="src">NVL72: \(\approx720\,\mathrm{PFLOPS}\) dense FP4 at \(\approx120\,\mathrm{kW}\), liquid. Jalapeño: \(13.4\,\mathrm{PFLOPS}\) MXFP4 at \(700\,\mathrm{W}\) (Hot Chips 2026). Cerebras: \(125\,\mathrm{PFLOPS}\) FP16 at \(\approx23\,\mathrm{kW}\).</div>
       <div class="lead">Consequences</div>
       <ul>
         <li>Same throughput at a fifth of the power, in any air-cooled hall</li>
@@ -368,11 +401,12 @@
         <tr><td>2023 chip MZI, \(625\,\mu\mathrm{m}\) long</td><td class="r">\(0.08\)</td><td class="r">–</td></tr>
         <tr><td>compact MZI, EO or MEMS</td><td class="r">\(0.01\)</td><td class="r">–</td></tr>
         <tr><td>Envise PTC, \(128^2\) in \(349\,\mathrm{mm}^2\)</td><td class="r">\(0.021\)</td><td class="r">\(0.05\) to \(0.19\)</td></tr>
+        <tr><td>Cerebras WSE-3, weights in SRAM</td><td class="r">\(\sim10^{-5}\)</td><td class="r">\(\sim2.7\)</td></tr>
         <tr><td>B200 die, FP4 MAC + SRAM</td><td class="r">\(\sim10^{-4}\)</td><td class="r">\(\sim5.6\)</td></tr>
       </table>
       <ul>
         <li>A 128-wide mesh of 2023 MZIs is \(80\times16\,\mathrm{mm}\): <span class="alert">bigger than a reticle</span></li>
-        <li>\(30\) to \(120\times\) less throughput per \(\mathrm{mm}^2\) than a GPU</li>
+        <li>\(30\) to \(120\times\) less throughput per \(\mathrm{mm}^2\) than a GPU. Cerebras holds \(44\,\mathrm{GB}\) of weights on one wafer; a mesh would need a football field</li>
       </ul>
     </div>
     <div>

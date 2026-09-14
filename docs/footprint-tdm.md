@@ -27,6 +27,7 @@ Contents
 | compact MZI (200 µm × 50 µm pitch) | ~0.01 mm² | – | typical foundry PDK, EO or MEMS shifter |
 | Lightmatter PTC, 128 × 128 in 349 mm² | 0.021 mm² | 0.047 TOPS/mm² at 500 MHz, 0.19 at 2 GHz | Nature 2025 SI, 65.5 TOPS over 4 × 349 mm² |
 | B200 (two ~800 mm² dies, ~9 PFLOPS dense FP4) | ~10⁻⁴ mm² per MAC unit incl. SRAM (order of magnitude) | ~5.6 TOPS/mm² | datasheet peak over die area |
+| Cerebras WSE-3 (46 225 mm², 44 GB SRAM, 125 PFLOPS FP16) | ~8 × 10⁻⁶ mm² per stored 8-bit weight | ~2.7 TOPS/mm² | the digital way to make weights resident: spend a wafer |
 
 A photonic weight cell is 100 to 1 000× the area of a digital multiply-accumulate
 with its local SRAM, and the realised photonic tensor core delivers 30 to 120×
@@ -35,6 +36,12 @@ built from the 2023 chip's MZIs would be 80 mm long and 16 mm high, 1 300 mm²,
 larger than a reticle (858 mm²). With compact cells it is about 250 mm², one
 reticle for one 128 × 128 layer. That is the silicon waste. The energy per op can
 be excellent and the chip still loses on cost per op, because cost is area.
+
+Cerebras is the useful comparison for "weights in silicon": it keeps 44 GB on
+the wafer, about 5.5 × 10⁹ 8-bit weights, at 21 PB/s, and that is why its
+decode is not HBM-bound. A photonic mesh holding the same weights at 0.01 mm²
+each would cover 55 000 m². The mesh is three orders of magnitude behind SRAM
+per stored weight, and SRAM is itself two orders behind HBM.
 
 ## 2. Why: one device per parameter, and the device is 100 µm long
 

@@ -29,6 +29,8 @@ some absolute sense. The reference points:
 | | value | note |
 |---|---|---|
 | B200 GPU package | ~1 000 W | ~9 PFLOPS dense FP4 at the wall, ~0.11 pJ/op |
+| OpenAI/Broadcom Jalapeño (Hot Chips 2026) | 700 W | 13.4 PFLOPS MXFP4, ~0.052 pJ/op at the wall; 216 GiB HBM4 at 15.4 TB/s; OpenAI claims 1.7 to 1.9× tokens per kW over GB200/GB300 |
+| Cerebras CS-3 (WSE-3) | ~23 kW | 125 PFLOPS FP16 vendor peak, ~0.18 pJ/op; 44 GB SRAM on the wafer at 21 PB/s, so decode is not HBM-bound |
 | GB200 NVL72 rack | ~120 kW | 72 GPUs + 36 CPUs + NVLink switches; ~720 PFLOPS dense FP4, so ~0.17 pJ/op at rack level including the shell |
 | air-cooled rack, conventional | 10 to 20 kW | raised-floor CRAC air |
 | air-cooled rack, rear-door heat exchanger | 30 to 40 kW | water to the door, not to the chip |
@@ -133,11 +135,16 @@ energy per op.
 |---|---|---|
 | 1.2 pJ, Envise measured | 25 POPS | 29× less per rack, 7× less per kW |
 | 300 fJ, 2023 model's 8-bit digital baseline | 100 POPS | 7× less per rack |
+| 180 fJ, Cerebras WSE-3 FP16 | 160 POPS | 4× less per rack, but at 16-bit and with weights resident on wafer |
+| 52 fJ, Jalapeño MXFP4 | 580 POPS | near parity with the 8-bit model row; the real digital target at 4 bits |
 | 45 fJ, 2023 model 8-bit inference, segmented PS | 670 POPS | at parity per rack, 4× better per kW |
 | 14 fJ, 2023 model 4-bit inference | 2.1 EOPS | 3× more per rack in a quarter of the power |
 
 Read the table with sec. 2 in mind: the 45 and 14 fJ rows are the multiply
-engine plus its I/O preparation, not a whole accelerator. They say what the
+engine plus its I/O preparation, not a whole accelerator. The Jalapeño row is
+the one to measure against: a purpose-built 4-bit inference ASIC already sits
+at 52 fJ per op at the wall, so the photonic 4-bit engine's margin is 3.7×
+*before* its own shell is counted, not the 8× against a B200. They say what the
 photonic core allows, and Envise says what a first-generation shell costs. The
 design target that makes the "no liquid cooling" story real is a shell under
 about 50 fJ per op, which is where the 2023 model's own $12E_{\mathrm{OP}}$ per

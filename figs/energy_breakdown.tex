@@ -45,8 +45,8 @@
 \addlegendentry{H100 INT8 wall 350}
 \addplot[sharp plot, stack plots=false, dashdotted, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,110) (SM 4-bit,110)};
 \addlegendentry{B200 FP4 wall 110}
-\addplot[sharp plot, stack plots=false, dashed, color=amber, thick, no markers, line legend] coordinates {(Envise meas.,100) (SM 4-bit,100)};
-\addlegendentry{model 4-bit digital 100}
+\addplot[sharp plot, stack plots=false, dashed, color=amber, thick, no markers, line legend] coordinates {(Envise meas.,52) (SM 4-bit,52)};
+\addlegendentry{Jalapeno MXFP4 wall 52}
 \node[font=\tiny, color=ink, anchor=west, xshift=7pt, align=left] at (axis cs:Envise meas.,220) {1215 fJ/op,\\ off scale};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit,45.1) {45};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit,13.9) {14};
@@ -81,6 +81,7 @@
 \addplot[fill=mist,draw=none] coordinates {(SM 8-bit M16,0.31) (batch-int. M256,0.02) (batch-int. M4096,0.00)};
 \addplot[forget plot, sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,300) (batch-int. M4096,300)};
 \addplot[forget plot, sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,350) (batch-int. M4096,350)};
+\addplot[forget plot, sharp plot, stack plots=false, dashdotted, color=amber, thick, no markers, line legend] coordinates {(SM 8-bit M16,184) (batch-int. M4096,184)} node[pos=0, anchor=south west, font=\tiny, color=amber] {Cerebras WSE-3 FP16 184};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit M16,95.5) {95};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:batch-int. M256,75.7) {76};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:batch-int. M4096,53.0) {53};

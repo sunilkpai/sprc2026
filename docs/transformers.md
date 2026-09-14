@@ -171,6 +171,10 @@ $$y_i = \sum_j W_{ij}\,x_j .$$
 | Llama-3 8B | $8\times10^9$ | 490k | 80 m² |
 | Llama-3 70B | $7\times10^{10}$ | 4.3M | 700 m² |
 
+Cerebras makes weights resident the digital way: 44 GB of SRAM on a 46 225 mm²
+wafer, 21 PB/s, so a 70B model at 8 bits fits on two wafers and decode runs at
+SRAM bandwidth. The equivalent photonic mesh would be 700 m² of silicon.
+
 A transformer mesh accelerator is therefore block-multiplexed from HBM. Its
 weight traffic per step is the same as a GPU's, its decode throughput is
 bounded by the same HBM bandwidth, and "no weight traffic" survives only inside
