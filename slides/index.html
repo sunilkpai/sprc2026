@@ -295,8 +295,8 @@
         </table>
       </div>
     </div>
-    <p class="center" style="margin-top:10px">All three pay for <strong>conversions at the edge</strong>, \(O(N)\) per \(N^2\) MACs, the term the energy slide is about. They differ in what holds the weight: a phase, a cell, or nothing.</p>
-    <p class="center small slate" style="margin-top:2px">The nonlinearity \(f\) stays electronic here. Optical nonlinearities exist, electro-optic, saturable, all-optical, and are a talk of their own; not covered today.</p>
+    
+    
   </div>
   <aside class="notes">[3:00] Three ways to make light do a matrix. The mesh holds the weights as phases and does the multiply and the sum by interference, so it needs coherence across the whole array and one interferometer per weight. The crossbar, which is what Envise actually is, holds the weights as attenuation cells, broadcasts the input, and sums photocurrents on a wire, so there is no phase to hold but still a device per weight. Temporal mapping holds nothing: the weights arrive as pulses from memory and multiply the input at a detector, so the silicon is order N and the cost moves to memory bandwidth. All three convert at the edge, order N per N squared multiplies; that shared term is the energy story later. Say once that the nonlinearity stays electronic: optical nonlinearities, electro-optic, saturable, all-optical, are real and interesting, and the 2023 SM even sketches a low-loss distributed one, but they are a separate talk and none of the energy numbers here depend on them. What differs is where the weight lives, and that decides footprint, stability, training, and what happens in decode.</aside>
 </section>
