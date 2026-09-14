@@ -168,6 +168,46 @@ Two ways to spend it:
 Floor footprint is the same rack either way; what changes is compute per
 megawatt, which is the number that sites are actually limited by.
 
+## 5.1 The rack fills with silicon before it fills with watts
+
+Section 5 divides a power budget by an energy per op. That assumes the rack
+can hold enough photonic silicon to spend the power, and it cannot. The rack
+is throughput-limited by area and clock first.
+
+Assume 2U sleds with 8 packages, 168 packages per rack, and per package $T$
+tiles of $128\times128$, each tile an SVD pair of meshes at compact-MZI
+density (about half a reticle per tile, so 4 tiles is a 2-reticle package).
+A tile does $2N^2$ ops per vector per clock, and the clock is the I/O
+converter rate, since the weights are static and the optics itself is not
+the limit.
+
+| 168 packages per rack | ops per rack | kW at 45 fJ/op (8-bit) | kW at 14 fJ/op (4-bit) | vs NVL72, 720 POPS |
+|---|---|---|---|---|
+| 4 tiles, 1 GS/s I/O (the 2023 model's clock) | 22 POPS | 1 | 0.3 | 33× less |
+| 4 tiles, 10 GS/s I/O | 220 POPS | 10 | 3 | 3× less |
+| 16 tiles, 10 GS/s I/O | 880 POPS | 40 | 12 | parity |
+
+At the clock the 2023 model assumed, a rack of photonic accelerators draws a
+kilowatt and delivers a thirtieth of an NVL72: the energy per op is real and
+the rack is nearly empty of compute. Parity in the same volume needs both
+10 GS/s converters on every mesh and four times Envise's tile count per
+package, and at 8 bits that is back above the air-cooled envelope. Only the
+4-bit case reaches parity inside 30 kW.
+
+Three consequences:
+
+- The binding constraint moves from watts per op to ops per package, which is
+  converter rate times tiles per package. Ten-gigasample 8-bit ADCs exist
+  (time-interleaved, a few pJ per sample) and 4-bit flash converters at that
+  rate are cheap; either way this is the ADC question of
+  `lightmatter-comparison.md` sec. 7.1 asked again at the rack.
+- "Same throughput at a fifth of the power" in sec. 5 is true only for the last
+  row of this table. The honest sentence is: same throughput in the same rack
+  needs 10 GS/s and 16 tiles per package; at the 2023 clock the rack is 30×
+  short.
+- This is `footprint-tdm.md` at rack scale. The mesh loses on silicon per op,
+  and an energy advantage does not fill a rack.
+
 ## 6. Why the rack was dense in the first place, and why it need not be
 
 The NVL72 exists because copper NVLink reaches one to two metres. Seventy-two
