@@ -59,6 +59,19 @@ Per 128-wide mesh at 1 GHz, from the 2023 model with segmented phase shifters
 | digital shell: I/O prep, control, SRAM, host interface | the unknown | Envise: 78 W for four 128-wide cores, i.e. ~19 W per core, 25× the photonic core | Nature 2025 SI VI |
 | HBM, if weights live off-package | ~25 to 30 W per stack | unchanged by photonics | vendor datasheets |
 
+On the actuation choice: Envise's weight modulators settle in about 10 ns,
+which rules out heaters and implies electro-optic devices, most likely
+reverse-biased junctions that hold a state on leakage current alone. That is
+the right answer for holding power and the wrong one for length, since silicon
+depletion shifters need $V_\pi L$ of 1 to 2 V·cm and a 2π element is
+millimetres to a centimetre. MEMS shifters are short and hold for free, but
+stiction, creep and drift over 10⁹ cycles, particle sensitivity and hermetic
+packaging are unproven at the $N^2$ count a mesh needs, and no foundry PDK
+offers them at scale. Thermal is out on power, EO on area, MEMS on
+reliability; the mesh's holding problem has no clean answer yet, and the
+crossbar's O(N) bias elements plus O(N²) leakage-held EO weights is the reason
+Lightmatter could reach 128 wide.
+
 Three conclusions:
 
 - **The photonic core is a few watts.** A mesh with EO or MEMS segments, its

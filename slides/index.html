@@ -360,6 +360,7 @@
       <div class="lead">Heat per 128-wide mesh</div>
       <ul>
         <li>Optics, ADCs, TIAs, laser: \(\approx2\,\mathrm{W}\). Thermal shifters would add \(800\,\mathrm{W}\)</li>
+        <li><strong>EO</strong> shifters, what Envise's \(10\,\mathrm{ns}\) weights imply: hold for free, but \(\mathrm{mm}\) to \(\mathrm{cm}\) long. <strong>MEMS</strong>: short and free, but stiction, drift and hermetic packaging are unproven at \(N^2\) scale</li>
         <li>The digital shell sets the package: \(50\) to \(100\,\mathrm{W}\), air-cooled</li>
       </ul>
       <div class="lead">Cooling: capacity versus stability</div>
@@ -400,7 +401,7 @@
 <!-- ================================================================ footprint -->
 <section>
   <h2>Area: one device per weight</h2>
-  <div class="body cols small">
+  <div class="body cols">
     <div>
       <div class="lead">Silicon per weight</div>
       <table>
@@ -432,10 +433,10 @@
 </section>
 
 <!-- ================================================================ tiling -->
-<section>
+<section style="font-size:1.25em">
   <h2>Scaling past one mesh: tiling</h2>
-  <div class="body cols">
-    <div class="w48">
+  <div class="body cols" style="align-items:center">
+    <div class="w66">
       <svg class="fig" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg">
         <!-- big weight matrix cut into tiles -->
         <g stroke="#5B6B7A" stroke-width="1" fill="#EEF2F6">
@@ -481,7 +482,7 @@
 </section>
 
 <!-- ================================================================ mlp vs attention -->
-<section>
+<section style="font-size:1.12em">
   <h2>MLP versus attention: weight-stationary or not</h2>
   <div class="body cols small">
     <div>
@@ -530,7 +531,7 @@
 </section>
 
 <!-- ================================================================ what changed -->
-<section style="font-size:1.12em">
+<section style="font-size:1.32em">
   <h2>What changed after 2022?</h2>
   <div class="body">
     <div class="cols">
