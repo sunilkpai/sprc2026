@@ -173,13 +173,12 @@
     </div>
     <div class="small">
       <ul>
-        <li>Two kinds of multiply. The projections and the MLP are matrix-times-vector with <span class="alert">stationary weights</span>, \(12d^2\) MACs per token that every token shares. Attention multiplies the new token's query against \(L\) cached keys and values: \(\approx Ld\) MACs, \(8\%\) of the layer at \(L=8\mathrm{k}\) context, \(57\%\) at \(128\mathrm{k}\)</li>
-        <li>Two regimes. <strong>Prefill and training</strong>: thousands of tokens pass through every weight before it changes, compute-bound. <strong>Decode</strong>: one token per request per step, every weight and every KV element read from HBM once, \(\sim1\) MAC per byte, memory-bandwidth bound</li>
-        <li>Precision collapsed for inference: FP8 in 2022, FP4 in 2024. Training keeps 16-bit for gradients</li>
-        <li>Where photonics was adopted: co-packaged optics for <span class="alert">moving</span> numbers between chips. The multiply stayed electronic</li>
-        <li>The rest of the talk: a mesh for the weight-stationary two thirds, a streaming circuit for attention, and what decode does to both</li>
+        <li>Two kinds of multiply. Projections and MLP are matrix-times-vector with <span class="alert">stationary weights</span>: \(12d^2\) MACs per token, shared by every token. Attention meets \(L\) cached keys and values: \(\approx Ld\) MACs, \(8\%\) of the layer at \(8\mathrm{k}\) context, \(57\%\) at \(128\mathrm{k}\)</li>
+        <li>Two regimes. <strong>Prefill and training</strong>: thousands of tokens per weight, compute-bound. <strong>Decode</strong>: one token per request per step, every weight and KV element read once, \(\sim1\) MAC per byte, memory-bandwidth bound</li>
+        <li>Precision collapsed for inference: FP8 in 2022, FP4 in 2024. Training keeps 16 bits for gradients</li>
+        <li>Photonics was adopted for <span class="alert">moving</span> numbers between chips. The multiply stayed electronic</li>
       </ul>
-    </div>
+      </div>
   </div>
   <aside class="notes">[1:45] Set up the workload before the hardware. Green boxes are matrix-times-vector with weights that sit still: that is two thirds of the multiplies at short context and the part a mesh can hold. The amber box is attention: the query meets keys and values that were computed on earlier tokens and live in the KV cache, so both operands change every token. Then the two regimes. In prefill and training a weight is reused across thousands of tokens and the machine is compute-bound. In decode each request contributes one token per step, so every weight and every cached key is read once per use, and the machine waits on HBM. Keep those two boxes and two regimes in mind; the whole talk sorts hardware into them.</aside>
 </section>
