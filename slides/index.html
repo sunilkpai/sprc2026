@@ -121,33 +121,67 @@
   <aside class="notes">[1:00] Two communities adopted the same hardware for opposite reasons. Quantum needs the mesh to be exact. AI needs it to be cheap. Keep that tension in mind.</aside>
 </section>
 
-<!-- ================================================================ interconnect -->
-<section style="font-size:1.12em">
-  <h2>The post-GPT thesis: photonic interconnects</h2>
+<!-- ================================================================ transformer workload -->
+<section>
+  <h2>The post-GPT workload: one transformer layer, per token</h2>
   <div class="body cols">
-    <div class="w52 small">
-      <div class="lead">The bottleneck moved to interconnect</div>
-      <ul>
-        <li>Transformer decode is memory-bandwidth bound: GPUs wait on HBM and on each other</li>
-        <li>Models grew \(100\times\) or more, clusters \(10\times\), electrical I/O about \(2\times\)</li>
-        <li>Co-packaged optics replaces pluggables: Nvidia photonic switches (2025), TSMC COUPE, Broadcom</li>
-        <li>The AI datacenter adopted photonics for <span class="alert">moving</span> numbers, not multiplying them</li>
-      </ul>
-      <div class="lead">The best-funded photonic compute company followed</div>
-      <ul>
-        <li>2021: Passage interconnect announced beside Envise</li>
-        <li>2024: $400M Series D at $4.4B, for interconnect</li>
-        <li>2025: M1000 ships in March; Envise appears in <em>Nature</em> in April, as research</li>
-      </ul>
+    <div class="w52">
+      <svg class="fig" viewBox="0 0 600 330" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
+        <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5B6B7A"/></marker></defs>
+        <!-- token in -->
+        <text x="18" y="50" font-size="13" fill="#16263A">token</text>
+        <line x1="60" y1="45" x2="92" y2="45" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
+        <!-- projections -->
+        <rect x="96" y="22" width="110" height="46" rx="5" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.6"/>
+        <text x="151" y="41" font-size="12" fill="#16263A" text-anchor="middle">Q, K, V projections</text>
+        <text x="151" y="58" font-size="11" fill="#5B6B7A" text-anchor="middle">4d² MACs, weights</text>
+        <line x1="206" y1="45" x2="238" y2="45" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
+        <!-- attention -->
+        <rect x="242" y="14" width="150" height="62" rx="5" fill="#F5DDBD" stroke="#D9821E" stroke-width="1.6"/>
+        <text x="317" y="34" font-size="12" fill="#16263A" text-anchor="middle">attention over L cached keys</text>
+        <text x="317" y="50" font-size="11" fill="#5B6B7A" text-anchor="middle">QKᵀ, softmax, ΣV: ≈Ld MACs</text>
+        <text x="317" y="66" font-size="11" fill="#5B6B7A" text-anchor="middle">activations × activations</text>
+        <!-- KV cache -->
+        <rect x="262" y="96" width="110" height="34" rx="5" fill="#EEF2F6" stroke="#5B6B7A" stroke-width="1.4" stroke-dasharray="4,3"/>
+        <text x="317" y="117" font-size="11" fill="#5B6B7A" text-anchor="middle">KV cache, in HBM</text>
+        <line x1="300" y1="96" x2="300" y2="80" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar)"/>
+        <line x1="334" y1="76" x2="334" y2="92" stroke="#5B6B7A" stroke-width="1.4" marker-end="url(#ar)"/>
+        <line x1="392" y1="45" x2="424" y2="45" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
+        <!-- O projection -->
+        <rect x="428" y="22" width="90" height="46" rx="5" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.6"/>
+        <text x="473" y="41" font-size="12" fill="#16263A" text-anchor="middle">O projection</text>
+        <text x="473" y="58" font-size="11" fill="#5B6B7A" text-anchor="middle">weights</text>
+        <!-- residual + norm -->
+        <path d="M518 45 H560 V160 H96" fill="none" stroke="#5B6B7A" stroke-width="1.6"/>
+        <text x="575" y="110" font-size="11" fill="#5B6B7A" text-anchor="middle" transform="rotate(90 575 110)">residual, norm</text>
+        <line x1="96" y1="160" x2="96" y2="196" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
+        <!-- MLP -->
+        <rect x="40" y="200" width="112" height="70" rx="5" fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.6"/>
+        <text x="96" y="222" font-size="12" fill="#16263A" text-anchor="middle">MLP</text>
+        <text x="96" y="239" font-size="11" fill="#5B6B7A" text-anchor="middle">up, gate, down</text>
+        <text x="96" y="256" font-size="11" fill="#5B6B7A" text-anchor="middle">8d² MACs, weights</text>
+        <line x1="152" y1="235" x2="184" y2="235" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
+        <rect x="188" y="215" width="100" height="40" rx="5" fill="#EEF2F6" stroke="#5B6B7A" stroke-width="1.4"/>
+        <text x="238" y="240" font-size="12" fill="#16263A" text-anchor="middle">nonlinearity</text>
+        <line x1="288" y1="235" x2="320" y2="235" stroke="#5B6B7A" stroke-width="1.6" marker-end="url(#ar)"/>
+        <text x="326" y="240" font-size="13" fill="#16263A">next layer, × 80</text>
+        <!-- legend -->
+        <rect x="40" y="298" width="14" height="12" fill="#E3ECD6" stroke="#6B8F3D"/><text x="60" y="309" font-size="11" fill="#16263A">weights stationary: matrix times vector</text>
+        <rect x="290" y="298" width="14" height="12" fill="#F5DDBD" stroke="#D9821E"/><text x="310" y="309" font-size="11" fill="#16263A">both operands change every token</text>
+        <rect x="500" y="298" width="14" height="12" fill="#EEF2F6" stroke="#5B6B7A"/><text x="520" y="309" font-size="11" fill="#16263A">digital</text>
+      </svg>
     </div>
-    <div>
-      <div class="stat"><div class="n">114 Tbps</div><div class="d">Passage M1000: \(4{,}000\,\mathrm{mm}^2\), 256 fibers</div></div>
-      <div class="stat"><div class="n">$850M</div><div class="d">raised to date at a $4.4B valuation</div></div>
-      <div class="stat"><div class="n">2%</div><div class="d">of Envise power is optical: \(1.6\,\mathrm{W}\) of \(79.6\,\mathrm{W}\)</div></div>
-      <div class="src">Lightmatter press and blog, 2024–25; Ahmed et al., <em>Nature</em> 640, 368 (2025).</div>
+    <div class="small">
+      <ul>
+        <li>Two kinds of multiply. The projections and the MLP are matrix-times-vector with <span class="alert">stationary weights</span>, \(12d^2\) MACs per token that every token shares. Attention multiplies the new token's query against \(L\) cached keys and values: \(\approx Ld\) MACs, \(8\%\) of the layer at \(L=8\mathrm{k}\) context, \(57\%\) at \(128\mathrm{k}\)</li>
+        <li>Two regimes. <strong>Prefill and training</strong>: thousands of tokens pass through every weight before it changes, compute-bound. <strong>Decode</strong>: one token per request per step, every weight and every KV element read from HBM once, \(\sim1\) MAC per byte, memory-bandwidth bound</li>
+        <li>Precision collapsed for inference: FP8 in 2022, FP4 in 2024. Training keeps 16-bit for gradients</li>
+        <li>Where photonics was adopted: co-packaged optics for <span class="alert">moving</span> numbers between chips. The multiply stayed electronic</li>
+        <li>The rest of the talk: a mesh for the weight-stationary two thirds, a streaming circuit for attention, and what decode does to both</li>
+      </ul>
     </div>
   </div>
-  <aside class="notes">[1:45] The last stat is the pivot in one number. It comes from their own Nature paper. The photons were never the power problem.</aside>
+  <aside class="notes">[1:45] Set up the workload before the hardware. Green boxes are matrix-times-vector with weights that sit still: that is two thirds of the multiplies at short context and the part a mesh can hold. The amber box is attention: the query meets keys and values that were computed on earlier tokens and live in the KV cache, so both operands change every token. Then the two regimes. In prefill and training a weight is reused across thousands of tokens and the machine is compute-bound. In decode each request contributes one token per step, so every weight and every cached key is read once per use, and the machine waits on HBM. Keep those two boxes and two regimes in mind; the whole talk sorts hardware into them.</aside>
 </section>
 
 <!-- ================================================================ theory -->
