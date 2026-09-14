@@ -339,12 +339,26 @@ weights, not energy per op. Jalapeño is the honest 4-bit target: the photonic
 | SM 8-bit, per-example gradients, $M=16$ | 7.0 | 0.2 | 21.6 | 54.7 (incl. $4N^2E_{\mathrm{TIA}}$ updater) | in TIA column | 11.7 | 96 |
 | batch-integrated 12-bit gradients, $M=256$ | 7.0 | 0.2 | 21.6 | 10.9 | 24.2 | 11.7 | 76 |
 | batch-integrated 12-bit gradients, $M=4096$ | 7.0 | 0.2 | 21.6 | 10.9 | 1.5 | 11.7 | 53 |
+| same, bf16-class activations: 8-bit mantissa, block exponent, 11-bit ADC at 7 pJ | 7.0 | 0.3 | 109 | 10.9 | 1.5 | 11.7 | 141 |
 
 Gradient readout = $N(N-1)\,(20\ \mathrm{pJ\ ADC} + 5\ \mathrm{pJ\ TIA{+}integrator})/(4N^2M)$.
 Digital reference lines: model 8-bit 300, H100 INT8 350, Cerebras WSE-3 FP16
 at 180 (125 PFLOPS at about 23 kW). Cerebras is the relevant training
 comparator because it keeps the weights on the wafer, which is the digital
 answer to the same footprint problem the mesh has.
+
+**bf16 activations.** Training runs bf16, and bf16 is an 8-bit significand
+with an 8-bit exponent. The per-vector normalisation in Algs. 2 and 3 supplies
+a block exponent, so the analog path carries the 8-bit mantissa; what it needs
+beyond the 8-bit inference readout is accumulation headroom, which is why the
+row above uses an Envise-class 11-bit ADC (Lagos 2022, 10.1 ENOB at 500 MS/s,
+about 7 pJ per sample) rather than a 16-bit converter that does not exist at
+this rate. The ADC term goes from 22 to 110 fJ per op and nothing else moves:
+141 fJ per op, 1.3× under Cerebras FP16 and 5× under H100 FP16. What is lost
+against true bf16 is the per-element exponent, which matters most for
+gradients with outliers; ABFP's per-row and per-vector scales recover part of
+it, and the gradient readout itself is batch-integrated at 12 to 16 bits, so
+the exposure is in the activations of the forward and backward passes.
 
 What the two tables say:
 

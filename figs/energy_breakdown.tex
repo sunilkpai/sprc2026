@@ -65,7 +65,7 @@
   bar width=13pt,
   ymin=0, ymax=400,
   ylabel near ticks,
-  symbolic x coords={SM 8-bit M16,batch-int. M256,batch-int. M4096},
+  symbolic x coords={SM A8 M16,batch-int. A8 M256,batch-int. A8 M4096,bf16-class M4096},
   xtick=data,
   x tick label style={font=\scriptsize, rotate=25, anchor=north east},
   y tick label style={font=\scriptsize},
@@ -78,18 +78,19 @@
   clip=true,
   at={(inf.south east)}, anchor=south west, xshift=0.9cm
 ]
-\addplot[fill=slate,draw=none] coordinates {(SM 8-bit M16,7.03) (batch-int. M256,7.03) (batch-int. M4096,7.03)};
-\addplot[fill=moss,draw=none] coordinates {(SM 8-bit M16,0.19) (batch-int. M256,0.19) (batch-int. M4096,0.19)};
-\addplot[fill=sky,draw=none] coordinates {(SM 8-bit M16,21.56) (batch-int. M256,21.56) (batch-int. M4096,21.56)};
-\addplot[fill=ink2,draw=none] coordinates {(SM 8-bit M16,54.69) (batch-int. M256,10.94) (batch-int. M4096,10.94)};
-\addplot[fill=sky!50,draw=none] coordinates {(SM 8-bit M16,0.00) (batch-int. M256,24.22) (batch-int. M4096,1.51)};
-\addplot[fill=amber!40,draw=none] coordinates {(SM 8-bit M16,11.72) (batch-int. M256,11.72) (batch-int. M4096,11.72)};
-\addplot[fill=mist,draw=none] coordinates {(SM 8-bit M16,0.31) (batch-int. M256,0.02) (batch-int. M4096,0.00)};
-\addplot[forget plot, sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,300) (batch-int. M4096,300)};
-\addplot[forget plot, sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(SM 8-bit M16,350) (batch-int. M4096,350)};
-\addplot[forget plot, sharp plot, stack plots=false, dashdotted, color=amber, thick, no markers, line legend] coordinates {(SM 8-bit M16,184) (batch-int. M4096,184)};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit M16,95.5) {95};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:batch-int. M256,75.7) {76};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:batch-int. M4096,53.0) {53};
+\addplot[fill=slate,draw=none] coordinates {(SM A8 M16,7.03) (batch-int. A8 M256,7.03) (batch-int. A8 M4096,7.03) (bf16-class M4096,7.03)};
+\addplot[fill=moss,draw=none] coordinates {(SM A8 M16,0.19) (batch-int. A8 M256,0.19) (batch-int. A8 M4096,0.19) (bf16-class M4096,0.26)};
+\addplot[fill=sky,draw=none] coordinates {(SM A8 M16,21.56) (batch-int. A8 M256,21.56) (batch-int. A8 M4096,21.56) (bf16-class M4096,109.37)};
+\addplot[fill=ink2,draw=none] coordinates {(SM A8 M16,54.69) (batch-int. A8 M256,10.94) (batch-int. A8 M4096,10.94) (bf16-class M4096,10.94)};
+\addplot[fill=sky!50,draw=none] coordinates {(SM A8 M16,0.00) (batch-int. A8 M256,24.22) (batch-int. A8 M4096,1.51) (bf16-class M4096,1.51)};
+\addplot[fill=amber!40,draw=none] coordinates {(SM A8 M16,11.72) (batch-int. A8 M256,11.72) (batch-int. A8 M4096,11.72) (bf16-class M4096,11.72)};
+\addplot[fill=mist,draw=none] coordinates {(SM A8 M16,0.31) (batch-int. A8 M256,0.02) (batch-int. A8 M4096,0.00) (bf16-class M4096,0.00)};
+\addplot[forget plot, sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(SM A8 M16,300) (bf16-class M4096,300)};
+\addplot[forget plot, sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(SM A8 M16,350) (bf16-class M4096,350)};
+\addplot[forget plot, sharp plot, stack plots=false, dashdotted, color=amber, thick, no markers, line legend] coordinates {(SM A8 M16,184) (bf16-class M4096,184)};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM A8 M16,95.5) {95};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:batch-int. A8 M256,75.7) {76};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:batch-int. A8 M4096,53.0) {53};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:bf16-class M4096,140.8) {141};
 \end{axis}
 \end{tikzpicture}

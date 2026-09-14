@@ -70,7 +70,8 @@ UP = 4                # extra gradient bits from batch integration at M >= 256 (
 
 
 def batch_grad(M, **kw):
-    """8-bit per-example forward/backward/sum passes, gradient read once per batch per phase."""
+    """Per-example forward/backward/sum passes (8-bit unless overridden), gradient read once per
+    batch per phase."""
     d = per_op(components(N, M, **SEG, **kw)[1], OPS_TRAIN, M)
     # replace the per-batch analog updater term 4 N^2 E_TIA by explicit readout electronics
     d["TIA"] = 8 * M * N * DEFAULT["E_TIA"] / OPS_TRAIN / M
@@ -86,10 +87,15 @@ inf = {
     "SM W8A8, = W4A8": per_op(components(N, 1, **SEG)[0], OPS_INF),
     "SM W4A4": per_op(components(N, 1, **SEG, **FOUR_BIT_INF)[0], OPS_INF),
 }
+# bf16-class activations: an 8-bit significand plus a per-vector block exponent (the SM's
+# normalisation), which needs an Envise-class 11-bit ADC (Lagos 2022: 10.1 ENOB at 500 MS/s,
+# ~7 pJ per sample) for accumulation headroom, not a 16-bit converter.
+E_ADC_11 = 7 * pJ
 train = {
-    f"SM 8-bit M{M_TRAIN}": per_op(components(N, M_TRAIN, **SEG)[1], OPS_TRAIN, M_TRAIN),
-    f"batch-int. M{M_BIG}": batch_grad(M_BIG),
-    f"batch-int. M{M_LLM}": batch_grad(M_LLM),
+    f"SM A8 M{M_TRAIN}": per_op(components(N, M_TRAIN, **SEG)[1], OPS_TRAIN, M_TRAIN),
+    f"batch-int. A8 M{M_BIG}": batch_grad(M_BIG),
+    f"batch-int. A8 M{M_LLM}": batch_grad(M_LLM),
+    f"bf16-class M{M_LLM}": batch_grad(M_LLM, E_ADC=E_ADC_11, E_mod=DEFAULT["E_mod"] * 11 / 8),
 }
 digital = {"model 8-bit": 6 * DEFAULT["E_OP"] / 2, "model 4-bit": 6 * FOUR_BIT["E_OP"] / 2,
            "H100 INT8": 0.35 * pJ, "B200 FP4": 0.11 * pJ, "B200 FP8": 0.22 * pJ,

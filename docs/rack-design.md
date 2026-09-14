@@ -61,10 +61,15 @@ Per 128-wide mesh at 1 GHz, from the 2023 model with segmented phase shifters
 
 On the actuation choice: Envise's weight modulators settle in about 10 ns,
 which rules out heaters and implies electro-optic devices, most likely
-reverse-biased junctions that hold a state on leakage current alone. That is
-the right answer for holding power and the wrong one for length, since silicon
-depletion shifters need $V_\pi L$ of 1 to 2 V·cm and a 2π element is
-millimetres to a centimetre. MEMS shifters are short and hold for free, but
+reverse-biased junctions that hold a state on leakage current alone. Their cells are
+sub-millimetre (349 mm² for 128², about 0.02 mm² each), which works because a
+crossbar weight only needs a 0-to-1 amplitude and can use a ring or an
+absorption modulator. A mesh is different: each phase needs a full $2\pi$ at
+zero holding power. Silicon depletion at $V_\pi L$ of 1 to 2 V·cm is
+centimetre-class at CMOS voltages; ring-based phase shifters reach $2\pi$ in
+tens of micrometres but are resonant, so they drift with wavelength and
+temperature and need their own locking loop, which is the stability problem
+of sec. 3 again at every element. MEMS shifters are short and hold for free, but
 stiction, creep and drift over 10⁹ cycles, particle sensitivity and hermetic
 packaging are unproven at the $N^2$ count a mesh needs, and no foundry PDK
 offers them at scale. Thermal is out on power, EO on area, MEMS on

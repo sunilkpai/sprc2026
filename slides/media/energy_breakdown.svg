@@ -55,32 +55,41 @@
 <text x="601" y="35.5" class="tick" text-anchor="end">400</text>
 <line x1="606" y1="32" x2="606" y2="278" class="axis"/>
 <line x1="606" y1="278" x2="1022" y2="278" class="axis"/>
-<rect x="658.3" y="273.7" width="34.0" height="4.3" fill="#5B6B7A"/>
-<rect x="658.3" y="273.6" width="34.0" height="0.1" fill="#6B8F3D"/>
-<rect x="658.3" y="260.3" width="34.0" height="13.3" fill="#3A8FB7"/>
-<rect x="658.3" y="226.7" width="34.0" height="33.6" fill="#2E4A6B"/>
-<rect x="658.3" y="219.5" width="34.0" height="7.2" fill="#F0CDA5"/>
-<rect x="658.3" y="219.3" width="34.0" height="0.2" fill="#EEF2F6"/>
-<text x="675.3" y="215.3" class="tick" text-anchor="middle">95</text>
-<text transform="translate(675.3,288) rotate(25)" class="tick" text-anchor="start">SM 8-bit M16</text>
-<rect x="797.0" y="273.7" width="34.0" height="4.3" fill="#5B6B7A"/>
-<rect x="797.0" y="273.6" width="34.0" height="0.1" fill="#6B8F3D"/>
-<rect x="797.0" y="260.3" width="34.0" height="13.3" fill="#3A8FB7"/>
-<rect x="797.0" y="253.6" width="34.0" height="6.7" fill="#2E4A6B"/>
-<rect x="797.0" y="238.7" width="34.0" height="14.9" fill="#9CC7DB"/>
-<rect x="797.0" y="231.5" width="34.0" height="7.2" fill="#F0CDA5"/>
-<rect x="797.0" y="231.5" width="34.0" height="0.0" fill="#EEF2F6"/>
-<text x="814.0" y="227.5" class="tick" text-anchor="middle">76</text>
-<text transform="translate(814.0,288) rotate(25)" class="tick" text-anchor="start">batch-int. M256</text>
-<rect x="935.7" y="273.7" width="34.0" height="4.3" fill="#5B6B7A"/>
-<rect x="935.7" y="273.6" width="34.0" height="0.1" fill="#6B8F3D"/>
-<rect x="935.7" y="260.3" width="34.0" height="13.3" fill="#3A8FB7"/>
-<rect x="935.7" y="253.6" width="34.0" height="6.7" fill="#2E4A6B"/>
-<rect x="935.7" y="252.6" width="34.0" height="0.9" fill="#9CC7DB"/>
-<rect x="935.7" y="245.4" width="34.0" height="7.2" fill="#F0CDA5"/>
-<rect x="935.7" y="245.4" width="34.0" height="0.0" fill="#EEF2F6"/>
-<text x="952.7" y="241.4" class="tick" text-anchor="middle">53</text>
-<text transform="translate(952.7,288) rotate(25)" class="tick" text-anchor="start">batch-int. M4096</text>
+<rect x="641.0" y="273.7" width="34.0" height="4.3" fill="#5B6B7A"/>
+<rect x="641.0" y="273.6" width="34.0" height="0.1" fill="#6B8F3D"/>
+<rect x="641.0" y="260.3" width="34.0" height="13.3" fill="#3A8FB7"/>
+<rect x="641.0" y="226.7" width="34.0" height="33.6" fill="#2E4A6B"/>
+<rect x="641.0" y="219.5" width="34.0" height="7.2" fill="#F0CDA5"/>
+<rect x="641.0" y="219.3" width="34.0" height="0.2" fill="#EEF2F6"/>
+<text x="658.0" y="215.3" class="tick" text-anchor="middle">95</text>
+<text transform="translate(658.0,288) rotate(25)" class="tick" text-anchor="start">SM A8 M16</text>
+<rect x="745.0" y="273.7" width="34.0" height="4.3" fill="#5B6B7A"/>
+<rect x="745.0" y="273.6" width="34.0" height="0.1" fill="#6B8F3D"/>
+<rect x="745.0" y="260.3" width="34.0" height="13.3" fill="#3A8FB7"/>
+<rect x="745.0" y="253.6" width="34.0" height="6.7" fill="#2E4A6B"/>
+<rect x="745.0" y="238.7" width="34.0" height="14.9" fill="#9CC7DB"/>
+<rect x="745.0" y="231.5" width="34.0" height="7.2" fill="#F0CDA5"/>
+<rect x="745.0" y="231.5" width="34.0" height="0.0" fill="#EEF2F6"/>
+<text x="762.0" y="227.5" class="tick" text-anchor="middle">76</text>
+<text transform="translate(762.0,288) rotate(25)" class="tick" text-anchor="start">batch-int. A8 M256</text>
+<rect x="849.0" y="273.7" width="34.0" height="4.3" fill="#5B6B7A"/>
+<rect x="849.0" y="273.6" width="34.0" height="0.1" fill="#6B8F3D"/>
+<rect x="849.0" y="260.3" width="34.0" height="13.3" fill="#3A8FB7"/>
+<rect x="849.0" y="253.6" width="34.0" height="6.7" fill="#2E4A6B"/>
+<rect x="849.0" y="252.6" width="34.0" height="0.9" fill="#9CC7DB"/>
+<rect x="849.0" y="245.4" width="34.0" height="7.2" fill="#F0CDA5"/>
+<rect x="849.0" y="245.4" width="34.0" height="0.0" fill="#EEF2F6"/>
+<text x="866.0" y="241.4" class="tick" text-anchor="middle">53</text>
+<text transform="translate(866.0,288) rotate(25)" class="tick" text-anchor="start">batch-int. A8 M4096</text>
+<rect x="953.0" y="273.7" width="34.0" height="4.3" fill="#5B6B7A"/>
+<rect x="953.0" y="273.5" width="34.0" height="0.2" fill="#6B8F3D"/>
+<rect x="953.0" y="206.3" width="34.0" height="67.3" fill="#3A8FB7"/>
+<rect x="953.0" y="199.5" width="34.0" height="6.7" fill="#2E4A6B"/>
+<rect x="953.0" y="198.6" width="34.0" height="0.9" fill="#9CC7DB"/>
+<rect x="953.0" y="191.4" width="34.0" height="7.2" fill="#F0CDA5"/>
+<rect x="953.0" y="191.4" width="34.0" height="0.0" fill="#EEF2F6"/>
+<text x="970.0" y="187.4" class="tick" text-anchor="middle">141</text>
+<text transform="translate(970.0,288) rotate(25)" class="tick" text-anchor="start">bf16-class M4096</text>
 <line x1="606" y1="93.5" x2="1022" y2="93.5" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="8,5"/>
 <line x1="606" y1="62.8" x2="1022" y2="62.8" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="2,4"/>
 <line x1="606" y1="164.8" x2="1022" y2="164.8" stroke="#D9821E" stroke-width="2" stroke-dasharray="8,4,2,4"/>
