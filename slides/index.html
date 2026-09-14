@@ -483,15 +483,9 @@
 <section>
   <h2>MLP versus attention: weight-stationary or not</h2>
   <div class="body">
-    <div class="lead">Share of MACs per token per layer, real models at their context</div>
-    <table class="big" style="font-size:1.0em">
-        <tr><th>model</th><th class="r">context</th><th class="r">MLP GMACs</th><th class="r">attention</th><th class="r">MLP</th><th class="r">proj.</th></tr>
-        <tr><td>DeepSeek-V3.2, sparse</td><td class="r">\(128\mathrm{k}\)</td><td class="r">\(0.4\)</td><td class="r">\(58\%\)</td><td class="r">\(28\%\)</td><td class="r">\(13\%\)</td></tr>
-        <tr><td>Kimi K3, KDA hybrid</td><td class="r">\(1\mathrm{M}\)</td><td class="r">\(1.2\)</td><td class="r">\(45\%\)</td><td class="r">\(46\%\)</td><td class="r">\(9\%\)</td></tr>
-        <tr><td>DeepSeek-V4 Pro, hybrid</td><td class="r">\(1\mathrm{M}\)</td><td class="r">\(0.5\)</td><td class="r">\(49\%\)</td><td class="r">\(38\%\)</td><td class="r">\(13\%\)</td></tr>
-      </table>
-    <div class="cols" style="margin-top:10px; align-items:center">
-      <div class="w40"><svg class="fig" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
+    <div class="block" style="margin-bottom:14px"><div class="bt">The weight-stationary half</div><div class="bb">In current models the MLP is <strong>roughly half of the MACs per token</strong>, \(0.4\) to \(1.2\,\mathrm{GMACs}\) of active experts; attention takes the other half at long context. Detail in the backup.</div></div>
+    <div class="cols" style="align-items:center">
+      <div class="w48"><svg class="fig" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
         <!-- left: mesh, weights inside -->
         <rect x="70" y="30" width="110" height="80" rx="6" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.6"/>
         <text x="125" y="62" font-size="12" fill="#16263A" text-anchor="middle">mesh</text>
@@ -510,11 +504,11 @@
         <text x="405" y="135" font-size="11" fill="#16263A" text-anchor="middle">both operands streamed: attention</text>
         <text x="405" y="152" font-size="10" fill="#5B6B7A" text-anchor="middle">photoelectric multiplication, O(N) devices, no state</text>
       </svg></div>
-      <div class="small">
+      <div>
         <ul>
-          <li>MoE thins the active MLP while attention is sized for the whole model, so attention's share is <em>higher</em> than in dense models. Linear (KDA) and compressed attention pull it back</li>
-          <li>Attention multiplies data by data; a mesh would be rewritten every token. Stream both operands into a detector. It is <span class="alert">memory-bound</span> in decode</li>
-          <li>Mesh for the MLP, streaming unit for attention, decode left to memory. K3's MLA layers assumed sparse</li>
+          <li>The MLP's weights sit still for every token: the mesh's case</li>
+          <li>Attention multiplies data by data; a mesh would be rewritten every token. Stream both operands into a detector instead</li>
+          <li>Attention is <span class="alert">memory-bound</span> in decode. Mesh for the MLP, streaming unit for attention, decode left to memory</li>
         </ul>
       </div>
     </div>
@@ -620,6 +614,22 @@
     </div>
   </div>
   <aside class="notes">Backup for the question "is 10 gigasamples real". Four bits: yes, flash converters. Eight bits nominal: yes, at six to seven effective bits, which is what every 112G PAM4 receiver already does in 5 nanometre silicon, and ABFP-style scaling tolerates it for inference. Ten to twelve bits: no, and it does not matter, because the only thing that needs it is the gradient readout and that runs at f over M. The part that is genuinely hard is the digital shell: ten terabits per second of activations per tile is a coherent-DSP-class design, and Envise's twelve nanometre control die stalling at five hundred megahertz is the cautionary tale.</aside>
+</section>
+
+<!-- ================================================================ appendix: MAC shares -->
+<section class="appendix">
+  <h2>Share of MACs per token per layer, real models <span class="tag">backup</span></h2>
+  <div class="body">
+    <table class="big" style="font-size:1.0em">
+        <tr><th>model</th><th class="r">context</th><th class="r">MLP GMACs</th><th class="r">attention</th><th class="r">MLP</th><th class="r">proj.</th></tr>
+        <tr><td>Llama 3 70B, dense GQA</td><td class="r">\(128\mathrm{k}\)</td><td class="r">\(0.7\)</td><td class="r">\(56\%\)</td><td class="r">\(37\%\)</td><td class="r">\(8\%\)</td></tr>
+        <tr><td>DeepSeek-V3.2, MoE, sparse DSA</td><td class="r">\(128\mathrm{k}\)</td><td class="r">\(0.4\)</td><td class="r">\(58\%\)</td><td class="r">\(28\%\)</td><td class="r">\(13\%\)</td></tr>
+        <tr><td>Kimi K3, MoE, 69 KDA + 24 MLA</td><td class="r">\(1\mathrm{M}\)</td><td class="r">\(1.2\)</td><td class="r">\(45\%\)</td><td class="r">\(46\%\)</td><td class="r">\(9\%\)</td></tr>
+        <tr><td>DeepSeek-V4 Pro, CSA + HCA hybrid</td><td class="r">\(1\mathrm{M}\)</td><td class="r">\(0.5\)</td><td class="r">\(49\%\)</td><td class="r">\(38\%\)</td><td class="r">\(13\%\)</td></tr>
+      </table>
+    <p class="small" style="margin-top:12px">MoE thins the active MLP, \((k+\text{shared})\times3\times d\times h_{\text{expert}}\), while attention is sized for the whole model, so attention's share is higher than in dense models: DeepSeek-V3.2's lightning indexer alone is linear in context. Linear (Kimi Delta Attention) and compressed (CSA, HCA) attention pull it back. Configs from the model cards; K3's MLA head dims and sparsity assumed as DeepSeek's; V4 Pro from its published \(27\%\) of V3.2's per-token FLOPs at \(1\mathrm{M}\). Script: <code>scripts/attention_share.py</code>.</p>
+  </div>
+  <aside class="notes">Backup for "is it really that much attention". Dense attention past 128k is almost all of the MACs, which is why nobody ships it; the models that advertise a million tokens got there with linear, sparse or compressed attention, and the MLP comes back to about half.</aside>
 </section>
 
 <!-- ================================================================ appendix -->
