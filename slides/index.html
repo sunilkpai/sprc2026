@@ -391,31 +391,29 @@
 </section>
 
 <!-- ================================================================ other applications -->
-<section style="font-size:1.12em">
+<section>
   <h2>Other applications: quantum and analog signal processing</h2>
   <div class="body">
     <div class="cols">
-      <div>
-        <div class="block"><div class="bt">Quantum photonics: exactness first</div><div class="bb"><ul>
-          <li>Meshes are the interferometers, switches, and multiplexers of linear-optical quantum computers (Carolan 2015; Xanadu and silicon platforms, <em>Nature</em> 2025)</li>
-          <li>No DAC or ADC in the data path: photons in, detector clicks out</li>
-          <li>Loss, extinction, and phase accuracy are what matter; accelerator calibration methods transfer directly</li>
-        </ul></div></div>
-      </div>
-      <div>
-        <div class="block"><div class="bt">Analog signal processing and sensing</div><div class="bb"><ul>
-          <li>Mode sorting and unscrambling for free-space and multimode links (Miller 2013; Annoni 2017)</li>
-          <li>RF photonic filtering and beamforming, lidar wavefront control, optical switching</li>
-          <li>The signal is already light: conversions only at the boundary, weights updated at kHz by feedback</li>
-        </ul></div></div>
-      </div>
+      <div class="block"><div class="bt">Quantum photonics</div><div class="bb">Meshes are the interferometers of linear-optical quantum computers. No DAC or ADC in the data path: photons in, clicks out. Exactness is everything.</div></div>
+      <div class="block"><div class="bt">Analog signal processing</div><div class="bb">Mode unscrambling, RF filtering and beamforming, lidar wavefront control. The signal is already light; the mesh <span class="alert">is</span> the signal path.</div></div>
+      <div class="block"><div class="bt">Edge computing</div><div class="bb">Small \(N\), low latency, milliwatts: sensor front ends and optical links where a GPU is not an option.</div></div>
     </div>
-    <div class="cols" style="align-items:center">
-      <div style="flex:0 0 58%"><img src="media/bintree_fig1cd.png" alt="Self-configuration of a universal network and of a binary-tree vector unit, Fig. 1c and 1d of Pai et al. 2022" style="max-height:230px;width:100%;object-fit:contain"></div>
-      <div class="small"><strong>The transferable toolkit</strong>: self-correcting binary-tree cascades, power monitoring with two detectors instead of taps, and in situ gradient measurement. Built to make an accelerator trustworthy; worth more where the mesh <span class="alert">is</span> the signal path. <span class="src">Pai et al., arXiv:2210.16935; JSTQE 2020; Science 2023.</span></div>
+    <div class="cols" style="align-items:center;margin-top:6px">
+      <div style="flex:0 0 62%"><img src="media/bintree_fig1cd.png" alt="Self-configuration of a universal network and error correction of a binary-tree vector unit, Fig. 1c and 1d of Pai et al. 2022" style="max-height:335px;width:100%;object-fit:contain"></div>
+      <div>
+        <div class="lead">Self-correcting configuration</div>
+        <ul class="small">
+          <li>Send in the row vector you want; null each MZI's output by feedback, column by column</li>
+          <li>Every phase and splitter error is absorbed: the device is measured, never modelled</li>
+          <li>A balanced tree nulls in parallel: \(\log_2 N\) steps, not \(N-1\)</li>
+          <li>The same power measurement gives the gradient in the Science paper</li>
+        </ul>
+        <div class="src">Pai et al., arXiv:2210.16935, Fig. 1c, d.</div>
+      </div>
     </div>
   </div>
-  <aside class="notes">[8:00] Do not land a conclusion here. Just show that the same three papers have an obvious home in two fields that never needed the GPU comparison.</aside>
+  <aside class="notes">[8:00] Do not land a conclusion here. Three places where the mesh is the signal path and there is no GPU to compare against: quantum, analog signal processing, and the edge, where the budget is milliwatts and a few ports. The figure is the self-correcting configuration: you send in the vector you want the row to be, and null each interferometer's output by feedback; every fabrication error is absorbed because you measure the device rather than model it. A balanced binary tree nulls its columns in parallel, log N steps instead of N minus one. It is the same power measurement that gives the gradient in the Science paper.</aside>
 </section>
 
 <!-- ================================================================ questions -->
