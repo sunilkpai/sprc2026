@@ -36,10 +36,14 @@ token, quadratically per sequence. With $d=8192$ and dense causal attention:
 | 8k | $5.4\times10^8$ | $2.7\times10^8$ | $6.7\times10^7$ | 61% | 2.6× |
 | 32k | $5.4\times10^8$ | $2.7\times10^8$ | $2.7\times10^8$ | 50% | 2.0× |
 | 128k | $5.4\times10^8$ | $2.7\times10^8$ | $1.1\times10^9$ | 29% | 1.4× |
+| 2M | $5.4\times10^8$ | $2.7\times10^8$ | $1.7\times10^{10}$ | 3% | 1.03× |
 
 The last column is Amdahl's law for a photonic MLP engine: the system-level
 speed-up if the MLP cost nothing. It is the honest number to put beside the
-per-op energy chart.
+per-op energy chart. At 2M tokens of dense causal attention the weight
+matrices are 4% of the work and a photonic MLP is irrelevant; that is also
+why no one runs 2M contexts with dense attention, and the sparse, windowed
+and linear variants in the next section are what actually ship.
 
 ## 2. What GQA, MQA and the long-context tricks change
 
