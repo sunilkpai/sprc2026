@@ -395,21 +395,31 @@
   <h2>Other applications: quantum and analog signal processing</h2>
   <div class="body">
     <div class="cols">
-      <div class="block"><div class="bt">Quantum photonics</div><div class="bb">Meshes are the interferometers of linear-optical quantum computers. No DAC or ADC in the data path: photons in, clicks out. Exactness is everything.</div></div>
-      <div class="block"><div class="bt">Analog signal processing</div><div class="bb">Mode unscrambling, RF filtering and beamforming, lidar wavefront control. The signal is already light; the mesh <span class="alert">is</span> the signal path.</div></div>
-      <div class="block"><div class="bt">Edge computing</div><div class="bb">Small \(N\), low latency, milliwatts: sensor front ends and optical links where a GPU is not an option.</div></div>
+      <div class="block"><div class="bt">Quantum photonics</div><div class="bb"><ul>
+        <li>Universal unitary operations (Reck 1994; Clements 2016)</li>
+        <li>Gaussian boson sampling (Zhong 2020; Madsen 2022)</li>
+      </ul></div></div>
+      <div class="block"><div class="bt">Analog signal processing</div><div class="bb"><ul>
+        <li>Beamforming</li>
+        <li>Mode unscrambling</li>
+        <li>Spectral filtering</li>
+      </ul></div></div>
+      <div class="block"><div class="bt">Edge computing</div><div class="bb"><ul>
+        <li>Small analog neural networks, not transformers</li>
+        <li>Sensor front ends, optical links</li>
+      </ul></div></div>
     </div>
     <div class="cols" style="align-items:center;margin-top:6px">
       <div style="flex:0 0 62%"><img src="media/bintree_fig1cd.png" alt="Self-configuration of a universal network and error correction of a binary-tree vector unit, Fig. 1c and 1d of Pai et al. 2022" style="max-height:335px;width:100%;object-fit:contain"></div>
       <div>
         <div class="lead">Self-correcting configuration</div>
         <ul class="small">
-          <li>Send in the row vector you want; null each MZI's output by feedback, column by column</li>
+          <li>Send in the row vector you want; null each MZI's output by feedback, column by column (Miller 2013)</li>
           <li>Every phase and splitter error is absorbed: the device is measured, never modelled</li>
           <li>A balanced tree nulls in parallel: \(\log_2 N\) steps, not \(N-1\)</li>
           <li>The same power measurement gives the gradient in the Science paper</li>
         </ul>
-        <div class="src">Pai et al., arXiv:2210.16935, Fig. 1c, d.</div>
+        <div class="src">Miller, Photon. Res. 1, 1 (2013); Pai et al., arXiv:2210.16935, Fig. 1c, d.</div>
       </div>
     </div>
   </div>
