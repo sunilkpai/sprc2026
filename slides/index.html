@@ -177,30 +177,50 @@
           <tr><td>who</td><td>Shen 2017; this work</td></tr>
         </table>
       </div>
-      <!-- 2. crossbar -->
+      <!-- 2. broadcast and weight -->
       <div>
-        <div class="lead center" style="font-size:0.7em; margin:0">Crossbar</div>
+        <div class="lead center" style="font-size:0.7em; margin:0">Optical fan-out, electronic weights</div>
         <svg class="fig tight" viewBox="0 0 300 138" xmlns="http://www.w3.org/2000/svg">
-          <g stroke="#3A8FB7" stroke-width="1.6"><line x1="60" y1="10" x2="60" y2="130"/><line x1="120" y1="10" x2="120" y2="130"/><line x1="180" y1="10" x2="180" y2="130"/><line x1="240" y1="10" x2="240" y2="130"/></g>
-          <g font-size="10" fill="#3A8FB7" text-anchor="middle"><text x="60" y="8">x₁</text><text x="120" y="8">x₂</text><text x="180" y="8">x₃</text><text x="240" y="8">x₄</text></g>
-          <g stroke="#5B6B7A" stroke-width="1.4"><line x1="30" y1="40" x2="275" y2="40"/><line x1="30" y1="80" x2="275" y2="80"/><line x1="30" y1="120" x2="275" y2="120"/></g>
-          <g fill="#F5DDBD" stroke="#D9821E" stroke-width="1.3">
-            <rect x="52" y="32" width="16" height="16"/><rect x="112" y="32" width="16" height="16"/><rect x="172" y="32" width="16" height="16"/><rect x="232" y="32" width="16" height="16"/>
-            <rect x="52" y="72" width="16" height="16"/><rect x="112" y="72" width="16" height="16"/><rect x="172" y="72" width="16" height="16"/><rect x="232" y="72" width="16" height="16"/>
-            <rect x="52" y="112" width="16" height="16"/><rect x="112" y="112" width="16" height="16"/><rect x="172" y="112" width="16" height="16"/><rect x="232" y="112" width="16" height="16"/>
+          <!-- inputs and 1:N splitters -->
+          <g font-size="10" fill="#3A8FB7" text-anchor="end"><text x="22" y="34">x₁</text><text x="22" y="74">x₂</text><text x="22" y="114">x₃</text></g>
+          <g stroke="#3A8FB7" stroke-width="1.6"><line x1="26" y1="30" x2="44" y2="30"/><line x1="26" y1="70" x2="44" y2="70"/><line x1="26" y1="110" x2="44" y2="110"/></g>
+          <g fill="#D6E6F0" stroke="#3A8FB7" stroke-width="1.2"><rect x="44" y="22" width="18" height="16" rx="2"/><rect x="44" y="62" width="18" height="16" rx="2"/><rect x="44" y="102" width="18" height="16" rx="2"/></g>
+          <g font-size="7" fill="#16263A" text-anchor="middle"><text x="53" y="33">1:N</text><text x="53" y="73">1:N</text><text x="53" y="113">1:N</text></g>
+          <!-- fan-out: input j to row i -->
+          <g stroke="#3A8FB7" stroke-width="1" fill="none" opacity="0.85">
+            <path d="M62 30 C86 30 86 30 108 30"/><path d="M62 30 C86 30 86 70 108 70"/><path d="M62 30 C86 30 86 110 108 110"/>
+            <path d="M62 70 C86 70 86 30 138 30"/><path d="M62 70 C86 70 86 70 138 70"/><path d="M62 70 C86 70 86 110 138 110"/>
+            <path d="M62 110 C86 110 86 30 168 30"/><path d="M62 110 C86 110 86 70 168 70"/><path d="M62 110 C86 110 86 110 168 110"/>
           </g>
-          <g font-size="10" fill="#6B8F3D" text-anchor="start"><text x="280" y="44">Σ I</text><text x="280" y="84">Σ I</text><text x="280" y="124">Σ I</text></g>
+          <g fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.2">
+            <circle cx="112" cy="30" r="4"/><circle cx="142" cy="30" r="4"/><circle cx="172" cy="30" r="4"/>
+            <circle cx="112" cy="70" r="4"/><circle cx="142" cy="70" r="4"/><circle cx="172" cy="70" r="4"/>
+            <circle cx="112" cy="110" r="4"/><circle cx="142" cy="110" r="4"/><circle cx="172" cy="110" r="4"/>
+          </g>
+          <!-- weight cells, one per (i, j) -->
+          <g fill="#F5DDBD" stroke="#D9821E" stroke-width="1.3">
+            <rect x="118" y="22" width="16" height="16"/><rect x="148" y="22" width="16" height="16"/><rect x="178" y="22" width="16" height="16"/>
+            <rect x="118" y="62" width="16" height="16"/><rect x="148" y="62" width="16" height="16"/><rect x="178" y="62" width="16" height="16"/>
+            <rect x="118" y="102" width="16" height="16"/><rect x="148" y="102" width="16" height="16"/><rect x="178" y="102" width="16" height="16"/>
+          </g>
+          <g stroke="#5B6B7A" stroke-width="1.2"><line x1="134" y1="30" x2="148" y2="30"/><line x1="164" y1="30" x2="178" y2="30"/><line x1="194" y1="30" x2="230" y2="30"/>
+            <line x1="134" y1="70" x2="148" y2="70"/><line x1="164" y1="70" x2="178" y2="70"/><line x1="194" y1="70" x2="230" y2="70"/>
+            <line x1="134" y1="110" x2="148" y2="110"/><line x1="164" y1="110" x2="178" y2="110"/><line x1="194" y1="110" x2="230" y2="110"/></g>
+          <!-- detectors summing each row -->
+          <g fill="#E3ECD6" stroke="#6B8F3D" stroke-width="1.3"><circle cx="238" cy="30" r="7"/><circle cx="238" cy="70" r="7"/><circle cx="238" cy="110" r="7"/></g>
+          <g font-size="10" fill="#6B8F3D" text-anchor="start"><text x="250" y="34">Σ I → y₁</text><text x="250" y="74">Σ I → y₂</text><text x="250" y="114">Σ I → y₃</text></g>
+          <text x="150" y="134" font-size="8" fill="#5B6B7A" text-anchor="middle">input split N ways to photodetectors; a resistive DAC scales each photocurrent; currents summed per output</text>
         </svg>
         <table class="tight">
-          <tr><td>weights</td><td>\(N^2\) attenuator cells, held</td></tr>
-          <tr><td>multiply, sum</td><td>attenuation, photocurrent</td></tr>
+          <tr><td>weights</td><td>\(N^2\) resistive DACs, held</td></tr>
+          <tr><td>multiply, sum</td><td>current scaling, wire sum</td></tr>
           <tr><td>devices</td><td>\(N^2\) cells, incoherent</td></tr>
           <tr><td>who</td><td>Envise, <em>Nature</em> 2025</td></tr>
         </table>
       </div>
       <!-- 3. temporal -->
       <div>
-        <div class="lead center" style="font-size:0.7em; margin:0">Temporal mapping</div>
+        <div class="lead center" style="font-size:0.7em; margin:0">Time-division multiplexing</div>
         <svg class="fig tight" viewBox="0 0 300 138" xmlns="http://www.w3.org/2000/svg">
           <rect x="30" y="30" width="70" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="65" y="47" font-size="11" fill="#16263A" text-anchor="middle">x(t)</text>
           <rect x="30" y="84" width="70" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="65" y="101" font-size="11" fill="#16263A" text-anchor="middle">w(t)</text>
@@ -222,7 +242,7 @@
     
     
   </div>
-  <aside class="notes">[2:45] Three ways to make light do a matrix. The mesh holds the weights as phases and does the multiply and the sum by interference, so it needs coherence across the whole array and one interferometer per weight. The crossbar, which is what Envise actually is, holds the weights as attenuation cells, broadcasts the input, and sums photocurrents on a wire, so there is no phase to hold but still a device per weight. Temporal mapping holds nothing: the weights arrive as pulses from memory and multiply the input at a detector, so the silicon is order N and the cost moves to memory bandwidth. All three convert at the edge, order N per N squared multiplies; that shared term is the main message at the end. Say once that the nonlinearity stays electronic: optical nonlinearities, electro-optic, saturable, all-optical, are real and interesting, and the 2023 SM even sketches a low-loss distributed one, but they are a separate talk and none of the energy numbers here depend on them. What differs is where the weight lives, and that decides footprint, stability, training, and what happens in decode.</aside>
+  <aside class="notes">[2:45] Three ways to make light do a matrix. The mesh holds the weights as phases and does the multiply and the sum by interference, so it needs coherence across the whole array and one interferometer per weight. Envise does the multiply electronically: the input vector is encoded on light, split N ways, and detected at every unit cell, where a 7-bit resistive DAC scales the photocurrent by the weight and the currents add on a wire. Optics does the distribution, not the arithmetic, so there is no phase to hold, but still a detector and a DAC per weight. Time-division multiplexing holds nothing: the weights arrive as pulses from memory and multiply the input at a detector, so the silicon is order N and the cost moves to memory bandwidth. All three convert at the edge, order N per N squared multiplies; that shared term is the main message at the end. Say once that the nonlinearity stays electronic: optical nonlinearities, electro-optic, saturable, all-optical, are real and interesting, and the 2023 SM even sketches a low-loss distributed one, but they are a separate talk and none of the energy numbers here depend on them. What differs is where the weight lives, and that decides footprint, stability, training, and what happens in decode.</aside>
 </section>
 
 <!-- ================================================================ method -->
@@ -398,14 +418,14 @@
 <!-- ================================================================ conclusions -->
 <section>
   <h2>What the paper showed, and what is new today</h2>
-  <div class="body cols">
+  <div class="body cols" style="font-size:0.92em">
     <div>
       <div class="lead">2023: Pai et al.</div>
       <ul>
         <li>Backpropagation on an optical chip, for the first time</li>
-        <li>Gradient of every phase shifter measured in three optical passes, fabrication errors included</li>
+        <li>Gradient of every phase from three optical passes, fabrication errors included</li>
         <li>An analog update: no digital readback of \(N^2\) parameters</li>
-        <li>Energy model: \(45\,\mathrm{fJ/op}\) at 8 bits, \(N=128\); the <span class="alert">ADC is the bottleneck</span>, not photons; converters are getting faster but energy remains constant (<a href="#/converters">backup</a>)</li>
+        <li>Energy model: \(45\,\mathrm{fJ/op}\) at 8 bits, \(N=128\). The <span class="alert">ADC is the bottleneck</span>: converters are getting faster but energy remains constant (<a href="#/converters">backup</a>)</li>
       </ul>
     </div>
     <div>
@@ -413,13 +433,13 @@
       <ul>
         <li>Transformers: the mesh fits the MLP in prefill and training; decode is memory-bound</li>
         <li>Inference went to 4 bits; training still needs bf16-class activations</li>
-        <li>Envise: \(128^2\) crossbar at \(1.2\,\mathrm{pJ/op}\); Jalapeño: MXFP4 at \(52\,\mathrm{fJ/op}\)</li>
+        <li>Envise: optical fan-out, electronic weights, \(1.2\,\mathrm{pJ/op}\); Jalapeño: MXFP4, \(52\,\mathrm{fJ/op}\)</li>
         <li>Mesh has poor footprint efficiency (\(10^{-2}\,\mathrm{mm}^2\) per weight), requires time-division multiplexing</li>
       </ul>
     </div>
   </div>
   <div class="block" style="margin:10px 32px 0"><div class="bt">Main message</div><div class="bb">Most optical-computing marketing misses the <span class="alert">electrical bottleneck</span>: the multiply is nearly free, but NOT the conversions. Innovations that <span class="alert">reduce conversions per operation</span> are what make these technologies worth the investment.</div></div>
-  <aside class="notes">[8:15] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that lands at 45 femtojoules per op at 8 bits for a 128-wide mesh, five times under a B200 at FP8, and already said conversions would dominate: the ADC is half the energy at 8 bits and the only clock in the system, and today's 5 nanometre converters are getting faster but their energy per sample has stayed constant; the projection is in the backup. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide crossbar and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The main message, and the thing I would like argued with: most optical-computing marketing misses the electrical bottleneck. The multiply is nearly free in every one of these schemes, mesh, crossbar or temporal mapping; what is not free is the DAC, the ADC and the memory read around it, and those are the same parts a GPU uses. Envise measured a factor of forty between core and package. So the innovations worth funding are the ones that reduce conversions per operation: batch-integrated readout, activations that stay optical between layers, weights that never move. Without those, the investment does not pay. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
+  <aside class="notes">[8:15] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that lands at 45 femtojoules per op at 8 bits for a 128-wide mesh, five times under a B200 at FP8, and already said conversions would dominate: the ADC is half the energy at 8 bits and the only clock in the system, and today's 5 nanometre converters are getting faster but their energy per sample has stayed constant; the projection is in the backup. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide array with optical fan-out and electronic weights and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The main message, and the thing I would like argued with: most optical-computing marketing misses the electrical bottleneck. The multiply is nearly free in every one of these schemes, mesh, fan-out array or time-division multiplexing; what is not free is the DAC, the ADC and the memory read around it, and those are the same parts a GPU uses. Envise measured a factor of forty between core and package. So the innovations worth funding are the ones that reduce conversions per operation: batch-integrated readout, activations that stay optical between layers, weights that never move. Without those, the investment does not pay. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
 </section>
 
 <!-- ================================================================ questions -->
@@ -608,7 +628,7 @@
         <line x1="180" y1="70" x2="240" y2="70" stroke="#6B8F3D" stroke-width="2"/><text x="200" y="60" font-size="11" fill="#6B8F3D">Wx</text>
         <text x="125" y="135" font-size="11" fill="#16263A" text-anchor="middle">weight-stationary: MLP, projections</text>
         <text x="125" y="152" font-size="10" fill="#5B6B7A" text-anchor="middle">reprogramming per token would need 130 Tb/s per mesh</text>
-        <!-- right: temporal mapping -->
+        <!-- right: time-division multiplexing -->
         <rect x="300" y="42" width="60" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="330" y="59" font-size="11" fill="#16263A" text-anchor="middle">mod q(t)</text>
         <rect x="300" y="84" width="60" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="330" y="101" font-size="11" fill="#16263A" text-anchor="middle">mod k(t)</text>
         <circle cx="410" cy="76" r="16" fill="#F0CDA5" stroke="#D9821E" stroke-width="1.6"/><text x="410" y="80" font-size="11" fill="#16263A" text-anchor="middle">PD</text>
@@ -687,7 +707,7 @@
       <div class="lead">Heat per 128-wide mesh</div>
       <ul>
         <li>Optics \(\approx2\,\mathrm{W}\); thermal shifters would add \(800\,\mathrm{W}\)</li>
-        <li>EO: Envise holds a \(0\) to \(1\) weight in a sub-mm cell with no holding current. A mesh phase needs \(2\pi\): depletion is cm-class, rings short but wavelength-sensitive. MEMS: short, free, unproven</li>
+        <li>Envise has no optical weight device: each cell is a photodetector pair with a 7-bit resistive DAC, so a weight is a register write. A mesh phase needs \(2\pi\): depletion is cm-class, rings short but wavelength-sensitive. MEMS: short, free, unproven</li>
         <li>The digital shell sets the package: \(50\) to \(100\,\mathrm{W}\), air-cooled</li>
       </ul>
       <div class="lead">Cooling: capacity versus stability</div>
@@ -744,7 +764,7 @@
       </ul>
     </div>
     <div>
-      <div class="lead">Temporal mapping (Opticore; Hamerly 2019)</div>
+      <div class="lead">Time-division multiplexing (Opticore; Hamerly 2019)</div>
       <ul>
         <li>Weights as pulses: \(O(N)\) devices, zero silicon per parameter, a memory-bandwidth problem instead</li>
       </ul>
@@ -754,7 +774,7 @@
       </ul>
     </div>
   </div>
-  <aside class="notes">Backup. This is the slide for the skeptic in the room. Energy per op can be good and the chip still loses because cost is area, and photonics is a hundred times worse per weight. Opticore's answer is to stop storing weights in silicon at all and stream them as pulses; the price is that weights now move on every use, so they inherit the GPU's arithmetic-intensity problem and an HBM stack. The mesh can play the same game at block level if the phase shifters switch in nanoseconds and the control die can push the bits, and unlike temporal mapping it keeps a stationary device to hang a gradient loop on. Sources: docs/footprint-tdm.md.</aside>
+  <aside class="notes">Backup. This is the slide for the skeptic in the room. Energy per op can be good and the chip still loses because cost is area, and photonics is a hundred times worse per weight. Opticore's answer is to stop storing weights in silicon at all and stream them as pulses; the price is that weights now move on every use, so they inherit the GPU's arithmetic-intensity problem and an HBM stack. The mesh can play the same game at block level if the phase shifters switch in nanoseconds and the control die can push the bits, and unlike time-division multiplexing it keeps a stationary device to hang a gradient loop on. Sources: docs/footprint-tdm.md.</aside>
 </section>
 
 <!-- ================================================================ appendix: full tradeoffs -->
@@ -771,7 +791,7 @@
       <tr><td>package, cooling</td><td>\(50\) to \(100\,\mathrm{W}\), air; lasers pooled, water-cooled</td><td>\(700\,\mathrm{W}\) to \(1\,\mathrm{kW}\), liquid</td></tr>
       <tr><td>ops per rack</td><td>\(22\,\mathrm{POPS}\) at \(1\,\mathrm{GS/s}\); parity at \(10\,\mathrm{GS/s}\), 16 tiles per package</td><td>NVL72 \(720\,\mathrm{POPS}\), \(120\,\mathrm{kW}\)</td></tr>
       <tr><td>precision</td><td>4 to 8 bits; gradients gain \(\tfrac12\log_2 M\) bits by integration</td><td>FP4, FP8 inference; BF16 training</td></tr>
-      <tr><td>holding a weight</td><td>thermal \(800\,\mathrm{W}\) per mesh. EO holds a crossbar\'s \(0\) to \(1\) weight in a sub-mm cell; a mesh phase needs \(2\pi\): depletion cm-class, rings drift. MEMS unproven</td><td>SRAM and HBM, solved</td></tr>
+      <tr><td>holding a weight</td><td>thermal \(800\,\mathrm{W}\) per mesh. Envise holds weights electronically, a resistive DAC per detector pair; a mesh phase needs \(2\pi\): depletion cm-class, rings drift. MEMS unproven</td><td>SRAM and HBM, solved</td></tr>
       <tr><td>training on chip</td><td>in situ: every gradient in three optical passes</td><td>digital backprop</td></tr>
       <tr><td>where it fits</td><td><span class="alert">MLP and projections, prefill and training</span>; attention streams; decode is memory-bound</td><td>everything, today</td></tr>
     </table>

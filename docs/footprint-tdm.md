@@ -52,8 +52,9 @@ EO: 50 to 500 µm depending on $V_\pi L$). The wavelength sets the floor: a
 waveguide is ~0.5 µm wide, a bend radius ~5 µm, so the smallest 2 × 2 building
 block is ~10⁻³ mm², and nothing on the roadmap takes it to 10⁻⁴. Meanwhile the
 transistor MAC keeps shrinking. "One device per parameter" is the mesh's
-structural disadvantage, and it is the same one Lightmatter's crossbar has:
-16 384 weight modulators per core, each with its own DAC and calibration loop.
+structural disadvantage, and it is the same one Lightmatter's broadcast-and-weight array has:
+16 384 weight unit cells per core, each a photodetector pair with its own
+resistive DAC and slope calibration.
 
 The mesh gets something for that silicon: the weights are *stationary*. Once
 programmed, no bit of weight moves for the whole batch, which is why the 2023

@@ -59,12 +59,12 @@ Per 128-wide mesh at 1 GHz, from the 2023 model with segmented phase shifters
 | digital shell: I/O prep, control, SRAM, host interface | the unknown | Envise: 78 W for four 128-wide cores, i.e. ~19 W per core, 25× the photonic core | Nature 2025 SI VI |
 | HBM, if weights live off-package | ~25 to 30 W per stack | unchanged by photonics | vendor datasheets |
 
-On the actuation choice: Envise's weight modulators settle in about 10 ns,
-which rules out heaters and implies electro-optic devices, most likely
-reverse-biased junctions that hold a state on leakage current alone. Their cells are
-sub-millimetre (349 mm² for 128², about 0.02 mm² each), which works because a
-crossbar weight only needs a 0-to-1 amplitude and can use a ring or an
-absorption modulator. A mesh is different: each phase needs a full $2\pi$ at
+On the actuation choice: Envise sidesteps it. Its weights are not optical
+devices at all: each unit cell is a differential photodetector pair with a 7-bit
+resistive DAC that scales the photocurrent, so a weight change is a register
+write that settles in about 10 ns and holds at zero optical power. The cells are
+sub-millimetre (349 mm² for 128², about 0.02 mm² each) because they contain no
+phase shifter. A mesh is different: each phase needs a full $2\pi$ at
 zero holding power. Silicon depletion at $V_\pi L$ of 1 to 2 V·cm is
 centimetre-class at CMOS voltages; ring-based phase shifters reach $2\pi$ in
 tens of micrometres but are resonant, so they drift with wavelength and
@@ -74,7 +74,7 @@ stiction, creep and drift over 10⁹ cycles, particle sensitivity and hermetic
 packaging are unproven at the $N^2$ count a mesh needs, and no foundry PDK
 offers them at scale. Thermal is out on power, EO on area, MEMS on
 reliability; the mesh's holding problem has no clean answer yet, and the
-crossbar's O(N) bias elements plus O(N²) leakage-held EO weights is the reason
+array's O(N) optical bias elements plus O(N²) electronic weights is the reason
 Lightmatter could reach 128 wide.
 
 Three conclusions:

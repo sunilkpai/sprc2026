@@ -29,7 +29,7 @@ Contents
 | package | six chips: 2 digital control dies (DCI) + 4 photonic tensor cores (PTC), 3D stacked on an interposer, 80 × 65 mm | SI III |
 | digital dies | GlobalFoundries 12 nm, ~50 B transistors total, quad-core RISC-V control processor running NuttX | SI V, blog |
 | photonic dies | 4 × (128 × 128) PTC, each 14 × 24.96 mm, ~1 M photonic components in total, 300 mm foundry silicon photonics | SI, Physics World |
-| PTC contents | 128 input vector modulators (VMOD, 10-bit), 128 × 128 weight modulators (WMOD, 7-bit), TIAs and 11-bit vector ADCs (VADC) | SI I, V |
+| PTC contents | 128 input vector modulators (VMOD, 10-bit), 128 × 128 weight unit cells (WMOD in the SI: a differential photodetector pair plus a 7-bit resistive DAC), TIAs and 11-bit vector ADCs (VADC) | SI I, V |
 | clock | 500 MHz sustained (clock-tree limited), 2 GHz peak design | SI II, VI |
 | throughput | 65.5 TOPS at 500 MHz = 4 × 128² × 2 × 0.5 GHz; 262 TOPS at 2 GHz | SI VI |
 | power | 78 W electrical + 1.6 W optical (full system); 0.25 W for the PTC encode/weight path alone | SI VI |
@@ -47,15 +47,21 @@ Contents
 
 From SI section I and V: each activation element $x_j$ is encoded by a vector
 modulator (an MZI held at quadrature by a "vector stabiliser") and *split into
-$N$ row lines*. On each row line it passes a weight modulator whose weight value
-is encoded as the *ratio of currents drawn from the differential row lines*.
+$N$ row lines*. On each row line it is detected by a weight unit cell, a
+differential photodetector pair feeding a 7-bit R-2R resistive DAC, whose weight
+value is encoded as the *ratio of currents drawn from the differential row lines*.
 The row line photocurrents are summed and the difference is read by a TIA and
 an 11-bit ADC:
 
 $$y_i = \sum_{j=1}^{N} w_{ij}\,x_j,\qquad w_{ij} \propto \frac{I^{+}_{ij}-I^{-}_{ij}}{I^{+}_{ij}+I^{-}_{ij}}.$$
 
-So this is an intensity-domain, incoherent crossbar. Multiplication is
-attenuation, accumulation is Kirchhoff's current law, sign is dual-rail. There is
+So this is an intensity-domain, incoherent broadcast-and-weight array (Tait et
+al., 2014), not a crossbar: there are no crossing conductors, each input is fanned
+out optically to a photodetector pair at every unit cell, a resistive DAC scales
+the photocurrent by the weight, and the currents are summed per output. The
+multiply itself is electronic; optics does the vector encoding and the fan-out
+(Nature main text, "Photonic processor architecture"). Accumulation is
+Kirchhoff's current law, sign is dual-rail. There is
 no interference between different $j$ and therefore no phase to stabilise across
 the array, only per-element bias points (the quadrature lock of each VMOD and the
 slope calibration of each WMOD). The Lightmatter patent literature and Nick
@@ -154,7 +160,7 @@ norms in the DCI.
 
 ## 5. Where they diverge, and why in situ backprop is a mesh-specific idea
 
-**In a crossbar the gradient is an outer product; in a mesh it is not.**
+**In a broadcast-and-weight array the gradient is an outer product; in a mesh it is not.**
 For $y = Wx$ with one cell per weight,
 
 $$\frac{\partial L}{\partial w_{ij}} = \delta_i\,x_j,\qquad \delta = \left(\frac{\partial L}{\partial y}\right),$$
@@ -170,13 +176,13 @@ and $\partial U/\partial\eta$ is a dense $N\times N$ matrix that depends on ever
 other phase and on every fabrication error. Computing it digitally needs a
 faithful model of the imperfect device; measuring $-\mathrm{Im}(x_\eta x_{\mathrm{adj},\eta})$
 at the tap needs none. That is the whole reason the 2023 paper exists: it is the
-mesh's answer to a problem the crossbar never had.
+mesh's answer to a problem the broadcast-and-weight array never had.
 
-**Bidirectionality is available to the mesh and not to the crossbar.** The
+**Bidirectionality is available to the mesh and not to the broadcast-and-weight array.** The
 adjoint pass $x_{\mathrm{adj}} = U^{T}y_{\mathrm{adj}}$ is one more optical pass
 because the mesh is reciprocal and lossless; time reversal then makes the sum
 pass reproduce the backward field at every tap (section 3.2 of the math note).
-A crossbar terminates in photodiodes, so there is no backward light; the backward
+A broadcast-and-weight array terminates in photodiodes, so there is no backward light; the backward
 MVM is a *transposed weight load*. On the 2025 silicon that costs a 128 × 128 × 7-bit
 transfer over a 25 MHz weight interface: 0.1 to 1 ms depending on the word width,
 which the SI does not give, against 2 ns for a forward MVM. Training on that chip
@@ -196,10 +202,10 @@ needs at $N=128$.
 
 **Stability cost.** A coherent mesh needs $N(N-1)$ phases stable to a small
 fraction of a radian *relative to each other* and a reference arm, for the
-duration of a forward, backward and sum pass. Lightmatter's crossbar needs each
+duration of a forward, backward and sum pass. Lightmatter's array needs each
 of ~1 M elements stable at its own bias point, with an hourly recalibration and
 per-cell slope matching, but no cross-element coherence. That asymmetry, more
-than any energy argument, is why the crossbar reached 128 wide in 2025 and meshes
+than any energy argument, is why the broadcast-and-weight array reached 128 wide in 2025 and meshes
 in the literature are still at 8 to 64.
 
 **Unitary versus general.** A mesh gives $U(N)$ natively; a general real matrix
@@ -447,10 +453,10 @@ stability requirement from `rack-design.md` restated as a training spec.
    adjoint vector norm, to keep $-\mathrm{Im}(x_\eta x_{\mathrm{adj},\eta})$ in the ADC
    window as the gradient shrinks toward convergence? Alg. 4 line 6 already picks
    one scale per batch; making it adaptive is a small change to the protocol.
-3. For a crossbar, the only thing in situ backprop offers is the backward MVM
+3. For a broadcast-and-weight array, the only thing in situ backprop offers is the backward MVM
    $W^{T}\delta$. Is a transposed read path (a second set of row lines along
    columns, or a switchable fan-in) cheaper than a 25 MHz weight reload? If yes,
-   the crossbar gets on-chip training without any of the mesh's coherence burden.
+   the array gets on-chip training without any of the mesh's coherence burden.
 4. Does loss imbalance at the ~0.05 dB level, which the 2023 simulations tolerate,
    hold at 128 columns where the S14 coupling recursion is already fighting
    0.2 dB per MZI?
