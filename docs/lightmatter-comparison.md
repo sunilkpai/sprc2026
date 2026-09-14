@@ -315,7 +315,9 @@ one that runs slowly.
 
 Digital reference lines: the model's own 8-bit baseline 300, H100 INT8 350,
 B200 FP4 110, and OpenAI's Jalapeño MXFP4 ASIC at 52 (13.4 PFLOPS at a 700 W
-package, Hot Chips 2026). Jalapeño is the honest 4-bit target: the photonic
+package, Hot Chips 2026). Groq's LPU (750 TOPS INT8 at about 300 W, 14 nm, 230 MB SRAM
+per chip) sits at 400 fJ per op: it buys decode latency with SRAM-resident
+weights, not energy per op. Jalapeño is the honest 4-bit target: the photonic
 4-bit engine at 14 fJ per op is 3.7× under it before any shell is counted.
 
 **Training, $N=128$, fJ per op**

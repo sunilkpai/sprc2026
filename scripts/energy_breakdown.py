@@ -95,7 +95,9 @@ digital = {"model 8-bit": 6 * DEFAULT["E_OP"] / 2, "model 4-bit": 6 * FOUR_BIT["
            # OpenAI/Broadcom Jalapeno (Hot Chips 2026): 13.4 PFLOP/s MXFP4 at a 700 W package
            "Jalapeno MXFP4": 700 / 13.4e15,
            # Cerebras WSE-3 / CS-3: 125 PFLOPS FP16 vendor peak at ~23 kW system power
-           "Cerebras FP16": 23e3 / 125e15}
+           "Cerebras FP16": 23e3 / 125e15,
+           # Groq LPU (GroqChip 1, 14 nm): 750 TOPS INT8 at ~300 W, 230 MB on-chip SRAM, inference only
+           "Groq INT8": 300 / 750e12}
 NONZERO = {k for d in (inf, train) for c in d.values() for k, v in c.items() if v > 0}
 
 # ------------------------------------------------------------------- report
@@ -142,7 +144,7 @@ SERIES = [("digital I/O prep", "slate", "digital I/O prep"),
           ("optical power", "amber!40", "optical power"),
           ("switches", "mist", "switches"),
           ("rest of system", "ink!25", f"Envise DCI, rest of system: {LM_REST / fJ:.0f}, off scale")]
-YMAX = 400.0
+YMAX = 460.0
 
 
 def axis(name, data, title, at=None, legend=False, ylabel=True, ymax=YMAX, baselines=None,
@@ -208,7 +210,8 @@ INF_BASE = [("model 8-bit digital", digital["model 8-bit"], "dashed, color=slate
             ("H100 INT8 wall", digital["H100 INT8"], "dotted, color=slate", False),
             ("B200 FP4 wall", digital["B200 FP4"], "dashdotted, color=slate", False),
             ("Cerebras WSE-3 FP16", digital["Cerebras FP16"], "dashdotted, color=amber", False),
-            ("Jalapeno MXFP4 wall, inference only", digital["Jalapeno MXFP4"], "dashed, color=moss", False)]
+            ("Jalapeno MXFP4 wall, inference only", digital["Jalapeno MXFP4"], "dashed, color=moss", False),
+            ("Groq LPU INT8, inference only", digital["Groq INT8"], "dotted, color=sky", False)]
 TRAIN_BASE = [("model 8-bit digital", digital["model 8-bit"], "dashed, color=slate", False),
               ("H100 INT8 wall", digital["H100 INT8"], "dotted, color=slate", False),
               ("Cerebras WSE-3 FP16", digital["Cerebras FP16"], "dashdotted, color=amber", False)]

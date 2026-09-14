@@ -62,6 +62,7 @@
 .reveal .cols > div.w40 { flex: 0 0 40%; }
 .reveal .cols > div.w36 { flex: 0 0 36%; }
 .reveal .cols > div.w60 { flex: 0 0 60%; }
+.reveal .cols > div.w66 { flex: 0 0 66%; }
 
 .reveal .block { background: var(--mist); border-radius: 6px; margin: 0 0 12px 0; overflow: hidden; }
 .reveal .block .bt { background: var(--ink2); color: var(--paper); font-size: 0.85em; padding: 5px 12px; }

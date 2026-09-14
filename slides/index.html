@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="vendor/reveal/reset.css">
 <link rel="stylesheet" href="vendor/reveal/reveal.css">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/theme.css?v=3">
 </head>
 <body>
 <div class="reveal">
@@ -122,7 +122,7 @@
 <section>
   <h2>The post-GPT workload: a transformer, and prefill versus decode</h2>
   <div class="body cols">
-    <div class="w60">
+    <div class="w66">
       <svg class="fig" viewBox="0 0 760 440" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
         <defs><marker id="ar2" markerWidth="7" markerHeight="7" refX="5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 z" fill="#5B6B7A"/></marker></defs>
         <!-- ============ architecture, vertical stack ============ -->
@@ -200,7 +200,7 @@
         <rect x="590" y="428" width="12" height="10" fill="#EEF2F6" stroke="#5B6B7A"/><text x="606" y="437" font-size="10" fill="#16263A">digital</text>
       </svg>
     </div>
-    <div class="small">
+    <div class="xsmall">
       <ul>
         <li>A <strong>token</strong> is a word piece, a vector of length \(d\) (\(8192\) for a 70B model). It passes through \(80\) of these blocks</li>
         <li><strong>Green</strong> layers multiply by a weight matrix that never changes at inference: \(12d^2\) MACs per token. <strong>Amber</strong> attention compares the token with every earlier one, whose keys and values sit in the <strong>KV cache</strong>: \(\approx Ld\)</li>
@@ -373,6 +373,7 @@
       <table>
         <tr><th>\(\mathrm{pJ/op}\), full system</th><th class="r">ops per rack</th><th>vs NVL72</th></tr>
         <tr><td>\(1.2\)&emsp;Envise measured</td><td class="r">\(25\,\mathrm{POPS}\)</td><td>\(29\times\) less</td></tr>
+        <tr><td>\(0.40\)&emsp;Groq LPU, INT8</td><td class="r">\(75\,\mathrm{POPS}\)</td><td>\(10\times\) less, 14 nm</td></tr>
         <tr><td>\(0.30\)&emsp;8-bit digital model</td><td class="r">\(100\,\mathrm{POPS}\)</td><td>\(7\times\) less</td></tr>
         <tr><td>\(0.18\)&emsp;Cerebras WSE-3, FP16</td><td class="r">\(160\,\mathrm{POPS}\)</td><td>\(4\times\) less, 16-bit</td></tr>
         <tr><td>\(0.052\)&ensp;Jalapeño, MXFP4</td><td class="r">\(580\,\mathrm{POPS}\)</td><td>near parity</td></tr>

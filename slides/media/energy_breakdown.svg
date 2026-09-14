@@ -4,42 +4,43 @@
 <text x="265" y="20" class="ttl">Inference: N = 128 MVM</text>
 <line x1="76" y1="278.0" x2="492" y2="278.0" class="grid"/>
 <text x="71" y="281.5" class="tick" text-anchor="end">0</text>
-<line x1="76" y1="216.5" x2="492" y2="216.5" class="grid"/>
-<text x="71" y="220.0" class="tick" text-anchor="end">100</text>
-<line x1="76" y1="155.0" x2="492" y2="155.0" class="grid"/>
-<text x="71" y="158.5" class="tick" text-anchor="end">200</text>
-<line x1="76" y1="93.5" x2="492" y2="93.5" class="grid"/>
-<text x="71" y="97.0" class="tick" text-anchor="end">300</text>
-<line x1="76" y1="32.0" x2="492" y2="32.0" class="grid"/>
-<text x="71" y="35.5" class="tick" text-anchor="end">400</text>
+<line x1="76" y1="224.5" x2="492" y2="224.5" class="grid"/>
+<text x="71" y="228.0" class="tick" text-anchor="end">100</text>
+<line x1="76" y1="171.0" x2="492" y2="171.0" class="grid"/>
+<text x="71" y="174.5" class="tick" text-anchor="end">200</text>
+<line x1="76" y1="117.6" x2="492" y2="117.6" class="grid"/>
+<text x="71" y="121.1" class="tick" text-anchor="end">300</text>
+<line x1="76" y1="64.1" x2="492" y2="64.1" class="grid"/>
+<text x="71" y="67.6" class="tick" text-anchor="end">400</text>
 <line x1="76" y1="32" x2="76" y2="278" class="axis"/>
 <line x1="76" y1="278" x2="492" y2="278" class="axis"/>
 <text transform="translate(41,155) rotate(-90)" class="lab" text-anchor="middle">fJ per op</text>
-<rect x="128.3" y="275.7" width="34.0" height="2.3" fill="#6B8F3D"/>
-<rect x="128.3" y="260.6" width="34.0" height="15.0" fill="#F0CDA5"/>
-<rect x="128.3" y="32.0" width="34.0" height="228.6" fill="#C5C9CE"/>
+<rect x="128.3" y="276.0" width="34.0" height="2.0" fill="#6B8F3D"/>
+<rect x="128.3" y="262.9" width="34.0" height="13.1" fill="#F0CDA5"/>
+<rect x="128.3" y="32.0" width="34.0" height="230.9" fill="#C5C9CE"/>
 <text x="168.3" y="142.7" class="tick" text-anchor="start">1215 fJ/op,</text>
 <text x="168.3" y="154.7" class="tick" text-anchor="start">off scale</text>
 <text transform="translate(145.3,288) rotate(25)" class="tick" text-anchor="start">Envise meas.</text>
-<rect x="267.0" y="275.1" width="34.0" height="2.9" fill="#5B6B7A"/>
-<rect x="267.0" y="275.0" width="34.0" height="0.1" fill="#6B8F3D"/>
-<rect x="267.0" y="261.8" width="34.0" height="13.3" fill="#3A8FB7"/>
-<rect x="267.0" y="255.1" width="34.0" height="6.7" fill="#2E4A6B"/>
-<rect x="267.0" y="250.2" width="34.0" height="4.8" fill="#F0CDA5"/>
-<text x="284.0" y="246.2" class="tick" text-anchor="middle">45</text>
+<rect x="267.0" y="275.5" width="34.0" height="2.5" fill="#5B6B7A"/>
+<rect x="267.0" y="275.4" width="34.0" height="0.1" fill="#6B8F3D"/>
+<rect x="267.0" y="263.9" width="34.0" height="11.5" fill="#3A8FB7"/>
+<rect x="267.0" y="258.0" width="34.0" height="5.8" fill="#2E4A6B"/>
+<rect x="267.0" y="253.9" width="34.0" height="4.2" fill="#F0CDA5"/>
+<text x="284.0" y="249.9" class="tick" text-anchor="middle">45</text>
 <text transform="translate(284.0,288) rotate(25)" class="tick" text-anchor="start">SM 8-bit</text>
-<rect x="405.7" y="277.0" width="34.0" height="1.0" fill="#5B6B7A"/>
-<rect x="405.7" y="277.0" width="34.0" height="0.0" fill="#6B8F3D"/>
-<rect x="405.7" y="276.2" width="34.0" height="0.8" fill="#3A8FB7"/>
-<rect x="405.7" y="269.4" width="34.0" height="6.7" fill="#2E4A6B"/>
-<rect x="405.7" y="269.4" width="34.0" height="0.0" fill="#F0CDA5"/>
-<text x="422.7" y="265.4" class="tick" text-anchor="middle">14</text>
+<rect x="405.7" y="277.2" width="34.0" height="0.8" fill="#5B6B7A"/>
+<rect x="405.7" y="277.1" width="34.0" height="0.0" fill="#6B8F3D"/>
+<rect x="405.7" y="276.4" width="34.0" height="0.7" fill="#3A8FB7"/>
+<rect x="405.7" y="270.6" width="34.0" height="5.8" fill="#2E4A6B"/>
+<rect x="405.7" y="270.5" width="34.0" height="0.0" fill="#F0CDA5"/>
+<text x="422.7" y="266.5" class="tick" text-anchor="middle">14</text>
 <text transform="translate(422.7,288) rotate(25)" class="tick" text-anchor="start">SM 4-bit</text>
-<line x1="76" y1="93.5" x2="492" y2="93.5" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="8,5"/>
-<line x1="76" y1="62.8" x2="492" y2="62.8" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="2,4"/>
-<line x1="76" y1="210.4" x2="492" y2="210.4" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="8,4,2,4"/>
-<line x1="76" y1="164.8" x2="492" y2="164.8" stroke="#D9821E" stroke-width="2" stroke-dasharray="8,4,2,4"/>
-<line x1="76" y1="245.9" x2="492" y2="245.9" stroke="#6B8F3D" stroke-width="2" stroke-dasharray="8,5"/>
+<line x1="76" y1="117.6" x2="492" y2="117.6" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="8,5"/>
+<line x1="76" y1="90.8" x2="492" y2="90.8" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="2,4"/>
+<line x1="76" y1="219.2" x2="492" y2="219.2" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="8,4,2,4"/>
+<line x1="76" y1="179.6" x2="492" y2="179.6" stroke="#D9821E" stroke-width="2" stroke-dasharray="8,4,2,4"/>
+<line x1="76" y1="250.1" x2="492" y2="250.1" stroke="#6B8F3D" stroke-width="2" stroke-dasharray="8,5"/>
+<line x1="76" y1="64.1" x2="492" y2="64.1" stroke="#3A8FB7" stroke-width="2" stroke-dasharray="2,4"/>
 <text x="795" y="20" class="ttl">Training: in situ VJP/grad, N = 128</text>
 <line x1="606" y1="278.0" x2="1022" y2="278.0" class="grid"/>
 <text x="601" y="281.5" class="tick" text-anchor="end">0</text>
@@ -108,4 +109,6 @@
 <text x="599.4" y="398" class="leg">Cerebras WSE-3 FP16 184</text>
 <line x1="766.3" y1="394" x2="792.3" y2="394" stroke="#6B8F3D" stroke-width="2" stroke-dasharray="8,5"/>
 <text x="798.3" y="398" class="leg">Jalapeno MXFP4 wall, inference only 52</text>
+<line x1="40" y1="414" x2="66" y2="414" stroke="#3A8FB7" stroke-width="2" stroke-dasharray="2,4"/>
+<text x="72" y="418" class="leg">Groq LPU INT8, inference only 400</text>
 </svg>

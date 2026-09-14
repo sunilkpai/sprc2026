@@ -30,6 +30,7 @@ some absolute sense. The reference points:
 |---|---|---|
 | B200 GPU package | ~1 000 W | ~9 PFLOPS dense FP4 at the wall, ~0.11 pJ/op |
 | OpenAI/Broadcom Jalapeño (Hot Chips 2026) | 700 W | 13.4 PFLOPS MXFP4, ~0.052 pJ/op at the wall; 216 GiB HBM4 at 15.4 TB/s; OpenAI claims 1.7 to 1.9× tokens per kW over GB200/GB300 |
+| Groq LPU (GroqChip 1, 14 nm, 2020 silicon) | ~300 W | 750 TOPS INT8, ~0.40 pJ/op; 230 MB SRAM per chip, so a 70B model spans hundreds of chips with weights resident; low decode latency, poor energy per op |
 | Cerebras CS-3 (WSE-3) | ~23 kW | 125 PFLOPS FP16 vendor peak, ~0.18 pJ/op; 44 GB SRAM on the wafer at 21 PB/s, so decode is not HBM-bound |
 | GB200 NVL72 rack | ~120 kW | 72 GPUs + 36 CPUs + NVLink switches; ~720 PFLOPS dense FP4, so ~0.17 pJ/op at rack level including the shell |
 | air-cooled rack, conventional | 10 to 20 kW | raised-floor CRAC air |
@@ -134,6 +135,7 @@ energy per op.
 | energy per op (full system) | ops in a 30 kW air rack | vs NVL72 (720 PFLOPS at 120 kW liquid) |
 |---|---|---|
 | 1.2 pJ, Envise measured | 25 POPS | 29× less per rack, 7× less per kW |
+| 400 fJ, Groq LPU INT8 | 75 POPS | 10× less per rack; 14 nm, weights in SRAM |
 | 300 fJ, 2023 model's 8-bit digital baseline | 100 POPS | 7× less per rack |
 | 180 fJ, Cerebras WSE-3 FP16 | 160 POPS | 4× less per rack, but at 16-bit and with weights resident on wafer |
 | 52 fJ, Jalapeño MXFP4 | 580 POPS | near parity with the 8-bit model row; the real digital target at 4 bits |

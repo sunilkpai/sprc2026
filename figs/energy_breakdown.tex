@@ -6,7 +6,7 @@
   height=3.9cm,
   ybar stacked,
   bar width=13pt,
-  ymin=0, ymax=400,
+  ymin=0, ymax=460,
   ylabel near ticks,
   symbolic x coords={Envise meas.,SM 8-bit,SM 4-bit},
   xtick=data,
@@ -49,7 +49,9 @@
 \addlegendentry{Cerebras WSE-3 FP16 184}
 \addplot[sharp plot, stack plots=false, dashed, color=moss, thick, no markers, line legend] coordinates {(Envise meas.,52) (SM 4-bit,52)};
 \addlegendentry{Jalapeno MXFP4 wall, inference only 52}
-\node[font=\tiny, color=ink, anchor=west, xshift=7pt, align=left] at (axis cs:Envise meas.,220) {1215 fJ/op,\\ off scale};
+\addplot[sharp plot, stack plots=false, dotted, color=sky, thick, no markers, line legend] coordinates {(Envise meas.,400) (SM 4-bit,400)};
+\addlegendentry{Groq LPU INT8, inference only 400}
+\node[font=\tiny, color=ink, anchor=west, xshift=7pt, align=left] at (axis cs:Envise meas.,253) {1215 fJ/op,\\ off scale};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit,45.1) {45};
 \node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit,13.9) {14};
 \end{axis}
