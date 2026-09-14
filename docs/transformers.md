@@ -76,6 +76,36 @@ Every current trend shrinks attention's share of the multiplies, and the two
 that go furthest make the remainder weight-stationary too. The direction of
 the field favours a photonic MLP engine.
 
+### 2.1 What shipped models do at long context, and MoE
+
+The dense-attention shares above are the worst case. Attention share of MACs
+per token for models at their advertised context, dense causal as reference:
+
+| model | mechanism | attention share |
+|---|---|---|
+| Llama 3 70B, 128k | GQA, dense | ~57% |
+| DeepSeek-V3, 128k | MoE, MLA, dense | ~85 to 90%: active MLP compute is that of a dense ~7k-wide model while attention still spans 128k |
+| DeepSeek-V3.2, 128k | DSA sparse selection, ~2048 tokens per query | ~5% |
+| Gemma 3, 128k | five local layers (1024 window) per global layer | ~26% |
+| Llama 4 Scout, 10M | chunked 8k local attention, few global layers, MoE | bounded by the chunk; MLP-dominated |
+| Jamba, Nemotron-H | attention in 1 of ~8 layers, SSM elsewhere | under 10% at 256k |
+
+Every model that advertises a million-token context got there by making
+attention sub-linear in $L$ per token. The 2M dense column is a statement
+about why that happened, not about what runs.
+
+Mixture of experts changes the weight count, not the compute share. DeepSeek-V3
+routes each token to 8 of 256 experts plus a shared one, each 2048 wide, so the
+MLP work per token is about $0.4$ GMACs, the same as a dense model of the same
+width. What changes: total MLP weights grow by about $E/k$, 32× here, all in
+HBM; reuse per expert weight falls by the same factor, so $M$ per expert block
+per step drops from $\sim10^5$ to a few thousand in training, still well above
+where the per-batch terms matter; decode touches nine experts' weights per token
+from a much larger pool and is harder to batch; the router is a small digital
+gate. For a mesh the expert MLPs are still stationary matrices with thousands
+of tokens per weight per step in prefill and training. The fit is unchanged and
+decode is worse.
+
 ## 3. The batch per weight block, by regime
 
 $M$ in the energy model is the number of vectors through one weight block on

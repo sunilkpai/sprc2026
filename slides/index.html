@@ -488,7 +488,8 @@
       </table>
       <ul>
         <li>Weights see every token: \(M\) of \(10^4\) to \(10^5\) in training</li>
-        <li>Amdahl: a free MLP buys \(2.6\times\) at \(8\mathrm{k}\), \(1.4\times\) at \(128\mathrm{k}\), \(1.03\times\) at \(2\mathrm{M}\). Long context belongs to attention, which is why it goes sparse or linear</li>
+        <li>Amdahl: a free MLP buys \(2.6\times\) at \(8\mathrm{k}\), \(1.4\times\) at \(128\mathrm{k}\), \(1.03\times\) at \(2\mathrm{M}\), dense</li>
+        <li>Dense is the worst case. Shipped long-context models are windowed, sparse or hybrid: Gemma 3 \(\approx26\%\) attention at \(128\mathrm{k}\), DeepSeek-V3.2 sparse \(\approx5\%\). MoE keeps MLP compute per token, multiplies the weights: same fit for prefill and training, worse decode</li>
       </ul>
     </div>
     <div>
@@ -519,7 +520,7 @@
       </ul>
     </div>
   </div>
-  <aside class="notes">[8:45] This is the slide that says where the mesh belongs. Two thirds of the weight work in a transformer is the MLP, and every token goes through it, so the weights sit still for tens of thousands of vectors. That is the mesh's case. Attention multiplies activations by activations, and there is no way to hold that in phases; you would be rewriting the mesh at terabits per second. The circuit that fits attention is the one where both operands stream into a detector. And say the bandwidth point plainly: attention is memory-bound. Every key and value is read from the cache and used once per query, so in decode the arithmetic intensity is about one MAC per byte, two orders below what it takes to keep any HBM-fed multiplier busy. Faster multiplies do nothing there, photonic or otherwise. Put the two circuits together and you cover training and prefill. Decode is a memory problem for everyone, including us.</aside>
+  <aside class="notes">[8:45] This is the slide that says where the mesh belongs. Two thirds of the weight work in a transformer is the MLP, and every token goes through it, so the weights sit still for tens of thousands of vectors. That is the mesh's case. Attention multiplies activations by activations, and there is no way to hold that in phases; you would be rewriting the mesh at terabits per second. The circuit that fits attention is the one where both operands stream into a detector. And say the bandwidth point plainly: attention is memory-bound. Every key and value is read from the cache and used once per query, so in decode the arithmetic intensity is about one MAC per byte, two orders below what it takes to keep any HBM-fed multiplier busy. Faster multiplies do nothing there, photonic or otherwise. On the 2M column: that is dense attention, and nobody ships dense at 2M; Gemma's local-global hybrid, DeepSeek's sparse selection and the SSM hybrids all pull the attention share back down, which is the mesh's side of the ledger. Mixture of experts changes the weight count, not the compute share: a token still does a dense model's worth of MLP work, but the experts live in HBM and each expert weight is reused thirty times less often. Put the two circuits together and you cover training and prefill. Decode is a memory problem for everyone, including us.</aside>
 </section>
 
 <!-- ================================================================ what changed -->
