@@ -169,7 +169,7 @@
         <rect x="500" y="298" width="14" height="12" fill="#EEF2F6" stroke="#5B6B7A"/><text x="520" y="309" font-size="11" fill="#16263A">digital</text>
       </svg>
     </div>
-    <div class="small">
+    <div>
       <ul>
         <li>Green: weights sit still, \(12d^2\) MACs per token. Amber: attention, \(\approx Ld\): \(8\%\) at \(8\mathrm{k}\) context, \(57\%\) at \(128\mathrm{k}\)</li>
         <li>Prefill and training: compute-bound. Decode: \(\sim1\) MAC per byte, memory-bound</li>
@@ -191,7 +191,7 @@
       <div class="lead">Energy per multiply-accumulate</div>
       <div class="eq">\[ E_{\mathrm{MAC}} \approx \underbrace{\frac{E_{\mathrm{DAC}}+E_{\mathrm{ADC}}}{N}}_{\text{conversions}} + \underbrace{\frac{2^{2b}\,\hbar\omega}{\eta\,N}}_{\text{photons, } b \text{ bits}} + \underbrace{\frac{P_{\mathrm{hold}}}{f_{\mathrm{clk}}\,N}}_{\text{holding phases}} \]</div>
     </div>
-    <div class="small">
+    <div>
       <div class="lead">Consequences of the \(1/N\) scaling</div>
       <ul>
         <li>Every term falls as \(1/N\): <span class="alert">wide</span> or nothing</li>
@@ -275,7 +275,7 @@
 <!-- ================================================================ rack design -->
 <section>
   <h2>Rack design when the accelerator is \(100\,\mathrm{W}\), not \(1\,\mathrm{kW}\)</h2>
-  <div class="body cols small">
+  <div class="body cols">
     <div>
       <div class="lead">Heat per 128-wide mesh</div>
       <ul>
@@ -311,7 +311,7 @@
 <!-- ================================================================ footprint -->
 <section>
   <h2>Area: one device per weight</h2>
-  <div class="body cols xsmall">
+  <div class="body cols small">
     <div>
       <div class="lead">Silicon per weight</div>
       <table>
@@ -344,7 +344,7 @@
 <!-- ================================================================ tiling -->
 <section>
   <h2>Scaling past one mesh: tiling</h2>
-  <div class="body cols small">
+  <div class="body cols">
     <div class="w48">
       <svg class="fig" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg">
         <!-- big weight matrix cut into tiles -->
