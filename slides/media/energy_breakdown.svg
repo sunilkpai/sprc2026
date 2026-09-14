@@ -38,7 +38,8 @@
 <line x1="76" y1="93.5" x2="492" y2="93.5" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="8,5"/>
 <line x1="76" y1="62.8" x2="492" y2="62.8" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="2,4"/>
 <line x1="76" y1="210.4" x2="492" y2="210.4" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="8,4,2,4"/>
-<line x1="76" y1="245.9" x2="492" y2="245.9" stroke="#D9821E" stroke-width="2" stroke-dasharray="8,5"/>
+<line x1="76" y1="164.8" x2="492" y2="164.8" stroke="#D9821E" stroke-width="2" stroke-dasharray="8,4,2,4"/>
+<line x1="76" y1="245.9" x2="492" y2="245.9" stroke="#6B8F3D" stroke-width="2" stroke-dasharray="8,5"/>
 <text x="795" y="20" class="ttl">Training: in situ VJP/grad, N = 128</text>
 <line x1="606" y1="278.0" x2="1022" y2="278.0" class="grid"/>
 <text x="601" y="281.5" class="tick" text-anchor="end">0</text>
@@ -81,7 +82,6 @@
 <line x1="606" y1="93.5" x2="1022" y2="93.5" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="8,5"/>
 <line x1="606" y1="62.8" x2="1022" y2="62.8" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="2,4"/>
 <line x1="606" y1="164.8" x2="1022" y2="164.8" stroke="#D9821E" stroke-width="2" stroke-dasharray="8,4,2,4"/>
-<text x="612" y="160.8" class="tick" fill="#D9821E">Cerebras WSE-3 FP16 184</text>
 <rect x="40" y="349" width="11" height="11" fill="#5B6B7A"/>
 <text x="56" y="358" class="leg">digital I/O prep</text>
 <rect x="178.8" y="349" width="11" height="11" fill="#6B8F3D"/>
@@ -104,8 +104,8 @@
 <text x="270.9" y="398" class="leg">H100 INT8 wall 350</text>
 <line x1="406.29999999999995" y1="394" x2="432.29999999999995" y2="394" stroke="#5B6B7A" stroke-width="2" stroke-dasharray="8,4,2,4"/>
 <text x="438.29999999999995" y="398" class="leg">B200 FP4 wall 110</text>
-<line x1="567.4" y1="394" x2="593.4" y2="394" stroke="#D9821E" stroke-width="2" stroke-dasharray="8,5"/>
-<text x="599.4" y="398" class="leg">Jalapeno MXFP4 wall 52</text>
-<line x1="760.0" y1="394" x2="786.0" y2="394" stroke="#D9821E" stroke-width="2" stroke-dasharray="8,4,2,4"/>
-<text x="792.0" y="398" class="leg">Cerebras WSE-3 FP16 184</text>
+<line x1="567.4" y1="394" x2="593.4" y2="394" stroke="#D9821E" stroke-width="2" stroke-dasharray="8,4,2,4"/>
+<text x="599.4" y="398" class="leg">Cerebras WSE-3 FP16 184</text>
+<line x1="766.3" y1="394" x2="792.3" y2="394" stroke="#6B8F3D" stroke-width="2" stroke-dasharray="8,5"/>
+<text x="798.3" y="398" class="leg">Jalapeno MXFP4 wall, inference only 52</text>
 </svg>
