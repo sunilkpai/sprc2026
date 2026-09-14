@@ -181,27 +181,74 @@
 </section>
 
 <!-- ================================================================ theory -->
-<section style="font-size:1.12em">
-  <h2>Optical neural network theory</h2>
-  <div class="body cols">
-    <div class="w52">
-      <div class="lead">A layer is a mesh plus a nonlinearity</div>
-      <div class="eq">\[ \mathbf{x}^{(\ell+1)} = f\!\left(M^{(\ell)}\mathbf{x}^{(\ell)}\right),\qquad M = V\,\Sigma\,U^{\dagger} \]</div>
-      <p class="small">Any matrix is two unitaries and a diagonal. \(N(N-1)/2\) MZIs reach all of \(\mathrm{U}(N)\).</p>
-      <div class="lead">Energy per multiply-accumulate</div>
-      <div class="eq">\[ E_{\mathrm{MAC}} \approx \underbrace{\frac{E_{\mathrm{DAC}}+E_{\mathrm{ADC}}}{N}}_{\text{conversions}} + \underbrace{\frac{2^{2b}\,\hbar\omega}{\eta\,N}}_{\text{photons, } b \text{ bits}} + \underbrace{\frac{P_{\mathrm{hold}}}{f_{\mathrm{clk}}\,N}}_{\text{holding phases}} \]</div>
+<section>
+  <h2>Optical neural network theory: three ways to hold a matrix</h2>
+  <div class="body">
+    <div class="eq center" style="margin:0 0 6px">\[ \mathbf{x}^{(\ell+1)} = f\!\left(W^{(\ell)}\mathbf{x}^{(\ell)}\right):\quad \text{light does } W\mathbf{x},\ \text{electronics does } f \]</div>
+    <div class="cols">
+      <!-- 1. mesh -->
+      <div>
+        <svg class="fig" viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#2E4A6B" stroke-width="1.6"><line x1="20" y1="30" x2="280" y2="30"/><line x1="20" y1="60" x2="280" y2="60"/><line x1="20" y1="90" x2="280" y2="90"/><line x1="20" y1="120" x2="280" y2="120"/></g>
+          <g fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4">
+            <rect x="45" y="18" width="40" height="54" rx="3"/><rect x="45" y="78" width="40" height="54" rx="3"/><rect x="105" y="48" width="40" height="54" rx="3"/>
+            <rect x="165" y="18" width="40" height="54" rx="3"/><rect x="165" y="78" width="40" height="54" rx="3"/><rect x="225" y="48" width="40" height="54" rx="3"/>
+          </g>
+          <g font-size="11" fill="#16263A" text-anchor="middle" font-style="italic"><text x="65" y="49">θ,φ</text><text x="65" y="109">θ,φ</text><text x="125" y="79">θ,φ</text><text x="185" y="49">θ,φ</text><text x="185" y="109">θ,φ</text><text x="245" y="79">θ,φ</text></g>
+          <text x="150" y="146" font-size="12" fill="#16263A" text-anchor="middle" font-weight="600">Unitary mesh</text>
+        </svg>
+        <table style="margin-top:4px">
+          <tr><td>weights</td><td>\(N(N-1)\) phases, held</td></tr>
+          <tr><td>multiply, sum</td><td>interference</td></tr>
+          <tr><td>devices</td><td>\(N^2\) MZIs, coherent</td></tr>
+          <tr><td>who</td><td>Shen 2017; this work</td></tr>
+        </table>
+      </div>
+      <!-- 2. crossbar -->
+      <div>
+        <svg class="fig" viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+          <g stroke="#3A8FB7" stroke-width="1.6"><line x1="60" y1="10" x2="60" y2="130"/><line x1="120" y1="10" x2="120" y2="130"/><line x1="180" y1="10" x2="180" y2="130"/><line x1="240" y1="10" x2="240" y2="130"/></g>
+          <g font-size="10" fill="#3A8FB7" text-anchor="middle"><text x="60" y="8">x₁</text><text x="120" y="8">x₂</text><text x="180" y="8">x₃</text><text x="240" y="8">x₄</text></g>
+          <g stroke="#5B6B7A" stroke-width="1.4"><line x1="30" y1="40" x2="275" y2="40"/><line x1="30" y1="80" x2="275" y2="80"/><line x1="30" y1="120" x2="275" y2="120"/></g>
+          <g fill="#F5DDBD" stroke="#D9821E" stroke-width="1.3">
+            <rect x="52" y="32" width="16" height="16"/><rect x="112" y="32" width="16" height="16"/><rect x="172" y="32" width="16" height="16"/><rect x="232" y="32" width="16" height="16"/>
+            <rect x="52" y="72" width="16" height="16"/><rect x="112" y="72" width="16" height="16"/><rect x="172" y="72" width="16" height="16"/><rect x="232" y="72" width="16" height="16"/>
+            <rect x="52" y="112" width="16" height="16"/><rect x="112" y="112" width="16" height="16"/><rect x="172" y="112" width="16" height="16"/><rect x="232" y="112" width="16" height="16"/>
+          </g>
+          <g font-size="10" fill="#6B8F3D" text-anchor="start"><text x="280" y="44">Σ I</text><text x="280" y="84">Σ I</text><text x="280" y="124">Σ I</text></g>
+          <text x="150" y="146" font-size="12" fill="#16263A" text-anchor="middle" font-weight="600">Crossbar</text>
+        </svg>
+        <table style="margin-top:4px">
+          <tr><td>weights</td><td>\(N^2\) attenuator cells, held</td></tr>
+          <tr><td>multiply, sum</td><td>attenuation, photocurrent</td></tr>
+          <tr><td>devices</td><td>\(N^2\) cells, incoherent</td></tr>
+          <tr><td>who</td><td>Envise, <em>Nature</em> 2025</td></tr>
+        </table>
+      </div>
+      <!-- 3. temporal -->
+      <div>
+        <svg class="fig" viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
+          <rect x="30" y="30" width="70" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="65" y="47" font-size="11" fill="#16263A" text-anchor="middle">x(t)</text>
+          <rect x="30" y="84" width="70" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="65" y="101" font-size="11" fill="#16263A" text-anchor="middle">w(t)</text>
+          <path d="M104 43 h30 m0 0 l6 -6 l6 12 l6 -12 l6 12 l6 -6" fill="none" stroke="#3A8FB7" stroke-width="1.6"/>
+          <path d="M104 97 h30 m0 0 l6 8 l6 -8 l6 8 l6 -8 l6 8" fill="none" stroke="#3A8FB7" stroke-width="1.6"/>
+          <line x1="170" y1="43" x2="205" y2="64" stroke="#3A8FB7" stroke-width="1.6"/><line x1="170" y1="97" x2="205" y2="76" stroke="#3A8FB7" stroke-width="1.6"/>
+          <circle cx="218" cy="70" r="15" fill="#F5DDBD" stroke="#D9821E" stroke-width="1.6"/><text x="218" y="74" font-size="11" fill="#16263A" text-anchor="middle">PD</text>
+          <line x1="233" y1="70" x2="250" y2="70" stroke="#6B8F3D" stroke-width="1.6"/>
+          <rect x="252" y="56" width="40" height="28" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="272" y="74" font-size="11" fill="#16263A" text-anchor="middle">∫ dt</text>
+          <text x="150" y="146" font-size="12" fill="#16263A" text-anchor="middle" font-weight="600">Temporal mapping</text>
+        </svg>
+        <table style="margin-top:4px">
+          <tr><td>weights</td><td>pulses in time, from memory</td></tr>
+          <tr><td>multiply, sum</td><td>homodyne, integrate</td></tr>
+          <tr><td>devices</td><td>\(O(N)\), coherent</td></tr>
+          <tr><td>who</td><td>Hamerly 2019; Opticore</td></tr>
+        </table>
+      </div>
     </div>
-    <div>
-      <div class="lead">Consequences of the \(1/N\) scaling</div>
-      <ul>
-        <li>Every term falls as \(1/N\): <span class="alert">wide</span> or nothing</li>
-        <li>Photons: under \(1\,\mathrm{fJ}\) per MAC. Conversions: picojoules, so \(N\) in the hundreds</li>
-        <li>A reticle caps \(N\) near \(128\); error compounds over \(N\) stages</li>
-      </ul>
-      <div class="block"><div class="bt">The bet</div><div class="bb">Wins if \(N\) is large, \(b\) is low, weights are static, data is already analog. In 2017, none held.</div></div>
-    </div>
+    <p class="center" style="margin-top:10px">All three pay for conversions at the edge, \(O(N)\) per \(N^2\) MACs. They differ in what holds the weight: a phase, a cell, or nothing.</p>
   </div>
-  <aside class="notes">[2:30] The equation is the whole talk. Three terms, all over N. Hold that thought for the "what changed" slide, because two of the four conditions in the box flipped after 2022.</aside>
+  <aside class="notes">[2:30] Three ways to make light do a matrix. The mesh holds the weights as phases and does the multiply and the sum by interference, so it needs coherence across the whole array and one interferometer per weight. The crossbar, which is what Envise actually is, holds the weights as attenuation cells, broadcasts the input, and sums photocurrents on a wire, so there is no phase to hold but still a device per weight. Temporal mapping holds nothing: the weights arrive as pulses from memory and multiply the input at a detector, so the silicon is order N and the cost moves to memory bandwidth. All three convert at the edge, order N per N squared multiplies; that shared term is the energy story later. What differs is where the weight lives, and that decides footprint, stability, training, and what happens in decode.</aside>
 </section>
 
 <!-- ================================================================ method -->
