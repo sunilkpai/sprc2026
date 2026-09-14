@@ -8,7 +8,7 @@
   bar width=13pt,
   ymin=0, ymax=460,
   ylabel near ticks,
-  symbolic x coords={Envise meas.,SM 8-bit,SM 4-bit},
+  symbolic x coords={Envise meas.,SM W8A8, = W4A8,SM W4A4},
   xtick=data,
   x tick label style={font=\scriptsize, rotate=25, anchor=north east},
   y tick label style={font=\scriptsize},
@@ -23,37 +23,39 @@
   legend style={font=\scriptsize, draw=none, fill=none, at={(0.5,-0.42)}, anchor=north, legend columns=4, /tikz/every even column/.append style={column sep=6pt}},
   legend cell align=left
 ]
-\addplot[fill=slate,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,4.69) (SM 4-bit,1.56)};
+\addplot[fill=slate,draw=none] coordinates {(Envise meas.,0.00) (SM W8A8, = W4A8,4.69) (SM W4A4,1.56)};
 \addlegendentry{digital I/O prep}
-\addplot[fill=moss,draw=none] coordinates {(Envise meas.,3.82) (SM 8-bit,0.12) (SM 4-bit,0.06)};
+\addplot[fill=moss,draw=none] coordinates {(Envise meas.,3.82) (SM W8A8, = W4A8,0.12) (SM W4A4,0.06)};
 \addlegendentry{encode: segmented PS (Envise: mod.\ + weight DAC)}
-\addplot[fill=sky,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,21.56) (SM 4-bit,1.35)};
+\addplot[fill=sky,draw=none] coordinates {(Envise meas.,0.00) (SM W8A8, = W4A8,21.56) (SM W4A4,1.35)};
 \addlegendentry{ADC}
-\addplot[fill=ink2,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,10.94) (SM 4-bit,10.94)};
+\addplot[fill=ink2,draw=none] coordinates {(Envise meas.,0.00) (SM W8A8, = W4A8,10.94) (SM W4A4,10.94)};
 \addlegendentry{TIA (per example)}
-\addplot[fill=sky!50,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,0.00) (SM 4-bit,0.00)};
+\addplot[fill=sky!50,draw=none] coordinates {(Envise meas.,0.00) (SM W8A8, = W4A8,0.00) (SM W4A4,0.00)};
 \addlegendentry{gradient readout, once per batch (12-bit ADC + integrator)}
-\addplot[fill=amber!40,draw=none] coordinates {(Envise meas.,24.43) (SM 8-bit,7.81) (SM 4-bit,0.03)};
+\addplot[fill=amber!40,draw=none] coordinates {(Envise meas.,24.43) (SM W8A8, = W4A8,7.81) (SM W4A4,0.03)};
 \addlegendentry{optical power}
-\addplot[fill=mist,draw=none] coordinates {(Envise meas.,0.00) (SM 8-bit,0.00) (SM 4-bit,0.00)};
+\addplot[fill=mist,draw=none] coordinates {(Envise meas.,0.00) (SM W8A8, = W4A8,0.00) (SM W4A4,0.00)};
 \addlegendentry{switches}
-\addplot[fill=ink!25,draw=none] coordinates {(Envise meas.,1187.02) (SM 8-bit,0.00) (SM 4-bit,0.00)};
+\addplot[fill=ink!25,draw=none] coordinates {(Envise meas.,1187.02) (SM W8A8, = W4A8,0.00) (SM W4A4,0.00)};
 \addlegendentry{Envise DCI, rest of system: 1187, off scale}
-\addplot[sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,300) (SM 4-bit,300)};
+\addplot[sharp plot, stack plots=false, dashed, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,300) (SM W4A4,300)};
 \addlegendentry{model 8-bit digital 300}
-\addplot[sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,350) (SM 4-bit,350)};
+\addplot[sharp plot, stack plots=false, dotted, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,350) (SM W4A4,350)};
 \addlegendentry{H100 INT8 wall 350}
-\addplot[sharp plot, stack plots=false, dashdotted, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,110) (SM 4-bit,110)};
+\addplot[sharp plot, stack plots=false, dashdotted, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,110) (SM W4A4,110)};
 \addlegendentry{B200 FP4 wall 110}
-\addplot[sharp plot, stack plots=false, dashdotted, color=amber, thick, no markers, line legend] coordinates {(Envise meas.,184) (SM 4-bit,184)};
+\addplot[sharp plot, stack plots=false, densely dashed, color=slate, thick, no markers, line legend] coordinates {(Envise meas.,220) (SM W4A4,220)};
+\addlegendentry{B200 FP8 wall 220}
+\addplot[sharp plot, stack plots=false, dashdotted, color=amber, thick, no markers, line legend] coordinates {(Envise meas.,184) (SM W4A4,184)};
 \addlegendentry{Cerebras WSE-3 FP16 184}
-\addplot[sharp plot, stack plots=false, dashed, color=moss, thick, no markers, line legend] coordinates {(Envise meas.,52) (SM 4-bit,52)};
+\addplot[sharp plot, stack plots=false, dashed, color=moss, thick, no markers, line legend] coordinates {(Envise meas.,52) (SM W4A4,52)};
 \addlegendentry{Jalapeno MXFP4 wall, inference only 52}
-\addplot[sharp plot, stack plots=false, dotted, color=sky, thick, no markers, line legend] coordinates {(Envise meas.,400) (SM 4-bit,400)};
+\addplot[sharp plot, stack plots=false, dotted, color=sky, thick, no markers, line legend] coordinates {(Envise meas.,400) (SM W4A4,400)};
 \addlegendentry{Groq LPU INT8, inference only 400}
 \node[font=\tiny, color=ink, anchor=west, xshift=7pt, align=left] at (axis cs:Envise meas.,253) {1215 fJ/op,\\ off scale};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 8-bit,45.1) {45};
-\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM 4-bit,13.9) {14};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM W8A8, = W4A8,45.1) {45};
+\node[font=\tiny, color=ink, anchor=south, inner sep=1pt] at (axis cs:SM W4A4,13.9) {14};
 \end{axis}
 \begin{axis}[
   name=train,

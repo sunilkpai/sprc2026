@@ -305,6 +305,18 @@ The per-example passes (forward, backward, sum) still read activations at 8
 bits and 1 GHz; that part is inference-class. The precision-hungry part is the
 one that runs slowly.
 
+**Weight precision is free per op; activation precision is not.** A mesh holds
+its weights as phases, so a 4-bit weight costs contacts and holding power but
+nothing per multiply. The per-op energy is set by the activation path: the
+input encoder's segment count, the output ADC's bits, and the optical power for
+the output SNR. So W4A8, which is what MXFP4-weight models such as Kimi K3
+(MXFP4 weights, MXFP8 activations) and DeepSeek's FP8 pipeline actually run,
+costs the same as W8A8 in this model: 45 fJ per op, 5× under a B200 at FP8
+(about 220 fJ per op, 4.5 PFLOPS over 1 kW). Only W4A4 collapses the ADC and
+reaches 14 fJ per op, and Jalapeño's 52 fJ is an MXFP4-by-MXFP4 number, so
+the like-for-like comparisons are W4A8 against B200 FP8 and W4A4 against
+Jalapeño.
+
 **Inference, $N=128$, fJ per op**
 
 | scenario | digital prep | encode | ADC | TIA | optical | rest | total |

@@ -81,8 +81,10 @@ def batch_grad(M, **kw):
 inf = {
     "Envise meas.": {**{k: 0.0 for k in KEYS}, "modulator": LM_ENC, "optical power": LM_OPT,
                      "rest of system": LM_REST},
-    "SM 8-bit": per_op(components(N, 1, **SEG)[0], OPS_INF),
-    "SM 4-bit": per_op(components(N, 1, **SEG, **FOUR_BIT_INF)[0], OPS_INF),
+    # Weight precision does not enter the per-op energy of a mesh (phases are held, not
+    # re-encoded), so W4A8 and W8A8 are the same bar: the activation path sets the cost.
+    "SM W8A8, = W4A8": per_op(components(N, 1, **SEG)[0], OPS_INF),
+    "SM W4A4": per_op(components(N, 1, **SEG, **FOUR_BIT_INF)[0], OPS_INF),
 }
 train = {
     f"SM 8-bit M{M_TRAIN}": per_op(components(N, M_TRAIN, **SEG)[1], OPS_TRAIN, M_TRAIN),
@@ -90,7 +92,7 @@ train = {
     f"batch-int. M{M_LLM}": batch_grad(M_LLM),
 }
 digital = {"model 8-bit": 6 * DEFAULT["E_OP"] / 2, "model 4-bit": 6 * FOUR_BIT["E_OP"] / 2,
-           "H100 INT8": 0.35 * pJ, "B200 FP4": 0.11 * pJ,
+           "H100 INT8": 0.35 * pJ, "B200 FP4": 0.11 * pJ, "B200 FP8": 0.22 * pJ,
            "H100 FP16": 700 / 990e12,              # dense FP16 peak over board power
            # OpenAI/Broadcom Jalapeno (Hot Chips 2026): 13.4 PFLOP/s MXFP4 at a 700 W package
            "Jalapeno MXFP4": 700 / 13.4e15,
@@ -209,6 +211,7 @@ def axis(name, data, title, at=None, legend=False, ylabel=True, ymax=YMAX, basel
 INF_BASE = [("model 8-bit digital", digital["model 8-bit"], "dashed, color=slate", False),
             ("H100 INT8 wall", digital["H100 INT8"], "dotted, color=slate", False),
             ("B200 FP4 wall", digital["B200 FP4"], "dashdotted, color=slate", False),
+            ("B200 FP8 wall", digital["B200 FP8"], "densely dashed, color=slate", False),
             ("Cerebras WSE-3 FP16", digital["Cerebras FP16"], "dashdotted, color=amber", False),
             ("Jalapeno MXFP4 wall, inference only", digital["Jalapeno MXFP4"], "dashed, color=moss", False),
             ("Groq LPU INT8, inference only", digital["Groq INT8"], "dotted, color=sky", False)]
@@ -280,7 +283,7 @@ def svg_panel(x0, y0, w, h, data, title, ymax, baselines, offscale, ylabel):
         out.append(f'<text transform="translate({cx:.1f},{py + ph + 10}) rotate(25)" class="tick" '
                    f'text-anchor="start">{c}</text>')
     # baselines
-    dash = {"dashed": "8,5", "dotted": "2,4", "dashdotted": "8,4,2,4", "densely dotted": "2,2"}
+    dash = {"dashed": "8,5", "dotted": "2,4", "dashdotted": "8,4,2,4", "densely dotted": "2,2", "densely dashed": "4,3"}
     for label, val, style, inline in baselines:
         if val / fJ > ymax:
             continue
@@ -318,7 +321,7 @@ def write_svg(path):
         if x > W - 260:
             x, y = 40, y + 20
     x, y = 40, y + 20
-    dash = {"dashed": "8,5", "dotted": "2,4", "dashdotted": "8,4,2,4", "densely dotted": "2,2"}
+    dash = {"dashed": "8,5", "dotted": "2,4", "dashdotted": "8,4,2,4", "densely dotted": "2,2", "densely dashed": "4,3"}
     for col, lab, kind in lines_:
         parts.append(f'<line x1="{x}" y1="{y - 4}" x2="{x + 26}" y2="{y - 4}" stroke="{col}" stroke-width="2" '
                      f'stroke-dasharray="{dash[kind]}"/>')
