@@ -55,7 +55,7 @@ an 11-bit ADC:
 
 $$y_i = \sum_{j=1}^{N} w_{ij}\,x_j,\qquad w_{ij} \propto \frac{I^{+}_{ij}-I^{-}_{ij}}{I^{+}_{ij}+I^{-}_{ij}}.$$
 
-So this is an intensity-domain, incoherent broadcast-and-weight array (Tait et
+So this is an intensity-domain broadcast-and-weight array (Tait et
 al., 2014), not a crossbar: there are no crossing conductors, each input is fanned
 out optically to a photodetector pair at every unit cell, a resistive DAC scales
 the photocurrent by the weight, and the currents are summed per output. The
