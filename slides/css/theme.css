@@ -112,3 +112,8 @@
 /* dense tradeoff table */
 .reveal table.dense { font-size: 0.66em; width: 100%; margin-top: 0; line-height: 1.25; }
 .reveal table.dense th, .reveal table.dense td { padding: 5px 10px; vertical-align: top; }
+
+/* architectures slide */
+.reveal svg.fig.tight { max-height: 120px; }
+.reveal table.tight { font-size: 0.6em; margin-top: 2px; }
+.reveal table.tight td { padding: 1px 6px; }

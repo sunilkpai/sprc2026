@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="vendor/reveal/reset.css">
 <link rel="stylesheet" href="vendor/reveal/reveal.css">
 <link rel="stylesheet" href="vendor/katex/katex.min.css">
-<link rel="stylesheet" href="css/theme.css?v=8">
+<link rel="stylesheet" href="css/theme.css?v=9">
 </head>
 <body>
 <div class="reveal">
@@ -234,14 +234,14 @@
   <h2>Three optical neural network architectures</h2>
   <div class="body">
     <figure style="margin-bottom:8px">
-      <img src="media/onn_multilayer.png" alt="A multilayer optical neural network: forward pass above, adjoint backward pass below, with optical layers U and electronic nonlinearities f" style="max-height:215px">
+      <img src="media/onn_multilayer.png" alt="A multilayer optical neural network: forward pass above, adjoint backward pass below, with optical layers U and electronic nonlinearities f" style="max-height:330px">
       <figcaption>A multilayer optical neural network, forward pass above and backward pass below: light does each \(U^{(\ell)}\), electronics does each \(f^{(\ell)}\).</figcaption>
     </figure>
     <div class="cols">
       <!-- 1. mesh -->
       <div>
-        <div class="lead center" style="font-size:0.85em; margin:0 0 2px">Unitary mesh</div>
-        <svg class="fig" viewBox="0 0 300 138" xmlns="http://www.w3.org/2000/svg">
+        <div class="lead center" style="font-size:0.7em; margin:0">Unitary mesh</div>
+        <svg class="fig tight" viewBox="0 0 300 138" xmlns="http://www.w3.org/2000/svg">
           <g stroke="#2E4A6B" stroke-width="1.6"><line x1="20" y1="30" x2="280" y2="30"/><line x1="20" y1="60" x2="280" y2="60"/><line x1="20" y1="90" x2="280" y2="90"/><line x1="20" y1="120" x2="280" y2="120"/></g>
           <g fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4">
             <rect x="45" y="18" width="40" height="54" rx="3"/><rect x="45" y="78" width="40" height="54" rx="3"/><rect x="105" y="48" width="40" height="54" rx="3"/>
@@ -249,7 +249,7 @@
           </g>
           <g font-size="11" fill="#16263A" text-anchor="middle" font-style="italic"><text x="65" y="49">θ,φ</text><text x="65" y="109">θ,φ</text><text x="125" y="79">θ,φ</text><text x="185" y="49">θ,φ</text><text x="185" y="109">θ,φ</text><text x="245" y="79">θ,φ</text></g>
         </svg>
-        <table style="margin-top:4px">
+        <table class="tight">
           <tr><td>weights</td><td>\(N(N-1)\) phases, held</td></tr>
           <tr><td>multiply, sum</td><td>interference</td></tr>
           <tr><td>devices</td><td>\(N^2\) MZIs, coherent</td></tr>
@@ -258,8 +258,8 @@
       </div>
       <!-- 2. crossbar -->
       <div>
-        <div class="lead center" style="font-size:0.85em; margin:0 0 2px">Crossbar</div>
-        <svg class="fig" viewBox="0 0 300 138" xmlns="http://www.w3.org/2000/svg">
+        <div class="lead center" style="font-size:0.7em; margin:0">Crossbar</div>
+        <svg class="fig tight" viewBox="0 0 300 138" xmlns="http://www.w3.org/2000/svg">
           <g stroke="#3A8FB7" stroke-width="1.6"><line x1="60" y1="10" x2="60" y2="130"/><line x1="120" y1="10" x2="120" y2="130"/><line x1="180" y1="10" x2="180" y2="130"/><line x1="240" y1="10" x2="240" y2="130"/></g>
           <g font-size="10" fill="#3A8FB7" text-anchor="middle"><text x="60" y="8">x₁</text><text x="120" y="8">x₂</text><text x="180" y="8">x₃</text><text x="240" y="8">x₄</text></g>
           <g stroke="#5B6B7A" stroke-width="1.4"><line x1="30" y1="40" x2="275" y2="40"/><line x1="30" y1="80" x2="275" y2="80"/><line x1="30" y1="120" x2="275" y2="120"/></g>
@@ -270,7 +270,7 @@
           </g>
           <g font-size="10" fill="#6B8F3D" text-anchor="start"><text x="280" y="44">Σ I</text><text x="280" y="84">Σ I</text><text x="280" y="124">Σ I</text></g>
         </svg>
-        <table style="margin-top:4px">
+        <table class="tight">
           <tr><td>weights</td><td>\(N^2\) attenuator cells, held</td></tr>
           <tr><td>multiply, sum</td><td>attenuation, photocurrent</td></tr>
           <tr><td>devices</td><td>\(N^2\) cells, incoherent</td></tr>
@@ -279,8 +279,8 @@
       </div>
       <!-- 3. temporal -->
       <div>
-        <div class="lead center" style="font-size:0.85em; margin:0 0 2px">Temporal mapping</div>
-        <svg class="fig" viewBox="0 0 300 138" xmlns="http://www.w3.org/2000/svg">
+        <div class="lead center" style="font-size:0.7em; margin:0">Temporal mapping</div>
+        <svg class="fig tight" viewBox="0 0 300 138" xmlns="http://www.w3.org/2000/svg">
           <rect x="30" y="30" width="70" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="65" y="47" font-size="11" fill="#16263A" text-anchor="middle">x(t)</text>
           <rect x="30" y="84" width="70" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="65" y="101" font-size="11" fill="#16263A" text-anchor="middle">w(t)</text>
           <path d="M104 43 h30 m0 0 l6 -6 l6 12 l6 -12 l6 12 l6 -6" fill="none" stroke="#3A8FB7" stroke-width="1.6"/>
@@ -290,7 +290,7 @@
           <line x1="233" y1="70" x2="250" y2="70" stroke="#6B8F3D" stroke-width="1.6"/>
           <rect x="252" y="56" width="40" height="28" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="272" y="74" font-size="11" fill="#16263A" text-anchor="middle">∫ dt</text>
         </svg>
-        <table style="margin-top:4px">
+        <table class="tight">
           <tr><td>weights</td><td>pulses in time, from memory</td></tr>
           <tr><td>multiply, sum</td><td>homodyne, integrate</td></tr>
           <tr><td>devices</td><td>\(O(N)\), coherent</td></tr>
@@ -316,7 +316,7 @@
     </div>
     <div class="eq center small" style="margin:4px 0 0">\[ \underbrace{\textcolor{#3A8FB7}{\frac{\partial\mathcal{L}}{\partial\eta} = -\,\mathrm{Im}\!\left(x_\eta\,x_{\mathrm{adj},\eta}\right)}}_{\textcolor{#3A8FB7}{\text{adjoint method}}} \;=\; \underbrace{\tfrac12\left(p_{\eta,\mathrm{sum}} - p_\eta - p_{\eta,\mathrm{adj}}\right)}_{\textcolor{#5B6B7A}{\text{digital subtraction}}} \;=\; \underbrace{\textcolor{#D9821E}{\tfrac14\left(p_{\eta,+} - p_{\eta,-}\right)}}_{\textcolor{#D9821E}{\text{experimental implementation}}} \]</div>
     
-    <p class="small center" style="margin:4px 0 0">This is what makes a mesh trainable at all: the gradient of every phase, of the device you have, without a model of it. Fig. 1E, Pai et al., <em>Science</em> 380, 398 (2023).</p>
+    <p class="small center" style="margin:4px 0 0">The gradient of every phase shifter is measured on the chip itself, so fabrication errors are included automatically and no model of the device is needed. Fig. 1E, Pai et al., <em>Science</em> 380, 398 (2023).</p>
   </div>
   <aside class="notes">[4:00] Point at the three colored paths. Forward, backward, sum. The gradient is a power measurement: interference between the forward field and the back-propagated error at each phase shifter, exactly the adjoint method from inverse design, and it does not care about fabrication error because the chip is doing the differentiation. Third formula is the analog version: toggle the adjoint phase, high-pass filter, done.</aside>
 </section>
