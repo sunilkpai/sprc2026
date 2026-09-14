@@ -207,24 +207,22 @@
 
 <!-- ================================================================ apparatus -->
 <section>
-  <h2>The experiment: a 6×6 mesh, a camera, and a stage</h2>
+  <h2>The experiment: a 6×6 mesh, a camera, and an analog update</h2>
   <div class="body cols">
     <div class="w60">
-      <img src="media/fig2_chip.png" alt="Wirebonded triangular mesh with bidirectional fiber I/O, and the control and measurement protocol" style="max-height:270px">
-      <ul class="xsmall" style="margin-top:12px">
-        <li>15 MZIs, TiN thermal phase shifters, a 3% grating tap beside every shifter; 6 × 19 spots imaged by an IR camera on an XY stage</li>
-        <li>Fiber arrays on both sides: light goes in from the left for forward, from the right for backward</li>
-        <li>3-layer, 4-port network: ring and moons trained <em>on chip</em> to 90 to 98% test accuracy; 1000 iterations took 31 hours, all of it stage motion</li>
-        <li><span class="alert">Analog update</span> demonstrated on one MZI with op-amps: toggle, integrate, write the voltage, no readback</li>
+      <img src="media/fig2_full.png" alt="Fig. 2: wirebonded triangular mesh with bidirectional fiber I/O, control and measurement protocol, analog gradient sum stage, analog gradient measurement and accuracy" style="max-height:445px">
+      <ul class="xsmall" style="margin-top:8px">
+        <li><strong>A, B</strong>: 15 MZIs, TiN heaters, a 3% grating tap beside every shifter, 6 × 19 spots imaged by an IR camera on an XY stage; fiber arrays on both sides for forward and backward light</li>
+        <li><strong>C to F</strong>: the <span class="alert">analog update</span>. Toggle the adjoint phase ζ between 0 and π, the tap power's AC component is the gradient; integrate and write the voltage. No subtraction, no O(N²) readback, error on par with the digital route and batchable by linearity</li>
       </ul>
     </div>
     <div>
       <img src="media/figS1_setup.png" alt="Photonic setup: microscope, fiber arrays, polarisation controller, fiber switch, IR camera" style="max-height:330px">
-      <img src="media/figS1_micro.png" alt="Grating tap monitor and TiN thermal phase shifter with deep trenches" style="max-height:130px; margin-top:8px">
-      <div class="src">Fig. 2A, B and Fig. S1 of Pai et al. (2023). Setup: microscope on a movable stage (blue), fiber arrays (red), fiber switch (orange), IR camera (purple).</div>
+      <img src="media/figS1_micro.png" alt="Grating tap monitor and TiN thermal phase shifter with deep trenches" style="max-height:120px; margin-top:8px">
+      <div class="src">Fig. 2 and Fig. S1 of Pai et al. (2023). Setup: microscope on a movable stage (blue), fiber arrays (red), fiber switch (orange), IR camera (purple). Ring and moons trained on chip to 90 to 98%; 1000 iterations took 31 hours of stage motion.</div>
     </div>
   </div>
-  <aside class="notes">[4:30] This is what a research demonstration looks like: the detector is a camera, the "ADC" is a microscope stage, and the phase shifters are heaters at 50 milliwatts each. Every number in the energy model later replaces one of these with an integrated part. The point of the slide is that the protocol worked on a chip with real loss and real crosstalk.</aside>
+  <aside class="notes">[4:30] This is what a research demonstration looks like: the detector is a camera, the "ADC" is a microscope stage, and the phase shifters are heaters at 50 milliwatts each. Panels C to F are the part to dwell on: the analog update. Toggle the adjoint phase, the AC part of the tap power is the gradient, integrate it over the batch, write the voltage. That is the batch-gradient story on the energy slide, demonstrated on one MZI with op-amps. Every number in the energy model later replaces one of these with an integrated part. The point of the slide is that the protocol worked on a chip with real loss and real crosstalk.</aside>
 </section>
 
 <!-- ================================================================ training movies -->
