@@ -389,7 +389,7 @@
 </section>
 
 <!-- ================================================================ conclusions -->
-<section style="font-size:1.1em">
+<section>
   <h2>What the paper showed, and what is new today</h2>
   <div class="body cols">
     <div>
@@ -407,7 +407,7 @@
         <li>The workload is transformers: the mesh fits the MLP, in prefill and training; decode is memory-bound</li>
         <li>Inference went to 4 bits; training still needs bf16-class activations</li>
         <li>Envise shipped a \(128^2\) crossbar at \(1.2\,\mathrm{pJ/op}\); Jalapeño does MXFP4 at \(52\,\mathrm{fJ/op}\)</li>
-        <li>Area, not energy, is the mesh's problem: \(10^{-2}\,\mathrm{mm}^2\) per weight</li>
+        <li>Area, not energy, is the mesh's problem: \(10^{-2}\,\mathrm{mm}^2\) per weight; time-division multiplexing at \(10\,\mathrm{GS/s}\) is required to beat the footprint bottleneck</li>
       </ul>
     </div>
   </div>
