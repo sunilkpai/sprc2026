@@ -383,7 +383,7 @@
       <tr><td>silicon</td><td>\(10^{-2}\,\mathrm{mm}^2\) per weight; \(0.05\) to \(0.2\,\mathrm{TOPS/mm}^2\) realised, \(\sim1\) at \(10\,\mathrm{GS/s}\)</td><td>\(10^{-4}\) to \(10^{-5}\,\mathrm{mm}^2\) per weight; B200 \(5.6\,\mathrm{TOPS/mm}^2\)</td></tr>
       <tr><td>rack</td><td>\(22\,\mathrm{POPS}\) at \(1\,\mathrm{GS/s}\); parity needs \(10\,\mathrm{GS/s}\) and 16 tiles per package. \(50\) to \(100\,\mathrm{W}\) packages, air-cooled</td><td>NVL72 \(720\,\mathrm{POPS}\) at \(120\,\mathrm{kW}\), liquid</td></tr>
       <tr><td>holding a weight</td><td>thermal \(800\,\mathrm{W}\) per mesh; EO short for a \(0\) to \(1\) cell, cm-class for a \(2\pi\) phase; rings drift; MEMS unproven</td><td>SRAM and HBM, solved</td></tr>
-      <tr><td>digital shell</td><td><span class="alert">unknown.</span> Envise measured \(1.19\,\mathrm{pJ/op}\), \(25\times\) its optics; the model needs \(\lesssim50\,\mathrm{fJ/op}\) in 5 nm</td><td>included in the numbers above</td></tr>
+      <tr><td>surrounding electronics (ADCs, memory, control)</td><td><span class="alert">unknown.</span> Envise measured \(1.19\,\mathrm{pJ/op}\), \(25\times\) its optics; the model needs \(\lesssim50\,\mathrm{fJ/op}\) in 5 nm</td><td>included in the numbers above</td></tr>
       <tr><td>reliability</td><td>hourly recalibration, \(10^6\) control loops (Envise); no MEMS PDK; sub-kelvin uniformity</td><td>solved</td></tr>
     </table>
     <div class="src">Mesh: 2023 SM model, \(N=128\), segmented phase shifters, 5 nm SerDes-class converters; every number in that column is a projection. Digital: vendor peak over package power; Jalapeño node undisclosed, Cerebras peak as quoted. Full table, rack, area and assumptions in the backup.</div>
@@ -401,7 +401,7 @@
       <div class="lead">What to build</div>
       <ul>
         <li>EO mesh tiles, block-multiplexed from HBM, \(10\,\mathrm{GS/s}\) converters</li>
-        <li>In situ gradients, integrated over the batch</li>
+        <li>In situ gradients, integrated over a batch of \(10^4\) tokens</li>
         <li>A streaming detector for attention</li>
         <li>Pooled lasers, air-cooled compute</li>
       </ul>
@@ -411,7 +411,7 @@
       <ul>
         <li><span class="alert">Training and prefill</span>, at \(3\) to \(5\times\) the best digital efficiency</li>
         <li>Not a decode engine</li>
-        <li>Unproven: the digital shell, phase holding, reliability</li>
+        <li>Unproven: the surrounding electronics, holding a phase without heaters, reliability</li>
         <li>Unique: the chip computes its own gradients</li>
       </ul>
     </div>
