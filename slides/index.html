@@ -399,9 +399,73 @@
   <aside class="notes">[6:15] Let them run for ten seconds. What to say over them: every frame is 15 stage moves and three optical passes; the boundary in the last panel is drawn by the chip's own parameters evaluated on the computer.</aside>
 </section>
 
-<!-- ================================================================ mnist simulation -->
+<!-- ================================================================ conclusions -->
 <section>
-  <h2>Does it scale? MNIST at \(N=64\) with hardware errors</h2>
+  <h2>What the paper showed, and what is new today</h2>
+  <div class="body cols">
+    <div>
+      <div class="lead">2023: Pai et al.</div>
+      <ul>
+        <li>Backpropagation on an optical chip, for the first time</li>
+        <li>Gradients of every phase from three optical passes, of the device you have</li>
+        <li>An analog update: no digital readback of \(N^2\) parameters</li>
+        <li>Energy model: the <span class="alert">ADC is the bottleneck</span>, not photons; today's converters change the clock, not the energy (<a href="#/converters">backup</a>)</li>
+      </ul>
+    </div>
+    <div>
+      <div class="lead">2026: what changed</div>
+      <ul>
+        <li>Transformers: the mesh fits the MLP in prefill and training; decode is memory-bound</li>
+        <li>Inference went to 4 bits; training still needs bf16-class activations</li>
+        <li>Envise: \(128^2\) crossbar at \(1.2\,\mathrm{pJ/op}\); Jalapeño: MXFP4 at \(52\,\mathrm{fJ/op}\)</li>
+        <li>Mesh has poor footprint efficiency (\(10^{-2}\,\mathrm{mm}^2\) per weight), requires time-division multiplexing</li>
+      </ul>
+    </div>
+  </div>
+  <div class="block" style="margin:10px 32px 0"><div class="bt">Main message</div><div class="bb">Most optical-computing marketing misses the <span class="alert">electrical bottleneck</span>: the multiply is nearly free, but NOT the conversions. Innovations that <span class="alert">reduce conversions per operation</span> are what make these technologies worth the investment.</div></div>
+  <aside class="notes">[6:45] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that already said conversions would dominate: the ADC is half the energy at 8 bits and the only clock in the system, and a 5 nanometre converter changes the clock, not the energy per op; the projection is in the backup. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide crossbar and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The main message, and the thing I would like argued with: most optical-computing marketing misses the electrical bottleneck. The multiply is nearly free in every one of these schemes, mesh, crossbar or temporal mapping; what is not free is the DAC, the ADC and the memory read around it, and those are the same parts a GPU uses. Envise measured a factor of forty between core and package. So the innovations worth funding are the ones that reduce conversions per operation: wider fan-in, batch-integrated readout, activations that stay optical between layers, weights that never move. Without those, the investment does not pay. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
+</section>
+
+<!-- ================================================================ questions -->
+<section class="standout">
+  <h1>Questions?</h1>
+  <div class="body cols" style="align-items:center">
+    <div class="w36 center"><img class="qr" src="media/qr.svg" alt="QR code linking to these slides"><div class="small" style="margin-top:8px;color:#EEF2F6">these slides</div></div>
+    <div class="links">
+      &#127760;&ensp;<a href="https://sunilkpai.github.io/sprc2026/">sunilkpai.github.io/sprc2026</a> (slides, notes, scripts)<br>
+      &#9998;&ensp;<a href="https://sunilkpai.github.io/website/">sunilkpai.github.io/website</a><br>
+      &#128188;&ensp;linkedin.com/in/sunil-pai-96286539<br>
+      &#128038;&ensp;@sunilkpai<br>
+      &#127891;&ensp;<a href="https://scholar.google.com/citations?user=orRndBUAAAAJ&amp;hl=en">Google Scholar</a><br>
+      &#9993;&ensp;sunilkpai93@gmail.com
+    </div>
+  </div>
+  <aside class="notes">[9:00] Leave the QR up during questions. It goes to the slides; the repo with the SM analysis and scripts is linked from the deck's README.</aside>
+</section>
+
+<!-- ================================================================ projection to today -->
+<section class="appendix" id="converters">
+  <h2>The 2023 model with today's converters <span class="tag">backup</span></h2>
+  <div class="body">
+    <table style="width:100%;font-size:1em">
+      <tr><th>scenario</th><th>ADC</th><th class="r">clock</th><th class="r">per op</th><th class="r">per \(128\)-mesh</th><th>best digital</th></tr>
+      <tr><td>2023 model, W8A8</td><td>8-bit SAR, \(1.38\,\mathrm{pJ}\)</td><td class="r">\(1\,\mathrm{GS/s}\)</td><td class="r">\(45\,\mathrm{fJ}\)</td><td class="r">\(33\,\mathrm{TOPS}\)</td><td>B200 FP8, \(220\,\mathrm{fJ}\)</td></tr>
+      <tr><td>today, W8A8</td><td>5 nm TI-SAR (Broadcom 112G), \(1\) to \(3\,\mathrm{pJ}\)</td><td class="r">\(10\,\mathrm{GS/s}\)</td><td class="r">\(39\) to \(70\,\mathrm{fJ}\)</td><td class="r">\(330\,\mathrm{TOPS}\)</td><td>B200 FP8, \(220\,\mathrm{fJ}\)</td></tr>
+      <tr><td>today, W4A4</td><td>5 nm flash, \(0.1\) to \(0.5\,\mathrm{pJ}\)</td><td class="r">\(10\,\mathrm{GS/s}\)</td><td class="r">\(14\) to \(20\,\mathrm{fJ}\)</td><td class="r">\(330\,\mathrm{TOPS}\)</td><td>Jalapeño MXFP4, \(52\,\mathrm{fJ}\)</td></tr>
+      <tr><td>training, bf16-class, \(M=4096\)</td><td>11-bit, \(7\,\mathrm{pJ}\); none at \(10\,\mathrm{GS/s}\)</td><td class="r">\(1\,\mathrm{GS/s}\)</td><td class="r">\(141\,\mathrm{fJ}\)</td><td class="r">\(33\,\mathrm{TOPS}\)</td><td>Cerebras FP16, \(184\,\mathrm{fJ}\)</td></tr>
+    </table>
+    <ul style="margin-top:14px">
+      <li><span class="alert">The ADC is the bottleneck</span>: half of the 8-bit energy, \(78\%\) of the bf16 energy, and the only clock in the system; the mesh has none</li>
+      <li>Newer converters buy throughput, not energy: per-sample cost has been flat near \(1\,\mathrm{pJ}\) at 8 bits since 45 nm</li>
+    </ul>
+    <div class="src">Per op: \(2N^2\) per matrix-vector product, \(N=128\), segmented phase shifters, no DACs. Chart: <a href="#/energy">energy per operation</a>. Converter and chip assumptions: <a href="#/assumptions">backup table</a>.</div>
+  </div>
+  <aside class="notes">Backup. Same 2023 model, only the converters replaced. At 8 bits a 5 nanometre time-interleaved SAR from a 112G receiver costs about what the 2023 table assumed, one to three picojoules, so the energy per op barely moves; what moves is the clock, ten gigasamples instead of one, so a single 128-mesh goes from 33 to 330 TOPS. At four bits a flash converter takes the bar to 14 to 20 femtojoules, under OpenAI's Jalapeño at 52. Training in bf16-class precision needs an 11-bit converter, and that does not exist at 10 gigasamples, so the clock stays at one and the ADC is 78 percent of the 141 femtojoules. The ADC is the bottleneck in both senses: it is the biggest slice of the energy and it is the only clock in the system. The chart and the converter table are in the backup, linked at the bottom.</aside>
+</section>
+
+<!-- ================================================================ mnist simulation -->
+<section class="appendix">
+  <h2>Does it scale? MNIST at \(N=64\) with hardware errors <span class="tag">backup</span></h2>
   <div class="body">
     <img src="media/fig4_mnist.png" alt="Fig. 4: two-layer 64-port photonic neural network on MNIST; test error versus epoch for tap photodiode noise and phase measurement error" style="width:100%;max-height:300px;object-fit:contain">
     <div class="cols" style="margin-top:10px">
@@ -421,71 +485,7 @@
     </div>
     <div class="src" style="margin-top:6px">Pai et al., Science 380, 398 (2023), Fig. 4.</div>
   </div>
-  <aside class="notes">[6:45] The experiment was four ports; this is the scaling question. Two 64-port meshes on MNIST, simulated with the same in situ protocol and a grid of 72 error settings. The ideal network reaches 97 percent; the average with hardware error is 95. Only two error sources matter: noise on the tap photodiodes that measure the powers, and error in the phase readout. Loss and I/O amplitude error hardly move the curves. And the curves converge anyway, just a little later: analog gradient noise costs epochs, not accuracy.</aside>
-</section>
-
-<!-- ================================================================ projection to today -->
-<section>
-  <h2>The 2023 model with today's converters</h2>
-  <div class="body">
-    <table style="width:100%;font-size:1em">
-      <tr><th>scenario</th><th>ADC</th><th class="r">clock</th><th class="r">per op</th><th class="r">per \(128\)-mesh</th><th>best digital</th></tr>
-      <tr><td>2023 model, W8A8</td><td>8-bit SAR, \(1.38\,\mathrm{pJ}\)</td><td class="r">\(1\,\mathrm{GS/s}\)</td><td class="r">\(45\,\mathrm{fJ}\)</td><td class="r">\(33\,\mathrm{TOPS}\)</td><td>B200 FP8, \(220\,\mathrm{fJ}\)</td></tr>
-      <tr><td>today, W8A8</td><td>5 nm TI-SAR (Broadcom 112G), \(1\) to \(3\,\mathrm{pJ}\)</td><td class="r">\(10\,\mathrm{GS/s}\)</td><td class="r">\(39\) to \(70\,\mathrm{fJ}\)</td><td class="r">\(330\,\mathrm{TOPS}\)</td><td>B200 FP8, \(220\,\mathrm{fJ}\)</td></tr>
-      <tr><td>today, W4A4</td><td>5 nm flash, \(0.1\) to \(0.5\,\mathrm{pJ}\)</td><td class="r">\(10\,\mathrm{GS/s}\)</td><td class="r">\(14\) to \(20\,\mathrm{fJ}\)</td><td class="r">\(330\,\mathrm{TOPS}\)</td><td>Jalapeño MXFP4, \(52\,\mathrm{fJ}\)</td></tr>
-      <tr><td>training, bf16-class, \(M=4096\)</td><td>11-bit, \(7\,\mathrm{pJ}\); none at \(10\,\mathrm{GS/s}\)</td><td class="r">\(1\,\mathrm{GS/s}\)</td><td class="r">\(141\,\mathrm{fJ}\)</td><td class="r">\(33\,\mathrm{TOPS}\)</td><td>Cerebras FP16, \(184\,\mathrm{fJ}\)</td></tr>
-    </table>
-    <ul style="margin-top:14px">
-      <li><span class="alert">The ADC is the bottleneck</span>: half of the 8-bit energy, \(78\%\) of the bf16 energy, and the only clock in the system; the mesh has none</li>
-      <li>Newer converters buy throughput, not energy: per-sample cost has been flat near \(1\,\mathrm{pJ}\) at 8 bits since 45 nm</li>
-    </ul>
-    <div class="src">Per op: \(2N^2\) per matrix-vector product, \(N=128\), segmented phase shifters, no DACs. Chart: <a href="#/energy">energy per operation</a>. Converter and chip assumptions: <a href="#/assumptions">backup table</a>.</div>
-  </div>
-  <aside class="notes">[7:15] Same 2023 model, only the converters replaced. At 8 bits a 5 nanometre time-interleaved SAR from a 112G receiver costs about what the 2023 table assumed, one to three picojoules, so the energy per op barely moves; what moves is the clock, ten gigasamples instead of one, so a single 128-mesh goes from 33 to 330 TOPS. At four bits a flash converter takes the bar to 14 to 20 femtojoules, under OpenAI's Jalapeño at 52. Training in bf16-class precision needs an 11-bit converter, and that does not exist at 10 gigasamples, so the clock stays at one and the ADC is 78 percent of the 141 femtojoules. The ADC is the bottleneck in both senses: it is the biggest slice of the energy and it is the only clock in the system. The chart and the converter table are in the backup, linked at the bottom.</aside>
-</section>
-
-<!-- ================================================================ conclusions -->
-<section>
-  <h2>What the paper showed, and what is new today</h2>
-  <div class="body cols">
-    <div>
-      <div class="lead">2023: the paper</div>
-      <ul>
-        <li>Backpropagation on an optical chip, for the first time</li>
-        <li>Gradients of every phase from three optical passes, of the device you have</li>
-        <li>An analog update: no digital readback of \(N^2\) parameters</li>
-        <li>Energy model: conversions dominate, not photons</li>
-      </ul>
-    </div>
-    <div>
-      <div class="lead">2026: what changed</div>
-      <ul>
-        <li>Transformers: the mesh fits the MLP in prefill and training; decode is memory-bound</li>
-        <li>Inference went to 4 bits; training still needs bf16-class activations</li>
-        <li>Envise: \(128^2\) crossbar at \(1.2\,\mathrm{pJ/op}\); Jalapeño: MXFP4 at \(52\,\mathrm{fJ/op}\)</li>
-        <li>Mesh has poor footprint efficiency (\(10^{-2}\,\mathrm{mm}^2\) per weight), requires time-division multiplexing</li>
-      </ul>
-    </div>
-  </div>
-  <div class="block" style="margin:10px 32px 0"><div class="bt">Main message</div><div class="bb">Most optical-computing marketing misses the <span class="alert">electrical bottleneck</span>: the multiply is nearly free, but NOT the conversions. Innovations that <span class="alert">reduce conversions per operation</span> are what make these technologies worth the investment.</div></div>
-  <aside class="notes">[7:45] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that already said conversions would dominate. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide crossbar and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The main message, and the thing I would like argued with: most optical-computing marketing misses the electrical bottleneck. The multiply is nearly free in every one of these schemes, mesh, crossbar or temporal mapping; what is not free is the DAC, the ADC and the memory read around it, and those are the same parts a GPU uses. Envise measured a factor of forty between core and package. So the innovations worth funding are the ones that reduce conversions per operation: wider fan-in, batch-integrated readout, activations that stay optical between layers, weights that never move. Without those, the investment does not pay. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
-</section>
-
-<!-- ================================================================ questions -->
-<section class="standout">
-  <h1>Questions?</h1>
-  <div class="body cols" style="align-items:center">
-    <div class="w36 center"><img class="qr" src="media/qr.svg" alt="QR code linking to these slides"><div class="small" style="margin-top:8px;color:#EEF2F6">these slides</div></div>
-    <div class="links">
-      &#127760;&ensp;<a href="https://sunilkpai.github.io/sprc2026/">sunilkpai.github.io/sprc2026</a> (slides, notes, scripts)<br>
-      &#9998;&ensp;<a href="https://sunilkpai.github.io/website/">sunilkpai.github.io/website</a><br>
-      &#128188;&ensp;linkedin.com/in/sunil-pai-96286539<br>
-      &#128038;&ensp;@sunilkpai<br>
-      &#127891;&ensp;<a href="https://scholar.google.com/citations?user=orRndBUAAAAJ&amp;hl=en">Google Scholar</a><br>
-      &#9993;&ensp;sunilkpai93@gmail.com
-    </div>
-  </div>
-  <aside class="notes">[9:00] Leave the QR up during questions. It goes to the slides; the repo with the SM analysis and scripts is linked from the deck's README.</aside>
+  <aside class="notes">Backup. The experiment was four ports; this is the scaling question. Two 64-port meshes on MNIST, simulated with the same in situ protocol and a grid of 72 error settings. The ideal network reaches 97 percent; the average with hardware error is 95. Only two error sources matter: noise on the tap photodiodes that measure the powers, and error in the phase readout. Loss and I/O amplitude error hardly move the curves. And the curves converge anyway, just a little later: analog gradient noise costs epochs, not accuracy.</aside>
 </section>
 
 <!-- ================================================================ energy breakdown -->
