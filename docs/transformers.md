@@ -78,33 +78,52 @@ the field favours a photonic MLP engine.
 
 ### 2.1 What shipped models do at long context, and MoE
 
-The dense-attention shares above are the worst case. Attention share of MACs
-per token for models at their advertised context, dense causal as reference:
+The dense-attention shares above are the worst case for a dense model, and
+the $8d^2$ MLP line is a dense idealisation. Real models differ in two ways:
+mixture of experts thins the *active* MLP to $(k+\text{shared})\times3\times
+d\times h_{\text{expert}}$, and MLA changes the attention cost per key to
+$H\times(\text{kv\_lora}+\text{rope}) + H\times\text{kv\_lora}$ in absorbed
+form, 139k MACs per key for DeepSeek's 128 heads. `scripts/attention_share.py`
+computes both from the published configs. Attention share of MACs per token
+per layer, MLP share in parentheses, causal, $L/2$ keys on average:
 
-| model | mechanism | attention share |
-|---|---|---|
-| Llama 3 70B, 128k | GQA, dense | ~57% |
-| DeepSeek-V3, 128k | MoE, MLA, dense | ~85 to 90%: active MLP compute is that of a dense ~7k-wide model while attention still spans 128k |
-| DeepSeek-V3.2, 128k | DSA sparse selection, ~2048 tokens per query | ~5% |
-| Gemma 3, 128k | five local layers (1024 window) per global layer | ~26% |
-| Llama 4 Scout, 10M | chunked 8k local attention, few global layers, MoE | bounded by the chunk; MLP-dominated |
-| Jamba, Nemotron-H | attention in 1 of ~8 layers, SSM elsewhere | under 10% at 256k |
+| model | active MLP, MMACs | 8k | 128k | 1M |
+|---|---|---|---|---|
+| Llama 3 70B, dense GQA | 705 | 7% (76%) | 56% (37%) | 91% (7%) |
+| DeepSeek-V3, MoE, MLA dense | 396 | 49% (34%) | 94% (4%) | 99% (1%) |
+| DeepSeek-V3.2, MoE, DSA sparse (indexer over $L$, core over 2048 keys) | 396 | 35% (44%) | 58% (28%) | 89% (8%) |
+| Kimi K3, MoE, 69 KDA + 24 MLA, MLA assumed sparse | 1189 | 5% (80%) | 12% (73%) | 45% (46%) |
+| Kimi K3, same, MLA assumed dense | 1189 | 7% (77%) | 55% (37%) | 91% (8%) |
+| DeepSeek-V4 Pro, CSA + HCA hybrid, from the published 27% of V3.2's per-token FLOPs at 1M | 525 | – | – | 49% (38%) |
 
-Every model that advertises a million-token context got there by making
-attention sub-linear in $L$ per token. The 2M dense column is a statement
-about why that happened, not about what runs.
+Configs: DeepSeek-V3 $d=7168$, 256 routed + 1 shared experts, 8 active,
+expert hidden 2048, 128 MLA heads with kv_lora 512, rope 64; V3.2 adds a
+64-head, 128-dim lightning indexer and top-2048 selection. Kimi K3 $d=7168$,
+93 layers of which 69 are Kimi Delta Attention and 24 gated MLA, 16 of 896
+experts plus 2 shared at hidden 3072, 96 heads, 1M context. K3's MLA head
+dimensions and whether its MLA layers are sparse are not in the model card,
+so both cases are shown. V4 Pro's split is inferred from the published ratio
+to V3.2 and its 49B active parameters.
 
-Mixture of experts changes the weight count, not the compute share. DeepSeek-V3
-routes each token to 8 of 256 experts plus a shared one, each 2048 wide, so the
-MLP work per token is about $0.4$ GMACs, the same as a dense model of the same
-width. What changes: total MLP weights grow by about $E/k$, 32× here, all in
-HBM; reuse per expert weight falls by the same factor, so $M$ per expert block
-per step drops from $\sim10^5$ to a few thousand in training, still well above
-where the per-batch terms matter; decode touches nine experts' weights per token
-from a much larger pool and is harder to batch; the router is a small digital
-gate. For a mesh the expert MLPs are still stationary matrices with thousands
-of tokens per weight per step in prefill and training. The fit is unchanged and
-decode is worse.
+Two corrections to the dense picture:
+
+- **MoE moves compute share toward attention, not away from it.** The active
+  MLP of a 671B-parameter DeepSeek is the size of a 7B dense model's, while
+  its attention is sized for the full model. Even with sparse selection,
+  attention is a third of the MACs at 8k and, through the $L$-linear indexer,
+  more than half at 128k. The earlier claim in this note that V3.2's attention
+  is about 5% counted only the selected keys and missed the indexer; it is
+  withdrawn.
+- **Only linear or compressed attention moves it back.** Kimi K3's 69 KDA
+  layers cost nothing in $L$, so its attention share stays low to 128k and is
+  under half at 1M even before its 24 MLA layers are assumed sparse. DeepSeek-V4
+  compresses the KV cache tenfold and lands near half at 1M.
+
+For a photonic MLP engine the target is therefore the active-expert MLP, 0.4
+to 1.2 GMACs per token, and its share of the work is set by the attention
+design of the model it sits under: 70 to 80% for a KDA-style hybrid at
+working contexts, 30 to 45% for a sparse-MLA MoE, and vanishing for dense
+attention past 128k.
 
 ## 3. The batch per weight block, by regime
 
