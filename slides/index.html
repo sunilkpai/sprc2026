@@ -363,6 +363,31 @@
   <aside class="notes">[5:45] Let them run for ten seconds. What to say over them: every frame is 15 stage moves and three optical passes; the boundary in the last panel is drawn by the chip's own parameters evaluated on the computer.</aside>
 </section>
 
+<!-- ================================================================ mnist simulation -->
+<section>
+  <h2>Does it scale? MNIST at \(N=64\) with hardware errors</h2>
+  <div class="body">
+    <img src="media/fig4_mnist.png" alt="Fig. 4: two-layer 64-port photonic neural network on MNIST; test error versus epoch for tap photodiode noise and phase measurement error" style="width:100%;max-height:300px;object-fit:contain">
+    <div class="cols" style="margin-top:10px">
+      <div>
+        <ul>
+          <li>Two \(64\)-port meshes on MNIST; batch \(600\), \(100\) epochs</li>
+          <li>Grid of \(72\) error settings: tap noise, loss, I/O amplitude and phase</li>
+        </ul>
+      </div>
+      <div>
+        <ul>
+          <li>Ideal \(97.2\%\) test accuracy; with errors, \(95\%\) on average</li>
+          <li>Tap photodiode noise (\(s_{\mathrm{tap}}\)) and phase readout error (\(\sigma_\phi\)) dominate; loss and I/O amplitude barely matter</li>
+          <li>Noisy gradients still converge, just later</li>
+        </ul>
+      </div>
+    </div>
+    <div class="src" style="margin-top:6px">Pai et al., Science 380, 398 (2023), Fig. 4.</div>
+  </div>
+  <aside class="notes">[6:15] The experiment was four ports; this is the scaling question. Two 64-port meshes on MNIST, simulated with the same in situ protocol and a grid of 72 error settings. The ideal network reaches 97 percent; the average with hardware error is 95. Only two error sources matter: noise on the tap photodiodes that measure the powers, and error in the phase readout. Loss and I/O amplitude error hardly move the curves. And the curves converge anyway, just a little later: analog gradient noise costs epochs, not accuracy.</aside>
+</section>
+
 <!-- ================================================================ conclusions -->
 <section style="font-size:1.1em">
   <h2>What the paper showed, and what is new today</h2>
@@ -387,7 +412,7 @@
     </div>
   </div>
   <div class="src" style="margin:8px 32px 0">Energy per op, the full tradeoff table, and what I would build are in the backup slides.</div>
-  <aside class="notes">[6:30] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that already said conversions would dominate. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide crossbar and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
+  <aside class="notes">[6:45] Rough summary. The paper: the first backpropagation on an optical chip, every gradient in three passes measured on the device itself, an analog update that never reads the parameters back, and a model that already said conversions would dominate. What is new: the workload is transformers, and the mesh fits the weight-stationary part in prefill and training while decode is a memory problem for everyone; inference went to four bits, which is the analog regime, while training still wants sixteen-bit-class activations; Lightmatter shipped a 128-wide crossbar and measured 1.2 picojoules per op, and OpenAI's inference ASIC does four-bit at 52 femtojoules, so the bar is high; and the mesh's real problem is area, one interferometer per weight, a hundred times more silicon than a transistor MAC. The energy chart, the tradeoff table and my own proposal are in the backup if anyone wants them.</aside>
 </section>
 
 <!-- ================================================================ other applications -->
