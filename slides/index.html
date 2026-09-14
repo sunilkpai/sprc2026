@@ -204,7 +204,7 @@
       <ul>
         <li>A <strong>token</strong> is a word piece, a vector of length \(d\) (\(8192\) for a 70B model), through \(80\) of these blocks</li>
         <li><strong>Green</strong>: weights that never change at inference. <strong>Amber</strong>: the token against every earlier one, from the <strong>KV cache</strong></li>
-        <li>Training looks like prefill, with thousands of tokens per weight per step</li>
+        <li>In current models the MLP is <strong>roughly half the MACs per token</strong>; attention takes the other half at long context. Training looks like prefill, thousands of tokens per weight</li>
         <li><span class="alert">The mesh fits prefill and training.</span> Decode is a memory problem for any multiplier</li>
       </ul>
     </div>
@@ -430,92 +430,6 @@
   <aside class="notes">[7:50] This is the slide for the skeptic in the room. Energy per op can be good and the chip still loses because cost is area, and photonics is a hundred times worse per weight. Opticore's answer is to stop storing weights in silicon at all and stream them as pulses; the price is that weights now move on every use, so they inherit the GPU's arithmetic-intensity problem and an HBM stack. The mesh can play the same game at block level if the phase shifters switch in nanoseconds and the control die can push the bits, and unlike temporal mapping it keeps a stationary device to hang a gradient loop on. Sources: docs/footprint-tdm.md.</aside>
 </section>
 
-<!-- ================================================================ tiling -->
-<section style="font-size:1.25em">
-  <h2>Scaling past one mesh: tiling</h2>
-  <div class="body cols" style="align-items:center">
-    <div class="w66">
-      <svg class="fig" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg">
-        <!-- big weight matrix cut into tiles -->
-        <g stroke="#5B6B7A" stroke-width="1" fill="#EEF2F6">
-          <rect x="20" y="30" width="240" height="150"/>
-        </g>
-        <g stroke="#5B6B7A" stroke-width="0.8">
-          <line x1="80" y1="30" x2="80" y2="180"/><line x1="140" y1="30" x2="140" y2="180"/><line x1="200" y1="30" x2="200" y2="180"/>
-          <line x1="20" y1="80" x2="260" y2="80"/><line x1="20" y1="130" x2="260" y2="130"/>
-        </g>
-        <rect x="140" y="80" width="60" height="50" fill="#F0CDA5" stroke="#D9821E" stroke-width="1.6"/>
-        <text x="140" y="20" font-size="13" fill="#16263A" text-anchor="middle">W, d<tspan font-size="9" dy="3">out</tspan><tspan dy="-3"> × d</tspan><tspan font-size="9" dy="3">in</tspan></text>
-        <text x="170" y="109" font-size="12" fill="#16263A" text-anchor="middle" font-style="italic">W<tspan font-size="9" dy="3">ij</tspan></text>
-        <text x="140" y="197" font-size="11" fill="#5B6B7A" text-anchor="middle">N × N tiles, N = 128</text>
-        <!-- expanded tile: V Sigma U^dagger -->
-        <line x1="200" y1="105" x2="300" y2="105" stroke="#D9821E" stroke-width="1.4" stroke-dasharray="4,3"/>
-        <g fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4">
-          <rect x="300" y="75" width="60" height="60" rx="4"/><rect x="376" y="75" width="40" height="60" rx="4"/><rect x="432" y="75" width="60" height="60" rx="4"/>
-        </g>
-        <g font-size="13" fill="#16263A" text-anchor="middle" font-style="italic">
-          <text x="330" y="110">U<tspan font-size="9" dy="-6">†</tspan></text><text x="396" y="110">Σ</text><text x="462" y="110">V</text>
-        </g>
-        <g font-size="10" fill="#5B6B7A" text-anchor="middle">
-          <text x="330" y="152">mesh</text><text x="396" y="152">N attenuators</text><text x="462" y="152">mesh</text>
-        </g>
-        <text x="396" y="60" font-size="11" fill="#5B6B7A" text-anchor="middle">one tile = two meshes + a diagonal</text>
-        <!-- accumulation -->
-        <g font-size="12" fill="#16263A">
-          <text x="20" y="235">y<tspan font-size="9" dy="3">i</tspan><tspan dy="-3"> = Σ</tspan><tspan font-size="9" dy="3">j</tspan><tspan dy="-3"> W</tspan><tspan font-size="9" dy="3">ij</tspan><tspan dy="-3"> x</tspan><tspan font-size="9" dy="3">j</tspan></text>
-          <text x="20" y="258" font-size="11" fill="#5B6B7A">each tile output is digitised, partial sums added digitally</text>
-          <text x="20" y="278" font-size="11" fill="#5B6B7A">tiles resident per reticle: ~5; the rest streamed from HBM per batch</text>
-        </g>
-      </svg>
-    </div>
-    <div>
-      <ul>
-        <li>Each tile is an SVD: two meshes and \(N\) attenuators</li>
-        <li>Error resets at every tile's ADC</li>
-        <li>Reload and fetch: \(\approx2.5\,\mathrm{fJ}\) per MAC at \(M=10^4\)</li>
-      </ul>
-    </div>
-  </div>
-  <aside class="notes">[8:15] The question always comes: your mesh is 128 wide, my matrix is 28 thousand. The answer is tiling, and it is better than it sounds. Every tile is its own SVD, its output is digitised, so error is capped per tile rather than compounding over the whole matrix. The conversion cost per MAC is exactly what it was for one mesh. What tiling does cost is weight traffic, and that is the same rule every accelerator lives under: reuse each tile over enough vectors. At ten thousand tokens per weight per step, which is what training does, it is under three femtojoules per MAC.</aside>
-</section>
-
-<!-- ================================================================ mlp vs attention -->
-<section style="font-size:1.18em">
-  <h2>MLP versus attention: weight-stationary or not</h2>
-  <div class="body">
-    <div class="block" style="margin-bottom:14px"><div class="bt">The weight-stationary half</div><div class="bb">In current models the MLP is <strong>roughly half of the MACs per token</strong>, \(0.4\) to \(1.2\,\mathrm{GMACs}\) of active experts; attention takes the other half at long context. Detail in the backup.</div></div>
-    <div class="cols" style="align-items:center">
-      <div class="w52"><svg class="fig" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
-        <!-- left: mesh, weights inside -->
-        <rect x="70" y="30" width="110" height="80" rx="6" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.6"/>
-        <text x="125" y="62" font-size="12" fill="#16263A" text-anchor="middle">mesh</text>
-        <text x="125" y="80" font-size="11" fill="#5B6B7A" text-anchor="middle">W held in N² phases</text>
-        <line x1="10" y1="70" x2="70" y2="70" stroke="#3A8FB7" stroke-width="2"/><text x="12" y="60" font-size="11" fill="#3A8FB7">x, streamed</text>
-        <line x1="180" y1="70" x2="240" y2="70" stroke="#6B8F3D" stroke-width="2"/><text x="200" y="60" font-size="11" fill="#6B8F3D">Wx</text>
-        <text x="125" y="135" font-size="11" fill="#16263A" text-anchor="middle">weight-stationary: MLP, projections</text>
-        <text x="125" y="152" font-size="10" fill="#5B6B7A" text-anchor="middle">reprogramming per token would need 130 Tb/s per mesh</text>
-        <!-- right: temporal mapping -->
-        <rect x="300" y="42" width="60" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="330" y="59" font-size="11" fill="#16263A" text-anchor="middle">mod q(t)</text>
-        <rect x="300" y="84" width="60" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="330" y="101" font-size="11" fill="#16263A" text-anchor="middle">mod k(t)</text>
-        <circle cx="410" cy="76" r="16" fill="#F0CDA5" stroke="#D9821E" stroke-width="1.6"/><text x="410" y="80" font-size="11" fill="#16263A" text-anchor="middle">PD</text>
-        <line x1="360" y1="55" x2="396" y2="68" stroke="#3A8FB7" stroke-width="2"/><line x1="360" y1="97" x2="396" y2="84" stroke="#3A8FB7" stroke-width="2"/>
-        <rect x="446" y="62" width="60" height="28" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="476" y="80" font-size="11" fill="#16263A" text-anchor="middle">∫ dt</text>
-        <line x1="426" y1="76" x2="446" y2="76" stroke="#6B8F3D" stroke-width="2"/>
-        <text x="405" y="135" font-size="11" fill="#16263A" text-anchor="middle">both operands streamed: attention</text>
-        <text x="405" y="152" font-size="10" fill="#5B6B7A" text-anchor="middle">photoelectric multiplication, O(N) devices, no state</text>
-      </svg></div>
-      <div>
-        <ul>
-          <li>The MLP's weights sit still for every token: the mesh's case</li>
-          <li>Attention multiplies data by data; a mesh would be rewritten every token. Stream both operands into a detector instead</li>
-          <li>Attention is <span class="alert">memory-bound</span> in decode. Mesh for the MLP, streaming unit for attention, decode left to memory</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-  <aside class="notes">[8:45] This is the slide that says where the mesh belongs. Two thirds of the weight work in a transformer is the MLP, and every token goes through it, so the weights sit still for tens of thousands of vectors. That is the mesh's case. Attention multiplies activations by activations, and there is no way to hold that in phases; you would be rewriting the mesh at terabits per second. The circuit that fits attention is the one where both operands stream into a detector. And say the bandwidth point plainly: attention is memory-bound. Every key and value is read from the cache and used once per query, so in decode the arithmetic intensity is about one MAC per byte, two orders below what it takes to keep any HBM-fed multiplier busy. Faster multiplies do nothing there, photonic or otherwise. Read the table by row. Llama 3 is the dense reference: attention is small at 8k and takes over by 128k. DeepSeek-V3.2 is the surprise: even with sparse attention, attention is a third of the MACs at 8k, because mixture of experts thinned the active MLP to 0.4 giga-MACs per token while the attention, 128 heads on a 576-wide latent, is sized for a 671-billion-parameter model; the lightning indexer is linear in context and dominates at 128k. Kimi K3 shows what linear attention does: 69 of 93 layers are Kimi Delta Attention with no context dependence, and the MLP is 1.2 giga-MACs, so attention stays under 15 percent to 128k and under half at a million. DeepSeek-V4 compresses the KV cache 10 times and lands near half at a million. The lesson for a photonic MLP engine: mixture of experts moved compute share toward attention, and only linear or compressed attention moves it back. Put the two circuits together and you cover training and prefill. Decode is a memory problem for everyone, including us.</aside>
-</section>
-
 <!-- ================================================================ what changed -->
 <section style="font-size:1.32em">
   <h2>What changed after 2022?</h2>
@@ -532,7 +446,7 @@
     </div>
     <p class="verdict">Revisit the four conditions: fan-in large <span class="slate">(still hard)</span>, precision low <span class="moss">(now true)</span>, weights static <span class="moss">(true for inference)</span>, data already analog <span class="slate">(not in a datacenter)</span>.</p>
   </div>
-  <aside class="notes">[9:20] Two of the four flipped in our favor. The two that did not are both about where the data lives, which is the hint for the last slide.</aside>
+  <aside class="notes">[8:30] Two of the four flipped in our favor. The two that did not are both about where the data lives, which is the hint for the last slide.</aside>
 </section>
 
 <!-- ================================================================ questions -->
@@ -549,7 +463,7 @@
       &#9993;&ensp;sunilkpai93@gmail.com
     </div>
   </div>
-  <aside class="notes">[10:00] Leave the QR up during questions. It goes to the slides; the repo with the SM analysis and scripts is linked from the deck's README.</aside>
+  <aside class="notes">[9:15] Leave the QR up during questions. It goes to the slides; the repo with the SM analysis and scripts is linked from the deck's README.</aside>
 </section>
 
 <!-- ================================================================ other applications -->
@@ -630,6 +544,92 @@
     <p class="small" style="margin-top:12px">MoE thins the active MLP, \((k+\text{shared})\times3\times d\times h_{\text{expert}}\), while attention is sized for the whole model, so attention's share is higher than in dense models: DeepSeek-V3.2's lightning indexer alone is linear in context. Linear (Kimi Delta Attention) and compressed (CSA, HCA) attention pull it back. Configs from the model cards; K3's MLA head dims and sparsity assumed as DeepSeek's; V4 Pro from its published \(27\%\) of V3.2's per-token FLOPs at \(1\mathrm{M}\). Script: <code>scripts/attention_share.py</code>.</p>
   </div>
   <aside class="notes">Backup for "is it really that much attention". Dense attention past 128k is almost all of the MACs, which is why nobody ships it; the models that advertise a million tokens got there with linear, sparse or compressed attention, and the MLP comes back to about half.</aside>
+</section>
+
+<!-- ================================================================ mlp vs attention -->
+<section class="appendix" style="font-size:1.18em">
+  <h2>MLP versus attention: weight-stationary or not <span class="tag">backup</span></h2>
+  <div class="body">
+    <div class="block" style="margin-bottom:14px"><div class="bt">The weight-stationary half</div><div class="bb">In current models the MLP is <strong>roughly half of the MACs per token</strong>, \(0.4\) to \(1.2\,\mathrm{GMACs}\) of active experts; attention takes the other half at long context. Detail in the backup.</div></div>
+    <div class="cols" style="align-items:center">
+      <div class="w52"><svg class="fig" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
+        <!-- left: mesh, weights inside -->
+        <rect x="70" y="30" width="110" height="80" rx="6" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.6"/>
+        <text x="125" y="62" font-size="12" fill="#16263A" text-anchor="middle">mesh</text>
+        <text x="125" y="80" font-size="11" fill="#5B6B7A" text-anchor="middle">W held in N² phases</text>
+        <line x1="10" y1="70" x2="70" y2="70" stroke="#3A8FB7" stroke-width="2"/><text x="12" y="60" font-size="11" fill="#3A8FB7">x, streamed</text>
+        <line x1="180" y1="70" x2="240" y2="70" stroke="#6B8F3D" stroke-width="2"/><text x="200" y="60" font-size="11" fill="#6B8F3D">Wx</text>
+        <text x="125" y="135" font-size="11" fill="#16263A" text-anchor="middle">weight-stationary: MLP, projections</text>
+        <text x="125" y="152" font-size="10" fill="#5B6B7A" text-anchor="middle">reprogramming per token would need 130 Tb/s per mesh</text>
+        <!-- right: temporal mapping -->
+        <rect x="300" y="42" width="60" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="330" y="59" font-size="11" fill="#16263A" text-anchor="middle">mod q(t)</text>
+        <rect x="300" y="84" width="60" height="26" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="330" y="101" font-size="11" fill="#16263A" text-anchor="middle">mod k(t)</text>
+        <circle cx="410" cy="76" r="16" fill="#F0CDA5" stroke="#D9821E" stroke-width="1.6"/><text x="410" y="80" font-size="11" fill="#16263A" text-anchor="middle">PD</text>
+        <line x1="360" y1="55" x2="396" y2="68" stroke="#3A8FB7" stroke-width="2"/><line x1="360" y1="97" x2="396" y2="84" stroke="#3A8FB7" stroke-width="2"/>
+        <rect x="446" y="62" width="60" height="28" rx="4" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4"/><text x="476" y="80" font-size="11" fill="#16263A" text-anchor="middle">∫ dt</text>
+        <line x1="426" y1="76" x2="446" y2="76" stroke="#6B8F3D" stroke-width="2"/>
+        <text x="405" y="135" font-size="11" fill="#16263A" text-anchor="middle">both operands streamed: attention</text>
+        <text x="405" y="152" font-size="10" fill="#5B6B7A" text-anchor="middle">photoelectric multiplication, O(N) devices, no state</text>
+      </svg></div>
+      <div>
+        <ul>
+          <li>The MLP's weights sit still for every token: the mesh's case</li>
+          <li>Attention multiplies data by data; a mesh would be rewritten every token. Stream both operands into a detector instead</li>
+          <li>Attention is <span class="alert">memory-bound</span> in decode. Mesh for the MLP, streaming unit for attention, decode left to memory</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Backup. This is the slide that says where the mesh belongs. Two thirds of the weight work in a transformer is the MLP, and every token goes through it, so the weights sit still for tens of thousands of vectors. That is the mesh's case. Attention multiplies activations by activations, and there is no way to hold that in phases; you would be rewriting the mesh at terabits per second. The circuit that fits attention is the one where both operands stream into a detector. And say the bandwidth point plainly: attention is memory-bound. Every key and value is read from the cache and used once per query, so in decode the arithmetic intensity is about one MAC per byte, two orders below what it takes to keep any HBM-fed multiplier busy. Faster multiplies do nothing there, photonic or otherwise. Read the table by row. Llama 3 is the dense reference: attention is small at 8k and takes over by 128k. DeepSeek-V3.2 is the surprise: even with sparse attention, attention is a third of the MACs at 8k, because mixture of experts thinned the active MLP to 0.4 giga-MACs per token while the attention, 128 heads on a 576-wide latent, is sized for a 671-billion-parameter model; the lightning indexer is linear in context and dominates at 128k. Kimi K3 shows what linear attention does: 69 of 93 layers are Kimi Delta Attention with no context dependence, and the MLP is 1.2 giga-MACs, so attention stays under 15 percent to 128k and under half at a million. DeepSeek-V4 compresses the KV cache 10 times and lands near half at a million. The lesson for a photonic MLP engine: mixture of experts moved compute share toward attention, and only linear or compressed attention moves it back. Put the two circuits together and you cover training and prefill. Decode is a memory problem for everyone, including us.</aside>
+</section>
+
+<!-- ================================================================ tiling -->
+<section class="appendix" style="font-size:1.25em">
+  <h2>Scaling past one mesh: tiling <span class="tag">backup</span></h2>
+  <div class="body cols" style="align-items:center">
+    <div class="w66">
+      <svg class="fig" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg">
+        <!-- big weight matrix cut into tiles -->
+        <g stroke="#5B6B7A" stroke-width="1" fill="#EEF2F6">
+          <rect x="20" y="30" width="240" height="150"/>
+        </g>
+        <g stroke="#5B6B7A" stroke-width="0.8">
+          <line x1="80" y1="30" x2="80" y2="180"/><line x1="140" y1="30" x2="140" y2="180"/><line x1="200" y1="30" x2="200" y2="180"/>
+          <line x1="20" y1="80" x2="260" y2="80"/><line x1="20" y1="130" x2="260" y2="130"/>
+        </g>
+        <rect x="140" y="80" width="60" height="50" fill="#F0CDA5" stroke="#D9821E" stroke-width="1.6"/>
+        <text x="140" y="20" font-size="13" fill="#16263A" text-anchor="middle">W, d<tspan font-size="9" dy="3">out</tspan><tspan dy="-3"> × d</tspan><tspan font-size="9" dy="3">in</tspan></text>
+        <text x="170" y="109" font-size="12" fill="#16263A" text-anchor="middle" font-style="italic">W<tspan font-size="9" dy="3">ij</tspan></text>
+        <text x="140" y="197" font-size="11" fill="#5B6B7A" text-anchor="middle">N × N tiles, N = 128</text>
+        <!-- expanded tile: V Sigma U^dagger -->
+        <line x1="200" y1="105" x2="300" y2="105" stroke="#D9821E" stroke-width="1.4" stroke-dasharray="4,3"/>
+        <g fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.4">
+          <rect x="300" y="75" width="60" height="60" rx="4"/><rect x="376" y="75" width="40" height="60" rx="4"/><rect x="432" y="75" width="60" height="60" rx="4"/>
+        </g>
+        <g font-size="13" fill="#16263A" text-anchor="middle" font-style="italic">
+          <text x="330" y="110">U<tspan font-size="9" dy="-6">†</tspan></text><text x="396" y="110">Σ</text><text x="462" y="110">V</text>
+        </g>
+        <g font-size="10" fill="#5B6B7A" text-anchor="middle">
+          <text x="330" y="152">mesh</text><text x="396" y="152">N attenuators</text><text x="462" y="152">mesh</text>
+        </g>
+        <text x="396" y="60" font-size="11" fill="#5B6B7A" text-anchor="middle">one tile = two meshes + a diagonal</text>
+        <!-- accumulation -->
+        <g font-size="12" fill="#16263A">
+          <text x="20" y="235">y<tspan font-size="9" dy="3">i</tspan><tspan dy="-3"> = Σ</tspan><tspan font-size="9" dy="3">j</tspan><tspan dy="-3"> W</tspan><tspan font-size="9" dy="3">ij</tspan><tspan dy="-3"> x</tspan><tspan font-size="9" dy="3">j</tspan></text>
+          <text x="20" y="258" font-size="11" fill="#5B6B7A">each tile output is digitised, partial sums added digitally</text>
+          <text x="20" y="278" font-size="11" fill="#5B6B7A">tiles resident per reticle: ~5; the rest streamed from HBM per batch</text>
+        </g>
+      </svg>
+    </div>
+    <div>
+      <ul>
+        <li>Each tile is an SVD: two meshes and \(N\) attenuators</li>
+        <li>Error resets at every tile's ADC</li>
+        <li>Reload and fetch: \(\approx2.5\,\mathrm{fJ}\) per MAC at \(M=10^4\)</li>
+      </ul>
+    </div>
+  </div>
+  <aside class="notes">Backup. The question always comes: your mesh is 128 wide, my matrix is 28 thousand. The answer is tiling, and it is better than it sounds. Every tile is its own SVD, its output is digitised, so error is capped per tile rather than compounding over the whole matrix. The conversion cost per MAC is exactly what it was for one mesh. What tiling does cost is weight traffic, and that is the same rule every accelerator lives under: reuse each tile over enough vectors. At ten thousand tokens per weight per step, which is what training does, it is under three femtojoules per MAC.</aside>
 </section>
 
 <!-- ================================================================ appendix -->
