@@ -30,7 +30,7 @@
 
 <!-- ================================================================ motivation -->
 <section>
-  <h2>Purpose: which optical computing technologies are viable in today's market?</h2>
+  <h2>Purpose: the role of photonic analog computing in AI, now that we know where LLMs bottleneck</h2>
   <div class="body cols" style="align-items:center">
     <div class="w40">
       <div class="stat"><div class="n">\(>\$300\mathrm{B}\)</div><div class="d">AI datacenter capex per year, 2025 hyperscaler guidance</div></div>
@@ -40,10 +40,10 @@
     <div>
       <div class="block"><div class="bt">2022: an analog chip that learns with light</div><div class="bb">Photonic mesh, in situ backpropagation, trained on chip. The premise: the multiply is the bottleneck, and light does it for free.</div></div>
       <div class="block"><div class="bt">2026: AGI-class models, and the workload changed</div><div class="bb">Transformers, inference at 4 bits, decode bound by memory, not multiplies. The cost of intelligence is now an energy and capex problem.</div></div>
-      <div class="block"><div class="bt">Purpose of this talk</div><div class="bb">Start a discussion, not close one. Against the 2026 workload and the 2026 competition, which optical compute technologies are viable, for which part of the job, and what would it take to build them.</div></div>
+      <div class="block"><div class="bt">Purpose of this talk</div><div class="bb">Stimulate a discussion about the role of photonic analog computing in AI, now that the bottlenecks of near-AGI LLM designs are understood: memory, precision, area, and where the multiplies actually are.</div></div>
     </div>
   </div>
-  <aside class="notes">[0:20] Motivation in one breath. The numbers on the left are the crisis: capex above three hundred billion a year across the hyperscalers on 2025 guidance, datacenters going from about four percent of US electricity in 2023 to a projected seven to twelve percent by 2028 in the Berkeley Lab report, and campuses now sized in gigawatts. In 2022 we built a chip that trains with light, on the premise that the multiply was the expensive thing. Since then the models reached what we now call AGI-class capability and the workload changed underneath us: transformers, four-bit inference, decode that waits on memory. The purpose of the talk is to start a discussion, not to close one: redo the 2022 argument against the 2026 workload and the 2026 competition, and ask which optical compute technologies are viable, for which part of the job, and what it would take to build them. I will give my own answers, and I would rather be argued with than agreed with.</aside>
+  <aside class="notes">[0:20] Motivation in one breath. The numbers on the left are the crisis: capex above three hundred billion a year across the hyperscalers on 2025 guidance, datacenters going from about four percent of US electricity in 2023 to a projected seven to twelve percent by 2028 in the Berkeley Lab report, and campuses now sized in gigawatts. In 2022 we built a chip that trains with light, on the premise that the multiply was the expensive thing. Since then the models reached what we now call AGI-class capability and the workload changed underneath us: transformers, four-bit inference, decode that waits on memory. The purpose of the talk is to stimulate a discussion about the role of photonic analog computing in AI, now that we understand where near-AGI LLM designs actually bottleneck: memory bandwidth in decode, precision in training, silicon area per weight, and the split between weight-stationary multiplies and attention. Redo the 2022 argument against that, and against the 2026 competition. I will give my own answers, and I would rather be argued with than agreed with.</aside>
 </section>
 
 <!-- ================================================================ 2010s thesis + mesh -->
