@@ -30,7 +30,7 @@
 
 <!-- ================================================================ motivation -->
 <section>
-  <h2>Motivations</h2>
+  <h2>Motivation for photonic computing in AI</h2>
   <div class="body cols" style="align-items:center">
     <div class="w40">
       <div class="stat"><div class="n">\(>\$300\mathrm{B}\)</div><div class="d">AI datacenter capex per year, 2025 hyperscaler guidance</div></div>
@@ -120,7 +120,7 @@
 
 <!-- ================================================================ transformer workload -->
 <section>
-  <h2>The post-GPT workload: a transformer, and prefill versus decode</h2>
+  <h2>The workload: what a transformer does with one token</h2>
   <div class="body cols">
     <div class="w66">
       <svg class="fig" viewBox="0 0 760 440" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
@@ -202,10 +202,9 @@
     </div>
     <div class="small">
       <ul>
-        <li>A <strong>token</strong> is a word piece, a vector of length \(d\) (\(8192\) for a 70B model), through \(80\) of these blocks</li>
-        <li><strong>Green</strong>: weights that never change at inference. <strong>Amber</strong>: the token against every earlier one, from the <strong>KV cache</strong></li>
-        <li>In current models the MLP is <strong>a third to a half of the MACs per token</strong>; attention takes the rest at long context (backup). Training looks like prefill, thousands of tokens per weight</li>
-        <li><span class="alert">The mesh fits prefill and training.</span> Decode is a memory problem for any multiplier</li>
+        <li>A <strong>token</strong> is a word piece: a vector of length \(d\), \(8192\) for a 70B model, passed through \(80\) of these blocks</li>
+        <li><strong>Green</strong>: multiply by a fixed weight matrix. <strong>Amber</strong>: compare the token with every earlier one, kept in the KV cache</li>
+        <li>The MLP is a third to a half of the multiplies</li>
       </ul>
     </div>
   </div>
