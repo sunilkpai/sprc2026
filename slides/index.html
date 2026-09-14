@@ -482,20 +482,17 @@
 <!-- ================================================================ mlp vs attention -->
 <section>
   <h2>MLP versus attention: weight-stationary or not</h2>
-  <div class="body cols">
-    <div class="w60">
-      <div class="lead">Attention share of MACs per token, by context; active MLP in GMACs</div>
-      <table class="big">
-        <tr><th>model</th><th class="r">MLP</th><th class="r">\(8\mathrm{k}\)</th><th class="r">\(128\mathrm{k}\)</th><th class="r">\(1\mathrm{M}\)</th></tr>
-        <tr><td>Llama 3 70B, dense</td><td class="r">\(0.7\,\mathrm{G}\)</td><td class="r">\(7\%\)</td><td class="r">\(56\%\)</td><td class="r">\(91\%\)</td></tr>
-        <tr><td>DeepSeek-V3.2, sparse</td><td class="r">\(0.4\,\mathrm{G}\)</td><td class="r">\(35\%\)</td><td class="r">\(58\%\)</td><td class="r">\(89\%\)</td></tr>
-        <tr><td>Kimi K3, 69 KDA + 24 MLA</td><td class="r">\(1.2\,\mathrm{G}\)</td><td class="r">\(5\%\)</td><td class="r">\(12\%\)</td><td class="r">\(45\%\)</td></tr>
-        <tr><td>DeepSeek-V4 Pro, hybrid</td><td class="r">\(0.5\,\mathrm{G}\)</td><td class="r">–</td><td class="r">–</td><td class="r">\(49\%\)</td></tr>
+  <div class="body">
+    <div class="lead">Share of MACs per token per layer, real models at their context</div>
+    <table class="big" style="font-size:1.0em">
+        <tr><th>model</th><th class="r">context</th><th class="r">MLP GMACs</th><th class="r">attention</th><th class="r">MLP</th><th class="r">proj.</th></tr>
+        <tr><td>Llama 3 70B, dense</td><td class="r">\(128\mathrm{k}\)</td><td class="r">\(0.7\)</td><td class="r">\(56\%\)</td><td class="r">\(37\%\)</td><td class="r">\(8\%\)</td></tr>
+        <tr><td>DeepSeek-V3.2, sparse</td><td class="r">\(128\mathrm{k}\)</td><td class="r">\(0.4\)</td><td class="r">\(58\%\)</td><td class="r">\(28\%\)</td><td class="r">\(13\%\)</td></tr>
+        <tr><td>Kimi K3, KDA hybrid</td><td class="r">\(1\mathrm{M}\)</td><td class="r">\(1.2\)</td><td class="r">\(45\%\)</td><td class="r">\(46\%\)</td><td class="r">\(9\%\)</td></tr>
+        <tr><td>DeepSeek-V4 Pro, hybrid</td><td class="r">\(1\mathrm{M}\)</td><td class="r">\(0.5\)</td><td class="r">\(49\%\)</td><td class="r">\(38\%\)</td><td class="r">\(13\%\)</td></tr>
       </table>
-      <p class="small" style="margin-top:8px">MoE thins the active MLP while attention is sized for the whole model, so attention\'s share is <em>higher</em> than in dense models. Linear (KDA) and compressed attention pull it back. K3\'s MLA layers assumed sparse.</p>
-    </div>
-    <div>
-      <svg class="fig" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
+    <div class="cols" style="margin-top:10px; align-items:center">
+      <div class="w40"><svg class="fig" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
         <!-- left: mesh, weights inside -->
         <rect x="70" y="30" width="110" height="80" rx="6" fill="#EEF2F6" stroke="#2E4A6B" stroke-width="1.6"/>
         <text x="125" y="62" font-size="12" fill="#16263A" text-anchor="middle">mesh</text>
@@ -513,11 +510,14 @@
         <line x1="426" y1="76" x2="446" y2="76" stroke="#6B8F3D" stroke-width="2"/>
         <text x="405" y="135" font-size="11" fill="#16263A" text-anchor="middle">both operands streamed: attention</text>
         <text x="405" y="152" font-size="10" fill="#5B6B7A" text-anchor="middle">photoelectric multiplication, O(N) devices, no state</text>
-      </svg>
-      <ul class="small" style="margin-top:8px">
-        <li>Attention multiplies data by data; a mesh would be rewritten every token. Stream both operands into a detector instead</li>
-        <li>Attention is <span class="alert">memory-bound</span> in decode. Mesh for the MLP, streaming unit for attention, decode left to memory</li>
-      </ul>
+      </svg></div>
+      <div class="small">
+        <ul>
+          <li>MoE thins the active MLP while attention is sized for the whole model, so attention's share is <em>higher</em> than in dense models. Linear (KDA) and compressed attention pull it back</li>
+          <li>Attention multiplies data by data; a mesh would be rewritten every token. Stream both operands into a detector. It is <span class="alert">memory-bound</span> in decode</li>
+          <li>Mesh for the MLP, streaming unit for attention, decode left to memory. K3's MLA layers assumed sparse</li>
+        </ul>
+      </div>
     </div>
   </div>
   <aside class="notes">[8:45] This is the slide that says where the mesh belongs. Two thirds of the weight work in a transformer is the MLP, and every token goes through it, so the weights sit still for tens of thousands of vectors. That is the mesh's case. Attention multiplies activations by activations, and there is no way to hold that in phases; you would be rewriting the mesh at terabits per second. The circuit that fits attention is the one where both operands stream into a detector. And say the bandwidth point plainly: attention is memory-bound. Every key and value is read from the cache and used once per query, so in decode the arithmetic intensity is about one MAC per byte, two orders below what it takes to keep any HBM-fed multiplier busy. Faster multiplies do nothing there, photonic or otherwise. Read the table by row. Llama 3 is the dense reference: attention is small at 8k and takes over by 128k. DeepSeek-V3.2 is the surprise: even with sparse attention, attention is a third of the MACs at 8k, because mixture of experts thinned the active MLP to 0.4 giga-MACs per token while the attention, 128 heads on a 576-wide latent, is sized for a 671-billion-parameter model; the lightning indexer is linear in context and dominates at 128k. Kimi K3 shows what linear attention does: 69 of 93 layers are Kimi Delta Attention with no context dependence, and the MLP is 1.2 giga-MACs, so attention stays under 15 percent to 128k and under half at a million. DeepSeek-V4 compresses the KV cache 10 times and lands near half at a million. The lesson for a photonic MLP engine: mixture of experts moved compute share toward attention, and only linear or compressed attention moves it back. Put the two circuits together and you cover training and prefill. Decode is a memory problem for everyone, including us.</aside>

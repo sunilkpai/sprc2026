@@ -102,6 +102,12 @@ def main():
     print("\nNotes:")
     for name, m in MODELS.items():
         print(f"  {name}: {m['note']}")
+    print("\nRow form, model at context: attention / MLP / projections share of MACs per token per layer")
+    for name, L in (("Llama 3 70B (dense, GQA)", "128k"), ("DeepSeek-V3.2 (MoE, DSA sparse)", "128k"),
+                    ("Kimi K3 (MoE, 69 KDA + 24 MLA, MLA sparse)", "128k"), ("Kimi K3 (MoE, 69 KDA + 24 MLA, MLA sparse)", "1M"),
+                    ("DeepSeek-V4 Pro (CSA + HCA hybrid, 1M)", "1M")):
+        m = MODELS[name]; core = m["core"](CTX[L]); tot = m["mlp"] + m["proj"] + core
+        print(f"  {name:46s} {L:>5s}  attn {100 * core / tot:3.0f}%  MLP {100 * m['mlp'] / tot:3.0f}%  proj {100 * m['proj'] / tot:3.0f}%")
     print(f"\nFor comparison, 8 d^2 at d=7168 is {8 * 7168**2 / M:.0f} MMACs; DeepSeek's active MLP happens to match it, Kimi K3's is 2.9x it.")
 
 
