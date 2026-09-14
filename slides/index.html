@@ -409,12 +409,12 @@
       </svg>
       <ul>
         <li>\(QK^{T}\) and the \(V\) sum multiply two activations; nothing is stationary, so a mesh would be rewritten every token. A homodyne detector with both operands as pulse streams (Hamerly 2019, Opticore) has no state to rewrite</li>
-        <li>Prefill and training reuse each key across the sequence, so that unit is compute-bound. Decode uses each key once per token and is KV-bandwidth-bound on any hardware</li>
+        <li>Attention layers are <span class="alert">memory-bandwidth bound, not compute bound</span>. Each KV-cache element is used once per query token: in decode that is one MAC per byte read, against the \(\sim100\) MACs per byte an HBM-fed accelerator needs to be compute bound. Prefill and training reuse each key across the sequence and stay compute-bound only with FlashAttention-style tiling</li>
         <li>So: <span class="alert">mesh for the MLP and projections, temporal unit for attention</span>, both for training and prefill. Decode stays a memory problem</li>
       </ul>
     </div>
   </div>
-  <aside class="notes">[8:45] This is the slide that says where the mesh belongs. Two thirds of the weight work in a transformer is the MLP, and every token goes through it, so the weights sit still for tens of thousands of vectors. That is the mesh's case. Attention multiplies activations by activations, and there is no way to hold that in phases; you would be rewriting the mesh at terabits per second. The circuit that fits attention is the one where both operands stream into a detector. Put the two together and you cover training and prefill. Decode is a memory problem for everyone, including us.</aside>
+  <aside class="notes">[8:45] This is the slide that says where the mesh belongs. Two thirds of the weight work in a transformer is the MLP, and every token goes through it, so the weights sit still for tens of thousands of vectors. That is the mesh's case. Attention multiplies activations by activations, and there is no way to hold that in phases; you would be rewriting the mesh at terabits per second. The circuit that fits attention is the one where both operands stream into a detector. And say the bandwidth point plainly: attention is memory-bound. Every key and value is read from the cache and used once per query, so in decode the arithmetic intensity is about one MAC per byte, two orders below what it takes to keep any HBM-fed multiplier busy. Faster multiplies do nothing there, photonic or otherwise. Put the two circuits together and you cover training and prefill. Decode is a memory problem for everyone, including us.</aside>
 </section>
 
 <!-- ================================================================ what changed -->

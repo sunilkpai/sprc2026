@@ -115,6 +115,20 @@ the sequence, so it is compute-bound and the multiply costs a modulation and a
 detector, a few femtojoules. In decode each key is used once per new token, so
 it is KV-cache bandwidth at 2 to 4 pJ per bit on any hardware.
 
+Underneath this is arithmetic intensity. An HBM-fed accelerator needs of order
+100 MACs per byte fetched to be compute-bound (an H100 does about 2 PFLOPS
+dense FP8 over 3.35 TB/s, roughly 300 MACs per byte at the crossover). The MLP
+gets there easily: each weight byte is reused across every token in the batch.
+Attention does not. Every key and value element in the cache is used once per
+query token, so in decode the intensity is about one MAC per byte, two orders
+of magnitude short, and the layer runs at the speed of the KV-cache read no
+matter how fast the multiplier is. In prefill and training the same key is
+reused across the $L$ queries of the sequence, so the intensity is $\sim L$,
+and the layer is compute-bound only because FlashAttention-style tiling keeps
+the $L\times L$ score matrix out of HBM. Attention layers are therefore
+memory-bandwidth bound in the regime that dominates serving, and a faster
+multiply, photonic or otherwise, does nothing for them there.
+
 So the division is: mesh for the MLP and projections, temporal unit for
 attention, both for training and prefill. Decode stays a memory problem.
 
