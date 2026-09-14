@@ -200,11 +200,10 @@
         <rect x="590" y="428" width="12" height="10" fill="#EEF2F6" stroke="#5B6B7A"/><text x="606" y="437" font-size="10" fill="#16263A">digital</text>
       </svg>
     </div>
-    <div class="xsmall">
+    <div class="small">
       <ul>
-        <li>A <strong>token</strong> is a word piece, a vector of length \(d\) (\(8192\) for a 70B model). It passes through \(80\) of these blocks</li>
-        <li><strong>Green</strong> layers multiply by a weight matrix that never changes at inference: \(12d^2\) MACs per token. <strong>Amber</strong> attention compares the token with every earlier one, whose keys and values sit in the <strong>KV cache</strong>: \(\approx Ld\)</li>
-        <li><strong>Prefill</strong> reads the prompt: all \(L\) tokens at once, each weight reused \(L\) times. <strong>Decode</strong> writes the answer: one token per step, every weight and the whole cache read for one vector</li>
+        <li>A <strong>token</strong> is a word piece, a vector of length \(d\) (\(8192\) for a 70B model), through \(80\) of these blocks</li>
+        <li><strong>Green</strong>: weights that never change at inference. <strong>Amber</strong>: the token against every earlier one, from the <strong>KV cache</strong></li>
         <li>Training looks like prefill, with thousands of tokens per weight per step</li>
         <li><span class="alert">The mesh fits prefill and training.</span> Decode is a memory problem for any multiplier</li>
       </ul>
