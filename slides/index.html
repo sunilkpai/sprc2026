@@ -122,7 +122,7 @@
 <section>
   <h2>The post-GPT workload: one transformer layer, per token</h2>
   <div class="body cols">
-    <div class="w52">
+    <div class="w48">
       <svg class="fig" viewBox="0 0 600 330" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
         <defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#5B6B7A"/></marker></defs>
         <!-- token in -->
@@ -168,15 +168,18 @@
         <rect x="500" y="298" width="14" height="12" fill="#EEF2F6" stroke="#5B6B7A"/><text x="520" y="309" font-size="11" fill="#16263A">digital</text>
       </svg>
     </div>
-    <div>
+    <div class="small">
       <ul>
-        <li>Green: weights sit still, \(12d^2\) MACs per token. Amber: attention, \(\approx Ld\): \(8\%\) at \(8\mathrm{k}\) context, \(57\%\) at \(128\mathrm{k}\)</li>
-        <li>Prefill and training: compute-bound. Decode: \(\sim1\) MAC per byte, memory-bound</li>
-        <li>Inference went to FP8, then FP4. Training kept 16 bits</li>
+        <li>A <strong>token</strong> is a word piece. Each becomes a vector of length \(d\), \(8192\) for a 70B model, and passes through \(80\) layers like this one</li>
+        <li><strong>Green</strong>: multiply that vector by a fixed weight matrix, \(12d^2\) MACs per token. The same weights serve every token: they sit still</li>
+        <li><strong>Amber, attention</strong>: the new token compares itself with every earlier token in the context. Their stored keys and values are the <strong>KV cache</strong>. \(\approx Ld\) MACs, both operands are data</li>
+        <li><strong>Prefill</strong>: the prompt's tokens go through together, thousands sharing each weight. Compute-bound</li>
+        <li><strong>Decode</strong>: the reply comes out one token at a time. Each step reads every weight and the whole KV cache for one vector: \(\sim1\) MAC per byte, memory-bound</li>
+        <li>Inference precision fell to FP8, then FP4. Training keeps 16 bits for gradients</li>
       </ul>
       </div>
   </div>
-  <aside class="notes">[1:45] Photonics was adopted in the datacenter for moving numbers between chips, co-packaged optics; the multiply stayed electronic. Set up the workload before the hardware. Green boxes are matrix-times-vector with weights that sit still: that is two thirds of the multiplies at short context and the part a mesh can hold. The amber box is attention: the query meets keys and values that were computed on earlier tokens and live in the KV cache, so both operands change every token. Then the two regimes. In prefill and training a weight is reused across thousands of tokens and the machine is compute-bound. In decode each request contributes one token per step, so every weight and every cached key is read once per use, and the machine waits on HBM. Keep those two boxes and two regimes in mind; the whole talk sorts hardware into them.</aside>
+  <aside class="notes">[1:45] Definitions first, this is a photonics room. A token is a word piece; the model turns it into a vector of eight thousand numbers and pushes it through eighty copies of this layer. Green boxes are ordinary matrix-times-vector with a weight matrix that never changes during inference: that is the thing an optical mesh can hold. The amber box is attention: the new token looks back at every earlier token in the conversation, whose keys and values were computed earlier and are kept in memory, the KV cache. Prefill is reading the prompt: all its tokens go through at once, so each weight is reused thousands of times and the chip is busy multiplying. Decode is writing the answer: one token per step, and every step has to read every weight and the whole cache from memory to produce one vector, so the chip spends its time waiting on memory, about one multiply per byte fetched. Photonics was adopted in the datacenter for moving numbers between chips, co-packaged optics; the multiply stayed electronic. Set up the workload before the hardware. Green boxes are matrix-times-vector with weights that sit still: that is two thirds of the multiplies at short context and the part a mesh can hold. The amber box is attention: the query meets keys and values that were computed on earlier tokens and live in the KV cache, so both operands change every token. Then the two regimes. In prefill and training a weight is reused across thousands of tokens and the machine is compute-bound. In decode each request contributes one token per step, so every weight and every cached key is read once per use, and the machine waits on HBM. Keep those two boxes and two regimes in mind; the whole talk sorts hardware into them.</aside>
 </section>
 
 <!-- ================================================================ theory -->
